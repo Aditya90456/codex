@@ -8,11 +8,25 @@ function Navbar() {
             <div className="">
                 <h1 className="text-white text-3xl font-semibold">CodeX</h1>
             </div>
-            <div className="flex gap-8 text-white list-none ">
-                <li className="w-[27%]  h-[27px] bg-white text-black ">Dashboard</li>
-                <li>PlayGround </li>
-                <li>Login</li>
+            <div className="flex gap-8 text-white list-none rounded-md">
+                <div className="bg-white text-black p-2">
+                    
+                <li className="">Dashboard</li>
+                </div>
+                <div className="flex gap-8 text-white list-none rounded-md ">
+                <div className="bg-white text-black p-2">
+                    
+                <li className="">Dashboard</li>
+                </div>
+                </div> 
+                <div className="flex gap-8 text-white list-none rounded-md ">
+                <div className=" transition-all hover:bg-black hover:text-black">
+                    
+                <li className="">Dashboard</li>
+                </div>
+                </div>    
             </div>
+
         </div>
     </div>
     </>
