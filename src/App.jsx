@@ -1,10 +1,11 @@
-import Navbar from "./components/Navbar"
+import CodexEditor from './components/CodexEditor'
+import './App.css'
 
 function App() {
   return (
-    <div className="h-full">
-    <Navbar/>
-   </div>
+    <div className="App">
+      <CodexEditor />
+    </div>
   )
 }
 
