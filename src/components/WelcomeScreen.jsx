@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import UserProfile from './UserProfile';
 import Settings from './Settings';
+import VSCodeEditor from './VSCodeEditorClean';
 import { 
   Code, 
   Zap, 
@@ -27,7 +28,9 @@ import {
   Moon,
   Sun,
   Monitor,
-  BarChart3
+  BarChart3,
+  FolderOpen,
+  Database
 } from 'lucide-react';
 
 const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
@@ -38,6 +41,7 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showVSCodeEditor, setShowVSCodeEditor] = useState(false);
   const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
@@ -139,6 +143,11 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
     { name: 'Java', ext: 'java', color: 'bg-red-500', action: () => onCreateNew('java') },
     { name: 'C++', ext: 'cpp', color: 'bg-blue-500', action: () => onCreateNew('cpp') }
   ];
+
+  // Show VS Code Editor if requested
+  if (showVSCodeEditor) {
+    return <VSCodeEditor onBack={() => setShowVSCodeEditor(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 text-white overflow-x-hidden">
@@ -416,6 +425,15 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                     
+                    <button
+                      onClick={() => setShowVSCodeEditor(true)}
+                      className="group bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      <FolderOpen className="w-5 h-5" />
+                      <span>VS Code Editor</span>
+                      <Database className="w-4 h-4" />
+                    </button>
+                    
                     <button 
                       onClick={() => onShowDashboard && onShowDashboard()}
                       className="bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-gray-600 px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3"
@@ -591,6 +609,14 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
             >
               <Rocket className="w-5 h-5" />
               <span>Launch Editor</span>
+            </button>
+            
+            <button
+              onClick={() => setShowVSCodeEditor(true)}
+              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3"
+            >
+              <FolderOpen className="w-5 h-5" />
+              <span>VS Code Editor</span>
             </button>
             
             <button

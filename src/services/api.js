@@ -188,6 +188,66 @@ class ApiService {
     const userStr = localStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
   }
+
+  // Project methods
+  async getProjects() {
+    return this.request('/projects');
+  }
+
+  async createProject(projectData) {
+    return this.request('/projects', {
+      method: 'POST',
+      body: projectData,
+    });
+  }
+
+  async getProject(id) {
+    return this.request(`/projects/${id}`);
+  }
+
+  async updateProject(id, projectData) {
+    return this.request(`/projects/${id}`, {
+      method: 'PUT',
+      body: projectData,
+    });
+  }
+
+  async deleteProject(id) {
+    return this.request(`/projects/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Database methods
+  async getDatabases() {
+    return this.request('/projects/databases/list');
+  }
+
+  async createDatabase(databaseData) {
+    return this.request('/projects/databases', {
+      method: 'POST',
+      body: databaseData,
+    });
+  }
+
+  async testDatabaseConnection(id) {
+    return this.request(`/projects/databases/${id}/test`, {
+      method: 'POST',
+    });
+  }
+
+  async executeQuery(id, query) {
+    return this.request(`/projects/databases/${id}/query`, {
+      method: 'POST',
+      body: { query },
+    });
+  }
+
+  async deleteDatabase(id) {
+    return this.request(`/projects/databases/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export default new ApiService();
