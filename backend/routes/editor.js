@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 const fs = require('fs').promises;
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
@@ -492,7 +492,7 @@ main().catch(console.error);`
 // Get all workspaces for user
 router.get('/workspaces', auth, async (req, res) => {
   try {
-    const userWorkspaces = workspaces.filter(w => w.userId === req.user.id);
+    const userWorkspaces = workspaces.filter(w => w.userId === req.user.userId);
     res.json({
       success: true,
       workspaces: userWorkspaces
@@ -528,7 +528,7 @@ router.post('/workspaces', auth, async (req, res) => {
       name,
       language,
       template: template || 'basic',
-      userId: req.user.id,
+      userId: req.user.userId,
       createdAt: new Date().toISOString(),
       lastModified: new Date().toISOString(),
       settings: {
@@ -571,7 +571,7 @@ router.post('/workspaces', auth, async (req, res) => {
 router.get('/workspaces/:id', auth, async (req, res) => {
   try {
     const workspace = workspaces.find(w => 
-      w.id === req.params.id && w.userId === req.user.id
+      w.id === req.params.id && w.userId === req.user.userId
     );
     
     if (!workspace) {
@@ -598,7 +598,7 @@ router.get('/workspaces/:id', auth, async (req, res) => {
 router.put('/workspaces/:id', auth, async (req, res) => {
   try {
     const workspaceIndex = workspaces.findIndex(w => 
-      w.id === req.params.id && w.userId === req.user.id
+      w.id === req.params.id && w.userId === req.user.userId
     );
     
     if (workspaceIndex === -1) {
@@ -631,7 +631,7 @@ router.put('/workspaces/:id', auth, async (req, res) => {
 router.delete('/workspaces/:id', auth, async (req, res) => {
   try {
     const workspaceIndex = workspaces.findIndex(w => 
-      w.id === req.params.id && w.userId === req.user.id
+      w.id === req.params.id && w.userId === req.user.userId
     );
     
     if (workspaceIndex === -1) {
@@ -662,7 +662,7 @@ router.delete('/workspaces/:id', auth, async (req, res) => {
 router.get('/workspaces/:id/files', auth, async (req, res) => {
   try {
     const workspace = workspaces.find(w => 
-      w.id === req.params.id && w.userId === req.user.id
+      w.id === req.params.id && w.userId === req.user.userId
     );
     
     if (!workspace) {
@@ -697,7 +697,7 @@ router.post('/workspaces/:id/files', auth, async (req, res) => {
     }
     
     const workspace = workspaces.find(w => 
-      w.id === req.params.id && w.userId === req.user.id
+      w.id === req.params.id && w.userId === req.user.userId
     );
     
     if (!workspace) {
@@ -756,7 +756,7 @@ router.get('/files/:id', auth, async (req, res) => {
     
     // Check if user owns the workspace
     const workspace = workspaces.find(w => 
-      w.id === file.workspaceId && w.userId === req.user.id
+      w.id === file.workspaceId && w.userId === req.user.userId
     );
     
     if (!workspace) {
@@ -792,7 +792,7 @@ router.put('/files/:id', auth, async (req, res) => {
     
     // Check if user owns the workspace
     const workspace = workspaces.find(w => 
-      w.id === files[fileIndex].workspaceId && w.userId === req.user.id
+      w.id === files[fileIndex].workspaceId && w.userId === req.user.userId
     );
     
     if (!workspace) {
@@ -834,7 +834,7 @@ router.delete('/files/:id', auth, async (req, res) => {
     
     // Check if user owns the workspace
     const workspace = workspaces.find(w => 
-      w.id === files[fileIndex].workspaceId && w.userId === req.user.id
+      w.id === files[fileIndex].workspaceId && w.userId === req.user.userId
     );
     
     if (!workspace) {
@@ -885,7 +885,7 @@ router.post('/execute', auth, async (req, res) => {
       
       // Check workspace ownership
       const workspace = workspaces.find(w => 
-        w.id === file.workspaceId && w.userId === req.user.id
+        w.id === file.workspaceId && w.userId === req.user.userId
       );
       
       if (!workspace) {
@@ -901,7 +901,7 @@ router.post('/execute', auth, async (req, res) => {
     
     const execution = {
       id: uuidv4(),
-      userId: req.user.id,
+      userId: req.user.userId,
       fileId: fileId || null,
       language: execLanguage,
       code: sourceCode,
@@ -945,14 +945,14 @@ router.get('/executions', auth, async (req, res) => {
     const { limit = 50, offset = 0 } = req.query;
     
     const userExecutions = executions
-      .filter(e => e.userId === req.user.id)
+      .filter(e => e.userId === req.user.userId)
       .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
       .slice(parseInt(offset), parseInt(offset) + parseInt(limit));
     
     res.json({
       success: true,
       executions: userExecutions,
-      total: executions.filter(e => e.userId === req.user.id).length
+      total: executions.filter(e => e.userId === req.user.userId).length
     });
   } catch (error) {
     console.error('Error fetching executions:', error);

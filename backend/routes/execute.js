@@ -92,16 +92,11 @@ async function runSingleTest(code, language, testCase) {
   if (language === 'javascript') {
     return await executeJavaScript(code, testCase, startTime);
   } else if (language === 'python') {
-    // For now, we'll simulate Python execution
-    // In production, you'd use a proper Python executor
-    return {
-      input: testCase.input,
-      expected: testCase.expected,
-      actual: 'Python execution not implemented',
-      passed: false,
-      error: 'Python execution not supported in this demo',
-      runtime: Date.now() - startTime
-    };
+    return await executePython(code, testCase, startTime);
+  } else if (language === 'java') {
+    return await executeJava(code, testCase, startTime);
+  } else if (language === 'cpp') {
+    return await executeCpp(code, testCase, startTime);
   }
   
   throw new Error(`Language ${language} not supported`);
@@ -194,9 +189,78 @@ async function executeCustomCode(code, language, input) {
         runtime: Date.now() - startTime
       };
     }
+  } else if (language === 'python') {
+    return await executePythonCustom(code, input, startTime);
+  } else if (language === 'java') {
+    return await executeJavaCustom(code, input, startTime);
+  } else if (language === 'cpp') {
+    return await executeCppCustom(code, input, startTime);
   }
 
   throw new Error(`Language ${language} not supported`);
+}
+
+async function executePython(code, testCase, startTime) {
+  // Mock Python execution for demo purposes
+  // In production, you would use child_process to run Python
+  return {
+    input: testCase.input,
+    expected: testCase.expected,
+    actual: 'Python execution simulated',
+    passed: false,
+    error: 'Python execution requires server-side setup',
+    runtime: Date.now() - startTime
+  };
+}
+
+async function executeJava(code, testCase, startTime) {
+  // Mock Java execution for demo purposes
+  // In production, you would compile and run Java code
+  return {
+    input: testCase.input,
+    expected: testCase.expected,
+    actual: 'Java execution simulated',
+    passed: false,
+    error: 'Java execution requires server-side setup',
+    runtime: Date.now() - startTime
+  };
+}
+
+async function executeCpp(code, testCase, startTime) {
+  // Mock C++ execution for demo purposes
+  // In production, you would compile and run C++ code
+  return {
+    input: testCase.input,
+    expected: testCase.expected,
+    actual: 'C++ execution simulated',
+    passed: false,
+    error: 'C++ execution requires server-side setup',
+    runtime: Date.now() - startTime
+  };
+}
+
+async function executePythonCustom(code, input, startTime) {
+  return {
+    output: 'Python custom execution simulated',
+    error: 'Python execution requires server-side setup',
+    runtime: Date.now() - startTime
+  };
+}
+
+async function executeJavaCustom(code, input, startTime) {
+  return {
+    output: 'Java custom execution simulated',
+    error: 'Java execution requires server-side setup',
+    runtime: Date.now() - startTime
+  };
+}
+
+async function executeCppCustom(code, input, startTime) {
+  return {
+    output: 'C++ custom execution simulated',
+    error: 'C++ execution requires server-side setup',
+    runtime: Date.now() - startTime
+  };
 }
 
 function prepareInput(input) {

@@ -1,5 +1,4 @@
-// Dynamic language templates for VS Code Editor
-// Generates content for every programming language
+// Simple Hello World templates for all programming languages
 
 export const languageConfigs = {
   javascript: {
@@ -7,153 +6,50 @@ export const languageConfigs = {
     icon: '🟨',
     extension: '.js',
     executable: true,
-    template: (projectName = 'MyProject') => `// ${projectName} - JavaScript Project
-// Modern JavaScript with ES6+ features
+    template: (projectName = 'Hello World') => `// ${projectName} - JavaScript
+console.log("Hello, World!");
+console.log("Welcome to JavaScript programming!");
 
-console.log("Welcome to ${projectName}!");
-
-// Example: Array methods and modern syntax
-const numbers = [1, 2, 3, 4, 5];
-const doubled = numbers.map(n => n * 2);
-const evens = numbers.filter(n => n % 2 === 0);
-
-console.log('Original numbers:', numbers);
-console.log('Doubled:', doubled);
-console.log('Even numbers:', evens);
-
-// Example: Async/await
-async function fetchData() {
-    console.log('Fetching data...');
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({ message: 'Data loaded successfully!', timestamp: new Date() });
-        }, 1000);
-    });
-}
-
-// Example: Classes and objects
-class Calculator {
-    constructor(name) {
-        this.name = name;
-    }
-    
-    add(a, b) {
-        return a + b;
-    }
-    
-    multiply(a, b) {
-        return a * b;
-    }
-}
-
-const calc = new Calculator('${projectName} Calculator');
-console.log(\`\${calc.name}: 5 + 3 = \${calc.add(5, 3)}\`);
-
-// Run async function
-fetchData().then(data => console.log(data));`
+// Variables and basic operations
+const message = "JavaScript is awesome!";
+const year = 2025;
+console.log(\`Message: \${message}\`);
+console.log(\`Year: \${year}\`);`
   },
   
   python: {
     name: 'Python',
     icon: '🐍',
     extension: '.py',
-    executable: false,
-    template: (projectName = 'MyProject') => `# ${projectName} - Python Project
-# Modern Python with best practices
+    executable: true,
+    template: (projectName = 'Hello World') => `# ${projectName} - Python
+print("Hello, World!")
+print("Welcome to Python programming!")
 
-import datetime
-import json
-from typing import List, Dict, Optional
-
-def main():
-    """Main function for ${projectName}"""
-    print(f"Welcome to ${projectName}!")
-    
-    # Example: List comprehensions and modern Python
-    numbers = [1, 2, 3, 4, 5]
-    doubled = [n * 2 for n in numbers]
-    evens = [n for n in numbers if n % 2 == 0]
-    
-    print(f"Original numbers: {numbers}")
-    print(f"Doubled: {doubled}")
-    print(f"Even numbers: {evens}")
-    
-    # Example: Dictionary operations
-    data = {
-        'project': '${projectName}',
-        'language': 'Python',
-        'created': datetime.datetime.now().isoformat(),
-        'features': ['OOP', 'Functional', 'Dynamic']
-    }
-    
-    print(f"Project data: {json.dumps(data, indent=2)}")
-    
-    # Example: Class definition
-    calc = Calculator('${projectName} Calculator')
-    print(f"{calc.name}: 5 + 3 = {calc.add(5, 3)}")
-
-class Calculator:
-    """A simple calculator class"""
-    
-    def __init__(self, name: str):
-        self.name = name
-    
-    def add(self, a: float, b: float) -> float:
-        return a + b
-    
-    def multiply(self, a: float, b: float) -> float:
-        return a * b
-
-if __name__ == "__main__":
-    main()`
+# Variables and basic operations
+message = "Python is awesome!"
+year = 2025
+print(f"Message: {message}")
+print(f"Year: {year}")`
   },
   
   java: {
     name: 'Java',
     icon: '☕',
     extension: '.java',
-    executable: false,
-    template: (projectName = 'MyProject') => `// ${projectName} - Java Project
-// Modern Java with best practices
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.time.LocalDateTime;
-
-public class Main {
+    executable: true,
+    template: (projectName = 'Hello World') => `// ${projectName} - Java
+public class HelloWorld {
     public static void main(String[] args) {
-        System.out.println("Welcome to ${projectName}!");
+        System.out.println("Hello, World!");
+        System.out.println("Welcome to Java programming!");
         
-        // Example: Collections and Streams
-        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
-        List<Integer> doubled = numbers.stream()
-            .map(n -> n * 2)
-            .collect(Collectors.toList());
-        
-        List<Integer> evens = numbers.stream()
-            .filter(n -> n % 2 == 0)
-            .collect(Collectors.toList());
-        
-        System.out.println("Original: " + numbers);
-        System.out.println("Doubled: " + doubled);
-        System.out.println("Evens: " + evens);
-        
-        // Example: Object-oriented programming
-        Calculator calc = new Calculator("${projectName} Calculator");
-        System.out.println(calc.getName() + ": 5 + 3 = " + calc.add(5, 3));
+        // Variables and basic operations
+        String message = "Java is awesome!";
+        int year = 2025;
+        System.out.println("Message: " + message);
+        System.out.println("Year: " + year);
     }
-}
-
-class Calculator {
-    private String name;
-    
-    public Calculator(String name) {
-        this.name = name;
-    }
-    
-    public String getName() { return name; }
-    public int add(int a, int b) { return a + b; }
-    public int multiply(int a, int b) { return a * b; }
 }`
   },
   
@@ -161,60 +57,200 @@ class Calculator {
     name: 'C++',
     icon: '⚡',
     extension: '.cpp',
-    executable: false,
-    template: (projectName = 'MyProject') => `// ${projectName} - C++ Project
-// Modern C++ with best practices
-
+    executable: true,
+    template: (projectName = 'Hello World') => `// ${projectName} - C++
 #include <iostream>
-#include <vector>
 #include <string>
-#include <algorithm>
-#include <memory>
-
-class Calculator {
-private:
-    std::string name;
-    
-public:
-    Calculator(const std::string& name) : name(name) {}
-    
-    std::string getName() const { return name; }
-    int add(int a, int b) const { return a + b; }
-    int multiply(int a, int b) const { return a * b; }
-};
 
 int main() {
-    std::cout << "Welcome to ${projectName}!" << std::endl;
+    std::cout << "Hello, World!" << std::endl;
+    std::cout << "Welcome to C++ programming!" << std::endl;
     
-    // Example: STL containers and algorithms
-    std::vector<int> numbers = {1, 2, 3, 4, 5};
-    std::vector<int> doubled;
-    std::vector<int> evens;
-    
-    // Transform (double each number)
-    std::transform(numbers.begin(), numbers.end(), 
-                  std::back_inserter(doubled), 
-                  [](int n) { return n * 2; });
-    
-    // Filter (even numbers only)
-    std::copy_if(numbers.begin(), numbers.end(),
-                std::back_inserter(evens),
-                [](int n) { return n % 2 == 0; });
-    
-    std::cout << "Original: ";
-    for (const auto& n : numbers) std::cout << n << " ";
-    std::cout << std::endl;
-    
-    std::cout << "Doubled: ";
-    for (const auto& n : doubled) std::cout << n << " ";
-    std::cout << std::endl;
-    
-    // Example: Smart pointers and RAII
-    auto calc = std::make_unique<Calculator>("${projectName} Calculator");
-    std::cout << calc->getName() << ": 5 + 3 = " << calc->add(5, 3) << std::endl;
+    // Variables and basic operations
+    std::string message = "C++ is awesome!";
+    int year = 2025;
+    std::cout << "Message: " << message << std::endl;
+    std::cout << "Year: " << year << std::endl;
     
     return 0;
 }`
+  },
+
+  c: {
+    name: 'C',
+    icon: '🔧',
+    extension: '.c',
+    executable: true,
+    template: (projectName = 'Hello World') => `// ${projectName} - C
+#include <stdio.h>
+
+int main() {
+    printf("Hello, World!\\n");
+    printf("Welcome to C programming!\\n");
+    
+    // Variables and basic operations
+    char message[] = "C is awesome!";
+    int year = 2025;
+    printf("Message: %s\\n", message);
+    printf("Year: %d\\n", year);
+    
+    return 0;
+}`
+  },
+
+  csharp: {
+    name: 'C#',
+    icon: '💜',
+    extension: '.cs',
+    executable: true,
+    template: (projectName = 'Hello World') => `// ${projectName} - C#
+using System;
+
+class HelloWorld 
+{
+    static void Main() 
+    {
+        Console.WriteLine("Hello, World!");
+        Console.WriteLine("Welcome to C# programming!");
+        
+        // Variables and basic operations
+        string message = "C# is awesome!";
+        int year = 2025;
+        Console.WriteLine($"Message: {message}");
+        Console.WriteLine($"Year: {year}");
+    }
+}`
+  },
+
+  go: {
+    name: 'Go',
+    icon: '🐹',
+    extension: '.go',
+    executable: true,
+    template: (projectName = 'Hello World') => `// ${projectName} - Go
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, World!")
+    fmt.Println("Welcome to Go programming!")
+    
+    // Variables and basic operations
+    message := "Go is awesome!"
+    year := 2025
+    fmt.Printf("Message: %s\\n", message)
+    fmt.Printf("Year: %d\\n", year)
+}`
+  },
+
+  rust: {
+    name: 'Rust',
+    icon: '🦀',
+    extension: '.rs',
+    executable: true,
+    template: (projectName = 'Hello World') => `// ${projectName} - Rust
+fn main() {
+    println!("Hello, World!");
+    println!("Welcome to Rust programming!");
+    
+    // Variables and basic operations
+    let message = "Rust is awesome!";
+    let year = 2025;
+    println!("Message: {}", message);
+    println!("Year: {}", year);
+}`
+  },
+
+  php: {
+    name: 'PHP',
+    icon: '🐘',
+    extension: '.php',
+    executable: true,
+    template: (projectName = 'Hello World') => `<?php
+// ${projectName} - PHP
+echo "Hello, World!\\n";
+echo "Welcome to PHP programming!\\n";
+
+// Variables and basic operations
+$message = "PHP is awesome!";
+$year = 2025;
+echo "Message: " . $message . "\\n";
+echo "Year: " . $year . "\\n";
+?>`
+  },
+
+  ruby: {
+    name: 'Ruby',
+    icon: '💎',
+    extension: '.rb',
+    executable: true,
+    template: (projectName = 'Hello World') => `# ${projectName} - Ruby
+puts "Hello, World!"
+puts "Welcome to Ruby programming!"
+
+# Variables and basic operations
+message = "Ruby is awesome!"
+year = 2025
+puts "Message: #{message}"
+puts "Year: #{year}"`
+  },
+
+  swift: {
+    name: 'Swift',
+    icon: '🦉',
+    extension: '.swift',
+    executable: true,
+    template: (projectName = 'Hello World') => `// ${projectName} - Swift
+print("Hello, World!")
+print("Welcome to Swift programming!")
+
+// Variables and basic operations
+let message = "Swift is awesome!"
+let year = 2025
+print("Message: \\(message)")
+print("Year: \\(year)")`
+  },
+
+  kotlin: {
+    name: 'Kotlin',
+    icon: '🟣',
+    extension: '.kt',
+    executable: true,
+    template: (projectName = 'Hello World') => `// ${projectName} - Kotlin
+fun main() {
+    println("Hello, World!")
+    println("Welcome to Kotlin programming!")
+    
+    // Variables and basic operations
+    val message = "Kotlin is awesome!"
+    val year = 2025
+    println("Message: $message")
+    println("Year: $year")
+}`
+  },
+
+  typescript: {
+    name: 'TypeScript',
+    icon: '🔷',
+    extension: '.ts',
+    executable: true,
+    template: (projectName = 'Hello World') => `// ${projectName} - TypeScript
+console.log("Hello, World!");
+console.log("Welcome to TypeScript programming!");
+
+// Variables with types
+const message: string = "TypeScript is awesome!";
+const year: number = 2025;
+console.log(\`Message: \${message}\`);
+console.log(\`Year: \${year}\`);
+
+// Function with types
+function greet(name: string): string {
+    return \`Hello, \${name}!\`;
+}
+
+console.log(greet("TypeScript"));`
   }
 };
 
@@ -223,47 +259,38 @@ export function generateProjectTemplates() {
   return Object.entries(languageConfigs).map(([id, config]) => ({
     id,
     name: `${config.name} Project`,
-    description: `Create a new ${config.name} project with modern best practices`,
+    description: `Create a new ${config.name} project with Hello World template`,
     icon: config.icon,
     language: id,
     files: {
       [`main${config.extension}`]: {
         type: 'file',
         content: config.template()
-      },
-      'README.md': {
-        type: 'file',
-        content: generateReadme(config.name, id)
       }
     }
   }));
 }
 
-function generateReadme(languageName, languageId) {
-  return `# ${languageName} Project
+// Get language by file extension
+export function getLanguageByExtension(filename) {
+  const ext = filename.split('.').pop()?.toLowerCase();
+  
+  for (const [id, config] of Object.entries(languageConfigs)) {
+    if (config.extension === `.${ext}`) {
+      return id;
+    }
+  }
+  
+  return 'plaintext';
+}
 
-A modern ${languageName} project with best practices and examples.
-
-## Features
-
-- Modern ${languageName} syntax and features
-- Example algorithms and data structures
-- Best practices and coding standards
-- Ready-to-run code examples
-
-## Getting Started
-
-1. Open the main${languageConfigs[languageId].extension} file
-2. Run the code using your preferred ${languageName} environment
-3. Modify and experiment with the examples
-
-## Examples Included
-
-- Basic syntax and data types
-- Object-oriented programming
-- Modern language features
-- Algorithm implementations
-
-Happy coding with ${languageName}! 🚀
-`;
+// Get all supported languages
+export function getSupportedLanguages() {
+  return Object.entries(languageConfigs).map(([id, config]) => ({
+    id,
+    name: config.name,
+    icon: config.icon,
+    extension: config.extension,
+    executable: config.executable
+  }));
 }

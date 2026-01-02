@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 
 const auth = async (req, res, next) => {
@@ -14,18 +15,32 @@ const auth = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Check if user still exists and is active
-    const user = await User.findById(decoded.userId);
-    if (!user || !user.isActive) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token. User not found or inactive.'
-      });
+    // Check if MongoDB is connected before querying
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('MongoDB not connected, using token-only authentication');
+      req.user = decoded;
+      return next();
     }
 
-    req.user = decoded;
-    req.userDoc = user; // Full user document if needed
-    next();
+    try {
+      // Check if user still exists and is active with timeout
+      const user = await User.findById(decoded.userId).maxTimeMS(5000);
+      if (!user || !user.isActive) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid token. User not found or inactive.'
+        });
+      }
+
+      req.user = decoded;
+      req.userDoc = user; // Full user document if needed
+      next();
+    } catch (dbError) {
+      // If database query fails, fall back to token-only auth
+      console.warn('Database query failed, using token-only authentication:', dbError.message);
+      req.user = decoded;
+      next();
+    }
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
@@ -54,11 +69,24 @@ const optionalAuth = async (req, res, next) => {
     
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findById(decoded.userId);
       
-      if (user && user.isActive) {
+      // Check if MongoDB is connected before querying
+      if (mongoose.connection.readyState === 1) {
+        try {
+          const user = await User.findById(decoded.userId).maxTimeMS(5000);
+          
+          if (user && user.isActive) {
+            req.user = decoded;
+            req.userDoc = user;
+          }
+        } catch (dbError) {
+          // If database query fails, use token-only auth
+          console.warn('Database query failed in optionalAuth:', dbError.message);
+          req.user = decoded;
+        }
+      } else {
+        // No database connection, use token-only auth
         req.user = decoded;
-        req.userDoc = user;
       }
     }
     

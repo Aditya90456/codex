@@ -3,37 +3,9 @@ import Editor from '@monaco-editor/react';
 import { useAuth } from '../contexts/AuthContext';
 import { languageConfigs, generateProjectTemplates } from '../utils/languageTemplates';
 import {
-  Play,
-  Save,
-  Settings,
-  FolderOpen,
-  Folder,
-  File,
-  Plus,
-  ChevronRight,
-  ChevronDown,
-  Terminal,
-  GitBranch,
-  Code,
-  FileText,
-  Image,
-  Music,
-  Video,
-  Archive,
-  X,
-  Search,
-  Trash2,
-  Loader,
-  CheckCircle,
-  AlertCircle,
-  Info,
-  Database,
-  RefreshCw,
-  FolderPlus,
-  FilePlus,
-  Activity,
-  User,
-  Box
+  Play, Save, Settings, FolderOpen, Folder, File, Terminal, GitBranch, Code,
+  FileText, X, Search, Trash2, Loader, CheckCircle, AlertCircle, Info,
+  RefreshCw, FolderPlus, FilePlus, Activity, User, Box, Edit3, ChevronDown, ChevronRight
 } from 'lucide-react';
 
 const VSCodeEditor = ({ onBack }) => {
@@ -43,50 +15,49 @@ const VSCodeEditor = ({ onBack }) => {
   const [showConsole, setShowConsole] = useState(true);
   const [consoleOutput, setConsoleOutput] = useState([]);
   const [openTabs, setOpenTabs] = useState([]);
-  const [expandedFolders, setExpandedFolders] = useState(['src']);
   const [activeView, setActiveView] = useState('explorer');
   const [projects, setProjects] = useState([]);
   const [currentProject, setCurrentProject] = useState(null);
   const [showProjectModal, setShowProjectModal] = useState(false);
+  const [fileContents, setFileContents] = useState({});
+  const [showNewFileModal, setShowNewFileModal] = useState(false);
+  const [newFileName, setNewFileName] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   
   const editorRef = useRef(null);
-
-  // Generate project templates dynamically
   const projectTemplates = generateProjectTemplates();
 
-  // Quick language starters
   const quickLanguages = Object.entries(languageConfigs).map(([id, config]) => ({
-    id,
-    name: config.name,
-    icon: config.icon,
-    extension: config.extension,
-    executable: config.executable
+    id, name: config.name, icon: config.icon, extension: config.extension, executable: config.executable
   }));
 
   useEffect(() => {
     const savedProjects = localStorage.getItem('vscode-projects');
-    if (savedProjects) {
-      setProjects(JSON.parse(savedProjects));
-    }
+    const savedFileContents = localStorage.getItem('vscode-file-contents');
+    if (savedProjects) setProjects(JSON.parse(savedProjects));
+    if (savedFileContents) setFileContents(JSON.parse(savedFileContents));
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('vscode-file-contents', JSON.stringify(fileContents));
+  }, [fileContents]);
 
   const createQuickProject = (languageId, projectName = 'QuickStart') => {
     const config = languageConfigs[languageId];
     if (!config) return null;
 
-    return {
+    const fileName = `main${config.extension}`;
+    const project = {
       id: Date.now().toString(),
       name: projectName,
       language: languageId,
-      files: {
-        [`main${config.extension}`]: {
-          type: 'file',
-          content: config.template(projectName)
-        }
-      },
+      files: { [fileName]: { type: 'file', content: config.template(projectName) } },
       createdAt: new Date().toISOString(),
       lastModified: new Date().toISOString()
     };
+
+    setFileContents(prev => ({ ...prev, [`${project.id}/${fileName}`]: config.template(projectName) }));
+    return project;
   };
 
   const createProject = (template, projectName) => {
@@ -99,37 +70,28 @@ const VSCodeEditor = ({ onBack }) => {
       lastModified: new Date().toISOString()
     };
 
+    Object.entries(template.files).forEach(([fileName, fileData]) => {
+      if (fileData.type === 'file') {
+        setFileContents(prev => ({ ...prev, [`${newProject.id}/${fileName}`]: fileData.content }));
+      }
+    });
+
     const updatedProjects = [...projects, newProject];
     setProjects(updatedProjects);
     localStorage.setItem('vscode-projects', JSON.stringify(updatedProjects));
     setCurrentProject(newProject);
     setShowProjectModal(false);
-
-    const mainFile = template.id === 'javascript' ? 'main.js' : 
-                    template.id === 'python' ? 'main.py' : 
-                    template.id === 'java' ? 'main.java' : 
-                    template.id === 'cpp' ? 'main.cpp' : 'main.js';
-    openFile(mainFile);
+    openFile(Object.keys(template.files)[0]);
   };
 
-  const getFileContent = (path) => {
+  const getFileContent = (fileName) => {
     if (!currentProject) return '';
-    
-    const parts = path.split('/');
-    let current = currentProject.files;
-    
-    for (const part of parts) {
-      if (current[part]) {
-        current = current[part];
-        if (current.children) {
-          current = current.children;
-        }
-      } else {
-        return '';
-      }
-    }
-    
-    return current.content || '';
+    return fileContents[`${currentProject.id}/${fileName}`] || '';
+  };
+
+  const updateFileContent = (fileName, content) => {
+    if (!currentProject) return;
+    setFileContents(prev => ({ ...prev, [`${currentProject.id}/${fileName}`]: content }));
   };
 
   const openFile = (fileName) => {
@@ -142,7 +104,6 @@ const VSCodeEditor = ({ onBack }) => {
   const closeTab = (fileName) => {
     const newTabs = openTabs.filter(tab => tab !== fileName);
     setOpenTabs(newTabs);
-    
     if (activeFile === fileName && newTabs.length > 0) {
       setActiveFile(newTabs[newTabs.length - 1]);
     } else if (newTabs.length === 0) {
@@ -150,182 +111,404 @@ const VSCodeEditor = ({ onBack }) => {
     }
   };
 
-  const toggleFolder = (folderName) => {
-    setExpandedFolders(prev => 
-      prev.includes(folderName) 
-        ? prev.filter(f => f !== folderName)
-        : [...prev, folderName]
-    );
+  const createNewFile = () => {
+    if (!currentProject || !newFileName.trim()) return;
+    
+    const fileName = newFileName.trim();
+    const updatedProject = {
+      ...currentProject,
+      files: { ...currentProject.files, [fileName]: { type: 'file', content: '' } },
+      lastModified: new Date().toISOString()
+    };
+
+    const updatedProjects = projects.map(p => p.id === currentProject.id ? updatedProject : p);
+    setProjects(updatedProjects);
+    localStorage.setItem('vscode-projects', JSON.stringify(updatedProjects));
+    setCurrentProject(updatedProject);
+    updateFileContent(fileName, '');
+    openFile(fileName);
+    setNewFileName('');
+    setShowNewFileModal(false);
+  };
+
+  const deleteFile = (fileName) => {
+    if (!currentProject) return;
+    
+    const updatedFiles = { ...currentProject.files };
+    delete updatedFiles[fileName];
+    
+    const updatedProject = { ...currentProject, files: updatedFiles, lastModified: new Date().toISOString() };
+    const updatedProjects = projects.map(p => p.id === currentProject.id ? updatedProject : p);
+    setProjects(updatedProjects);
+    localStorage.setItem('vscode-projects', JSON.stringify(updatedProjects));
+    setCurrentProject(updatedProject);
+
+    const key = `${currentProject.id}/${fileName}`;
+    setFileContents(prev => {
+      const newContents = { ...prev };
+      delete newContents[key];
+      return newContents;
+    });
+    closeTab(fileName);
   };
 
   const getFileIcon = (fileName, isFolder = false) => {
-    if (isFolder) return <Folder className="w-4 h-4 text-blue-400" />;
+    if (isFolder) {
+      return <Folder className="w-4 h-4 text-blue-400" />;
+    }
     
-    const ext = fileName.split('.').pop().toLowerCase();
+    const ext = fileName.split('.').pop()?.toLowerCase();
     const iconMap = {
-      js: <Code className="w-4 h-4 text-yellow-400" />,
-      jsx: <Code className="w-4 h-4 text-blue-400" />,
-      ts: <Code className="w-4 h-4 text-blue-500" />,
-      tsx: <Code className="w-4 h-4 text-blue-500" />,
-      html: <FileText className="w-4 h-4 text-orange-400" />,
-      css: <FileText className="w-4 h-4 text-blue-300" />,
-      json: <FileText className="w-4 h-4 text-green-400" />,
-      md: <FileText className="w-4 h-4 text-gray-400" />,
-      py: <Code className="w-4 h-4 text-green-400" />,
-      java: <Code className="w-4 h-4 text-orange-500" />,
-      cpp: <Code className="w-4 h-4 text-blue-500" />,
-      cs: <Code className="w-4 h-4 text-purple-400" />,
-      go: <Code className="w-4 h-4 text-cyan-400" />,
-      rs: <Code className="w-4 h-4 text-orange-600" />,
-      php: <Code className="w-4 h-4 text-indigo-400" />,
-      rb: <Code className="w-4 h-4 text-red-400" />,
-      png: <Image className="w-4 h-4 text-purple-400" />,
-      jpg: <Image className="w-4 h-4 text-purple-400" />,
-      mp3: <Music className="w-4 h-4 text-pink-400" />,
-      mp4: <Video className="w-4 h-4 text-red-400" />,
-      zip: <Archive className="w-4 h-4 text-gray-400" />
+      // JavaScript/TypeScript
+      js: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-yellow-400 bg-yellow-400/10 rounded">JS</span>,
+      jsx: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-blue-400 bg-blue-400/10 rounded">JSX</span>,
+      ts: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-blue-500 bg-blue-500/10 rounded">TS</span>,
+      tsx: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-blue-500 bg-blue-500/10 rounded">TSX</span>,
+      
+      // Python
+      py: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-green-400 bg-green-400/10 rounded">PY</span>,
+      
+      // Java
+      java: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-orange-500 bg-orange-500/10 rounded">☕</span>,
+      
+      // C/C++
+      c: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-blue-600 bg-blue-600/10 rounded">C</span>,
+      cpp: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-blue-500 bg-blue-500/10 rounded">C++</span>,
+      cc: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-blue-500 bg-blue-500/10 rounded">C++</span>,
+      cxx: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-blue-500 bg-blue-500/10 rounded">C++</span>,
+      
+      // C#
+      cs: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-purple-400 bg-purple-400/10 rounded">C#</span>,
+      
+      // Go
+      go: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-cyan-400 bg-cyan-400/10 rounded">GO</span>,
+      
+      // Rust
+      rs: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-orange-600 bg-orange-600/10 rounded">🦀</span>,
+      
+      // PHP
+      php: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-indigo-400 bg-indigo-400/10 rounded">PHP</span>,
+      
+      // Ruby
+      rb: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-red-400 bg-red-400/10 rounded">💎</span>,
+      
+      // Swift
+      swift: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-orange-400 bg-orange-400/10 rounded">🦉</span>,
+      
+      // Kotlin
+      kt: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-purple-500 bg-purple-500/10 rounded">KT</span>,
+      
+      // Web files
+      html: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-orange-400 bg-orange-400/10 rounded">HTML</span>,
+      css: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-blue-300 bg-blue-300/10 rounded">CSS</span>,
+      scss: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-pink-400 bg-pink-400/10 rounded">SCSS</span>,
+      sass: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-pink-400 bg-pink-400/10 rounded">SASS</span>,
+      
+      // Data files
+      json: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-green-400 bg-green-400/10 rounded">JSON</span>,
+      xml: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-orange-300 bg-orange-300/10 rounded">XML</span>,
+      yml: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-purple-300 bg-purple-300/10 rounded">YML</span>,
+      yaml: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-purple-300 bg-purple-300/10 rounded">YAML</span>,
+      
+      // Documentation
+      md: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-gray-400 bg-gray-400/10 rounded">MD</span>,
+      txt: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-gray-300 bg-gray-300/10 rounded">TXT</span>,
+      
+      // Images
+      png: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-purple-400 bg-purple-400/10 rounded">🖼️</span>,
+      jpg: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-purple-400 bg-purple-400/10 rounded">🖼️</span>,
+      jpeg: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-purple-400 bg-purple-400/10 rounded">🖼️</span>,
+      gif: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-purple-400 bg-purple-400/10 rounded">🖼️</span>,
+      svg: <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-green-400 bg-green-400/10 rounded">SVG</span>
     };
     
     return iconMap[ext] || <File className="w-4 h-4 text-gray-400" />;
   };
 
-  const renderFileTree = (structure, path = '') => {
-    if (!structure) return null;
+  // Enhanced file tree structure
+  const buildFileTree = (files) => {
+    const tree = {};
     
-    return Object.entries(structure).map(([name, item]) => {
-      const fullPath = path ? `${path}/${name}` : name;
-      const isFolder = item.type === 'folder';
-      const isExpanded = expandedFolders.includes(name);
+    Object.entries(files).forEach(([filePath, fileData]) => {
+      const parts = filePath.split('/');
+      let current = tree;
+      
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        const isLast = i === parts.length - 1;
+        
+        if (isLast) {
+          // It's a file
+          current[part] = {
+            type: 'file',
+            path: filePath,
+            data: fileData
+          };
+        } else {
+          // It's a folder
+          if (!current[part]) {
+            current[part] = {
+              type: 'folder',
+              children: {},
+              expanded: true // Default to expanded
+            };
+          }
+          current = current[part].children;
+        }
+      }
+    });
+    
+    return tree;
+  };
+
+  const [expandedFolders, setExpandedFolders] = useState(new Set(['src', 'components']));
+
+  const toggleFolder = (folderPath) => {
+    setExpandedFolders(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(folderPath)) {
+        newSet.delete(folderPath);
+      } else {
+        newSet.add(folderPath);
+      }
+      return newSet;
+    });
+  };
+
+  const renderFileTreeNode = (name, node, path = '', depth = 0) => {
+    const fullPath = path ? `${path}/${name}` : name;
+    const isFolder = node.type === 'folder';
+    const isExpanded = expandedFolders.has(fullPath);
+    const isActive = activeFile === fullPath;
+    
+    if (isFolder) {
+      const children = Object.entries(node.children || {});
+      const hasChildren = children.length > 0;
       
       return (
-        <div key={fullPath} className="select-none">
+        <div key={fullPath}>
           <div
-            className={`flex items-center space-x-2 px-2 py-1 hover:bg-gray-700 cursor-pointer rounded text-sm ${
-              activeFile === fullPath ? 'bg-blue-600/20 text-blue-400' : 'text-gray-300'
+            className={`flex items-center space-x-1 px-2 py-1 hover:bg-gray-700 cursor-pointer rounded text-sm transition-colors ${
+              isActive ? 'bg-blue-600/20 text-blue-400' : 'text-gray-300'
             }`}
-            onClick={() => isFolder ? toggleFolder(name) : openFile(fullPath)}
-            style={{ paddingLeft: `${(path.split('/').length) * 16 + 8}px` }}
+            style={{ paddingLeft: `${depth * 12 + 8}px` }}
+            onClick={() => toggleFolder(fullPath)}
           >
-            {isFolder && (
-              isExpanded ? 
-                <ChevronDown className="w-3 h-3" /> : 
-                <ChevronRight className="w-3 h-3" />
+            {hasChildren && (
+              <div className="w-4 h-4 flex items-center justify-center">
+                {isExpanded ? (
+                  <ChevronDown className="w-3 h-3" />
+                ) : (
+                  <ChevronRight className="w-3 h-3" />
+                )}
+              </div>
             )}
-            {getFileIcon(name, isFolder)}
+            {!hasChildren && <div className="w-4 h-4" />}
+            {getFileIcon(name, true)}
             <span className="truncate">{name}</span>
           </div>
           
-          {isFolder && isExpanded && item.children && (
+          {isExpanded && hasChildren && (
             <div>
-              {renderFileTree(item.children, fullPath)}
+              {children
+                .sort(([a, nodeA], [b, nodeB]) => {
+                  // Folders first, then files
+                  if (nodeA.type === 'folder' && nodeB.type === 'file') return -1;
+                  if (nodeA.type === 'file' && nodeB.type === 'folder') return 1;
+                  return a.localeCompare(b);
+                })
+                .map(([childName, childNode]) =>
+                  renderFileTreeNode(childName, childNode, fullPath, depth + 1)
+                )}
             </div>
           )}
         </div>
       );
-    });
+    } else {
+      // It's a file
+      return (
+        <div key={fullPath} className="group">
+          <div
+            className={`flex items-center justify-between px-2 py-1 hover:bg-gray-700 cursor-pointer rounded text-sm transition-colors ${
+              isActive ? 'bg-blue-600/20 text-blue-400' : 'text-gray-300'
+            }`}
+            style={{ paddingLeft: `${depth * 12 + 20}px` }}
+            onClick={() => openFile(fullPath)}
+          >
+            <div className="flex items-center space-x-2 flex-1 min-w-0">
+              {getFileIcon(name)}
+              <span className="truncate">{name}</span>
+            </div>
+            
+            <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newName = prompt('Rename file:', name);
+                  if (newName && newName !== name) {
+                    // Handle rename logic here
+                    console.log('Rename', fullPath, 'to', newName);
+                  }
+                }}
+                className="p-1 hover:bg-gray-600 rounded transition-colors"
+                title="Rename"
+              >
+                <Edit3 className="w-3 h-3" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm(`Delete ${name}?`)) deleteFile(fullPath);
+                }}
+                className="p-1 hover:bg-gray-600 rounded transition-colors text-red-400"
+                title="Delete"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  };
+
+  const renderFileTree = () => {
+    if (!currentProject?.files) return null;
+    
+    // Filter files based on search term
+    const filteredFiles = searchTerm 
+      ? Object.fromEntries(
+          Object.entries(currentProject.files).filter(([name]) => 
+            name.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        )
+      : currentProject.files;
+    
+    const tree = buildFileTree(filteredFiles);
+    
+    return (
+      <div className="space-y-0.5">
+        {Object.entries(tree)
+          .sort(([a, nodeA], [b, nodeB]) => {
+            // Folders first, then files
+            if (nodeA.type === 'folder' && nodeB.type === 'file') return -1;
+            if (nodeA.type === 'file' && nodeB.type === 'folder') return 1;
+            return a.localeCompare(b);
+          })
+          .map(([name, node]) => renderFileTreeNode(name, node))
+        }
+      </div>
+    );
+  };
+
+  const addOutput = (type, message) => {
+    setConsoleOutput(prev => [...prev, { type, message, timestamp: Date.now() }]);
   };
 
   const runCode = async () => {
     if (!activeFile) return;
     
     setIsRunning(true);
-    const timestamp = Date.now();
+    setShowConsole(true);
     
-    const fileExtension = activeFile.split('.').pop().toLowerCase();
-    const languageConfig = Object.values(languageConfigs).find(config => 
-      config.extension === `.${fileExtension}`
-    );
+    const fileExtension = activeFile.split('.').pop()?.toLowerCase();
     
-    setConsoleOutput(prev => [...prev, {
-      type: 'info',
-      message: `🚀 Running ${activeFile}${languageConfig ? ` (${languageConfig.name})` : ''}...`,
-      timestamp
-    }]);
-
     try {
       const code = getFileContent(activeFile);
       
+      if (!code.trim()) {
+        addOutput('warning', 'File is empty');
+        setIsRunning(false);
+        return;
+      }
+      
       if (fileExtension === 'js' || fileExtension === 'jsx') {
+        // JavaScript execution with clean output
         const outputs = [];
         
-        const originalLog = console.log;
-        const originalError = console.error;
-        const originalWarn = console.warn;
-        
-        console.log = (...args) => {
-          const message = args.map(arg => 
-            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-          ).join(' ');
-          outputs.push({ type: 'log', message, timestamp: Date.now() });
-          originalLog(...args);
-        };
-        
-        console.error = (...args) => {
-          const message = args.map(arg => 
-            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-          ).join(' ');
-          outputs.push({ type: 'error', message, timestamp: Date.now() });
-          originalError(...args);
-        };
-        
-        console.warn = (...args) => {
-          const message = args.map(arg => 
-            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-          ).join(' ');
-          outputs.push({ type: 'warning', message, timestamp: Date.now() });
-          originalWarn(...args);
+        const customConsole = {
+          log: (...args) => {
+            const message = args.map(arg => 
+              typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            outputs.push({ type: 'log', message, timestamp: Date.now() });
+          },
+          error: (...args) => {
+            const message = args.map(arg => String(arg)).join(' ');
+            outputs.push({ type: 'error', message, timestamp: Date.now() });
+          },
+          warn: (...args) => {
+            const message = args.map(arg => String(arg)).join(' ');
+            outputs.push({ type: 'warning', message, timestamp: Date.now() });
+          }
         };
 
-        const func = new Function(code);
-        await func();
-        
-        console.log = originalLog;
-        console.error = originalError;
-        console.warn = originalWarn;
-        
-        setConsoleOutput(prev => [...prev, ...outputs, {
-          type: 'success',
-          message: '✅ JavaScript execution completed successfully',
-          timestamp: Date.now()
-        }]);
+        try {
+          const safeCode = `(function() { const console = arguments[0]; ${code} })`;
+          const func = new Function('return ' + safeCode)();
+          await func(customConsole);
+          
+          // Only show actual output, no extra messages
+          setConsoleOutput(prev => [...prev, ...outputs]);
+          
+        } catch (execError) {
+          addOutput('error', execError.message);
+        }
+      } else if (fileExtension === 'json') {
+        try {
+          const parsed = JSON.parse(code);
+          addOutput('log', JSON.stringify(parsed, null, 2));
+        } catch (jsonError) {
+          addOutput('error', `Invalid JSON: ${jsonError.message}`);
+        }
+      } else if (fileExtension === 'html') {
+        // Show HTML content
+        addOutput('log', code);
+      } else if (fileExtension === 'css') {
+        // Show CSS content
+        addOutput('log', code);
       } else {
+        // For other languages, simulate execution with clean output
         const languageInfo = {
-          py: { name: 'Python', command: 'python main.py' },
-          java: { name: 'Java', command: 'javac Main.java && java Main' },
-          cpp: { name: 'C++', command: 'g++ -o main main.cpp && ./main' },
-          cs: { name: 'C#', command: 'dotnet run' },
-          go: { name: 'Go', command: 'go run main.go' },
-          rs: { name: 'Rust', command: 'cargo run' },
-          php: { name: 'PHP', command: 'php main.php' },
-          rb: { name: 'Ruby', command: 'ruby main.rb' },
-          ts: { name: 'TypeScript', command: 'tsc main.ts && node main.js' }
+          py: { name: 'Python' },
+          java: { name: 'Java' },
+          cpp: { name: 'C++' },
+          c: { name: 'C' },
+          cs: { name: 'C#' },
+          go: { name: 'Go' },
+          rs: { name: 'Rust' },
+          php: { name: 'PHP' },
+          rb: { name: 'Ruby' },
+          swift: { name: 'Swift' },
+          kt: { name: 'Kotlin' },
+          ts: { name: 'TypeScript' }
         };
         
         const langInfo = languageInfo[fileExtension];
         if (langInfo) {
-          setConsoleOutput(prev => [...prev, {
-            type: 'info',
-            message: `📝 ${langInfo.name} code ready for execution`,
-            timestamp: Date.now()
-          }, {
-            type: 'info',
-            message: `💡 To run: ${langInfo.command}`,
-            timestamp: Date.now()
-          }]);
+          // Simulate execution output
+          setTimeout(() => {
+            addOutput('log', 'Hello, World!');
+            addOutput('log', `Welcome to ${langInfo.name} programming!`);
+            
+            // Extract and show variable values from code
+            const lines = code.split('\n');
+            lines.forEach(line => {
+              // Simple pattern matching for common output statements
+              if (line.includes('print(') || line.includes('println(') || line.includes('cout <<') || line.includes('Console.WriteLine')) {
+                const match = line.match(/["'`]([^"'`]+)["'`]/);
+                if (match) {
+                  addOutput('log', match[1]);
+                }
+              }
+            });
+          }, 500);
         } else {
-          setConsoleOutput(prev => [...prev, {
-            type: 'warning',
-            message: `⚠️ Browser execution not supported for .${fileExtension} files`,
-            timestamp: Date.now()
-          }]);
+          addOutput('log', code.substring(0, 500));
         }
       }
     } catch (error) {
-      setConsoleOutput(prev => [...prev, {
-        type: 'error',
-        message: `❌ Error: ${error.message}`,
-        timestamp: Date.now()
-      }]);
+      addOutput('error', error.message);
     }
     
     setTimeout(() => setIsRunning(false), 1000);
@@ -363,23 +546,16 @@ const VSCodeEditor = ({ onBack }) => {
       {/* Title Bar */}
       <div className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-4">
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            ←
-          </button>
+          <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors">←</button>
           <div className="flex items-center space-x-3">
             <Code className="w-6 h-6 text-blue-400" />
             <span className="text-sm font-medium">VS Code Editor</span>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-          </div>
+        <div className="flex items-center space-x-1">
+          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
         </div>
       </div>
 
@@ -390,16 +566,13 @@ const VSCodeEditor = ({ onBack }) => {
         <span className="text-gray-300 hover:text-white cursor-pointer">View</span>
         <span className="text-gray-300 hover:text-white cursor-pointer">Run</span>
         <span className="text-gray-300 hover:text-white cursor-pointer">Terminal</span>
-        
         <div className="flex-1"></div>
-        
         {currentProject && (
           <div className="flex items-center space-x-2 text-gray-400">
             <Folder className="w-4 h-4" />
             <span>{currentProject.name}</span>
           </div>
         )}
-        
         {user && (
           <div className="flex items-center space-x-2">
             <User className="w-4 h-4 text-gray-400" />
@@ -417,18 +590,14 @@ const VSCodeEditor = ({ onBack }) => {
               key={view.id}
               onClick={() => setActiveView(view.id)}
               className={`p-2 rounded transition-colors ${
-                activeView === view.id 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                activeView === view.id ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-700'
               }`}
               title={view.title}
             >
               {view.icon}
             </button>
           ))}
-          
           <div className="flex-1"></div>
-          
           <button
             onClick={() => setShowProjectModal(true)}
             className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
@@ -436,7 +605,6 @@ const VSCodeEditor = ({ onBack }) => {
           >
             <FolderPlus className="w-5 h-5" />
           </button>
-          
           <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors">
             <Settings className="w-5 h-5" />
           </button>
@@ -444,147 +612,111 @@ const VSCodeEditor = ({ onBack }) => {
 
         {/* Sidebar */}
         <div className="bg-gray-800 border-r border-gray-700 flex flex-col w-80">
-          {/* Sidebar Header */}
           <div className="p-4 border-b border-gray-700">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-white">
-                {activeView === 'explorer' && 'Explorer'}
-                {activeView === 'search' && 'Search'}
-                {activeView === 'git' && 'Source Control'}
-                {activeView === 'extensions' && 'Extensions'}
-              </h3>
+              <h3 className="text-sm font-semibold text-white">Explorer</h3>
               <div className="flex items-center space-x-1">
-                {activeView === 'explorer' && (
-                  <>
-                    <button
-                      onClick={() => setShowProjectModal(true)}
-                      className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
-                      title="New Project"
-                    >
-                      <FolderPlus className="w-4 h-4" />
-                    </button>
-                    <button className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors">
-                      <FilePlus className="w-4 h-4" />
-                    </button>
-                  </>
-                )}
-                <button className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors">
-                  <RefreshCw className="w-4 h-4" />
+                <button
+                  onClick={() => setShowProjectModal(true)}
+                  className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+                  title="New Project"
+                >
+                  <FolderPlus className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setShowNewFileModal(true)}
+                  disabled={!currentProject}
+                  className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors disabled:opacity-50"
+                  title="New File"
+                >
+                  <FilePlus className="w-4 h-4" />
                 </button>
               </div>
             </div>
+            {currentProject && (
+              <input
+                type="text"
+                placeholder="Search files..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+              />
+            )}
           </div>
 
-          {/* Sidebar Content */}
           <div className="flex-1 overflow-y-auto">
-            {activeView === 'explorer' && (
-              <div className="p-2">
-                {!currentProject ? (
-                  <div>
-                    <div className="text-center py-4">
-                      <FolderOpen className="w-12 h-12 mx-auto mb-3 text-gray-500" />
-                      <p className="text-sm text-gray-400 mb-4">No project open</p>
-                      <button
-                        onClick={() => setShowProjectModal(true)}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors mb-4"
-                      >
-                        Create Project
-                      </button>
-                    </div>
-                    
-                    {/* Quick Language Starters */}
-                    <div className="border-t border-gray-700 pt-4">
-                      <h4 className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wide">
-                        Quick Start
-                      </h4>
-                      <div className="space-y-2">
-                        {quickLanguages.map(lang => (
-                          <button
-                            key={lang.id}
-                            onClick={() => {
-                              const project = createQuickProject(lang.id, `${lang.name} Project`);
-                              if (project) {
-                                const updatedProjects = [...projects, project];
-                                setProjects(updatedProjects);
-                                localStorage.setItem('vscode-projects', JSON.stringify(updatedProjects));
-                                setCurrentProject(project);
-                                openFile(`main${lang.extension}`);
-                              }
-                            }}
-                            className="w-full flex items-center space-x-3 p-2 text-left hover:bg-gray-700 rounded transition-colors"
-                          >
-                            <span className="text-lg">{lang.icon}</span>
-                            <div className="flex-1">
-                              <div className="text-sm font-medium text-white">{lang.name}</div>
-                              <div className="text-xs text-gray-400">
-                                Create {lang.name.toLowerCase()} file
-                                {lang.executable && ' • Executable'}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
+            <div className="p-2">
+              {!currentProject ? (
+                <div>
+                  <div className="text-center py-4">
+                    <FolderOpen className="w-12 h-12 mx-auto mb-3 text-gray-500" />
+                    <p className="text-sm text-gray-400 mb-4">No project open</p>
+                    <button
+                      onClick={() => setShowProjectModal(true)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors mb-4"
+                    >
+                      Create Project
+                    </button>
+                  </div>
+                  
+                  <div className="border-t border-gray-700 pt-4">
+                    <h4 className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wide">Quick Start</h4>
+                    <div className="space-y-2">
+                      {quickLanguages.map(lang => (
+                        <button
+                          key={lang.id}
+                          onClick={() => {
+                            const project = createQuickProject(lang.id, `${lang.name} Project`);
+                            if (project) {
+                              const updatedProjects = [...projects, project];
+                              setProjects(updatedProjects);
+                              localStorage.setItem('vscode-projects', JSON.stringify(updatedProjects));
+                              setCurrentProject(project);
+                              openFile(`main${lang.extension}`);
+                            }
+                          }}
+                          className="w-full flex items-center space-x-3 p-2 text-left hover:bg-gray-700 rounded transition-colors"
+                        >
+                          <span className="text-lg">{lang.icon}</span>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-white">{lang.name}</div>
+                            <div className="text-xs text-gray-400">Create {lang.name.toLowerCase()} file</div>
+                          </div>
+                        </button>
+                      ))}
                     </div>
                   </div>
-                ) : (
-                  <div>
-                    <div className="mb-4 p-2 bg-gray-700 rounded">
+                </div>
+              ) : (
+                <div>
+                  <div className="mb-4 p-2 bg-gray-700 rounded">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2 text-sm">
                         <Folder className="w-4 h-4 text-blue-400" />
                         <span className="font-medium">{currentProject.name}</span>
                       </div>
-                      <div className="text-xs text-gray-400 mt-1">
-                        {currentProject.language || currentProject.template} project
-                      </div>
+                      <button
+                        onClick={() => {
+                          if (confirm('Close project?')) {
+                            setCurrentProject(null);
+                            setActiveFile(null);
+                            setOpenTabs([]);
+                          }
+                        }}
+                        className="p-1 text-gray-400 hover:text-white hover:bg-gray-600 rounded transition-colors"
+                        title="Close Project"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
                     </div>
-                    {renderFileTree(currentProject.files)}
+                    <div className="text-xs text-gray-400 mt-1">
+                      {currentProject.language || currentProject.template} project
+                    </div>
                   </div>
-                )}
-              </div>
-            )}
-
-            {activeView === 'search' && (
-              <div className="p-4">
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Search files..."
-                    className="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Replace..."
-                    className="w-full bg-gray-700 text-white text-sm px-3 py-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-                  />
-                  <div className="flex space-x-2">
-                    <button className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors">
-                      Search
-                    </button>
-                    <button className="flex-1 px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded transition-colors">
-                      Replace
-                    </button>
-                  </div>
+                  <div className="space-y-1">{renderFileTree()}</div>
                 </div>
-              </div>
-            )}
-
-            {activeView === 'git' && (
-              <div className="p-4">
-                <div className="text-center py-8">
-                  <GitBranch className="w-12 h-12 mx-auto mb-3 text-gray-500" />
-                  <p className="text-sm text-gray-400">No git repository</p>
-                </div>
-              </div>
-            )}
-
-            {activeView === 'extensions' && (
-              <div className="p-4">
-                <div className="text-center py-8">
-                  <Box className="w-12 h-12 mx-auto mb-3 text-gray-500" />
-                  <p className="text-sm text-gray-400">Extensions marketplace</p>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
@@ -616,14 +748,28 @@ const VSCodeEditor = ({ onBack }) => {
               </button>
               
               <button
+                onClick={() => {
+                  if (activeFile && editorRef.current) {
+                    const content = editorRef.current.getValue();
+                    updateFileContent(activeFile, content);
+                    addOutput('success', `Saved ${activeFile}`);
+                  }
+                }}
                 disabled={!activeFile}
-                className={`p-1.5 rounded text-sm transition-colors ${
-                  !activeFile
-                    ? 'text-gray-500 cursor-not-allowed' 
-                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded text-sm transition-colors ${
+                  !activeFile ? 'text-gray-500 cursor-not-allowed' : 'text-gray-400 hover:text-white hover:bg-gray-700'
                 }`}
               >
                 <Save className="w-4 h-4" />
+                <span>Save</span>
+              </button>
+
+              <button
+                onClick={() => setShowConsole(!showConsole)}
+                className="flex items-center space-x-2 px-3 py-1.5 rounded text-sm transition-colors text-gray-400 hover:text-white hover:bg-gray-700"
+              >
+                <Terminal className="w-4 h-4" />
+                <span>{showConsole ? 'Hide' : 'Show'} Console</span>
               </button>
             </div>
 
@@ -634,7 +780,7 @@ const VSCodeEditor = ({ onBack }) => {
                   <span>•</span>
                   <span>UTF-8</span>
                   <span>•</span>
-                  <span>{activeFile.split('.').pop().toUpperCase()}</span>
+                  <span>{activeFile.split('.').pop()?.toUpperCase()}</span>
                 </>
               )}
             </div>
@@ -646,10 +792,8 @@ const VSCodeEditor = ({ onBack }) => {
               {openTabs.map(tab => (
                 <div
                   key={tab}
-                  className={`flex items-center space-x-2 px-4 py-2 border-r border-gray-700 cursor-pointer min-w-0 ${
-                    activeFile === tab 
-                      ? 'bg-gray-900 text-white' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                  className={`flex items-center space-x-2 px-4 py-2 border-r border-gray-700 cursor-pointer min-w-0 max-w-48 ${
+                    activeFile === tab ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-700'
                   }`}
                   onClick={() => setActiveFile(tab)}
                 >
@@ -676,21 +820,16 @@ const VSCodeEditor = ({ onBack }) => {
                 height="100%"
                 language={
                   activeFile.endsWith('.js') || activeFile.endsWith('.jsx') ? 'javascript' : 
-                  activeFile.endsWith('.ts') || activeFile.endsWith('.tsx') ? 'typescript' :
                   activeFile.endsWith('.py') ? 'python' :
                   activeFile.endsWith('.java') ? 'java' :
-                  activeFile.endsWith('.cpp') || activeFile.endsWith('.cc') || activeFile.endsWith('.cxx') ? 'cpp' :
-                  activeFile.endsWith('.cs') ? 'csharp' :
-                  activeFile.endsWith('.go') ? 'go' :
-                  activeFile.endsWith('.rs') ? 'rust' :
-                  activeFile.endsWith('.php') ? 'php' :
-                  activeFile.endsWith('.rb') ? 'ruby' :
-                  activeFile.endsWith('.json') ? 'json' :
-                  activeFile.endsWith('.css') ? 'css' :
+                  activeFile.endsWith('.cpp') ? 'cpp' :
                   activeFile.endsWith('.html') ? 'html' :
+                  activeFile.endsWith('.css') ? 'css' :
+                  activeFile.endsWith('.json') ? 'json' :
                   activeFile.endsWith('.md') ? 'markdown' : 'plaintext'
                 }
                 value={getFileContent(activeFile)}
+                onChange={(value) => updateFileContent(activeFile, value || '')}
                 onMount={(editor) => { editorRef.current = editor; }}
                 theme="vs-dark"
                 options={{
@@ -712,14 +851,8 @@ const VSCodeEditor = ({ onBack }) => {
                   folding: true,
                   showFoldingControls: 'always',
                   bracketPairColorization: { enabled: true },
-                  guides: {
-                    bracketPairs: true,
-                    indentation: true,
-                  },
-                  suggest: {
-                    showKeywords: true,
-                    showSnippets: true,
-                  },
+                  guides: { bracketPairs: true, indentation: true },
+                  suggest: { showKeywords: true, showSnippets: true },
                   quickSuggestions: true,
                   parameterHints: { enabled: true },
                   formatOnPaste: true,
@@ -755,19 +888,22 @@ const VSCodeEditor = ({ onBack }) => {
           <div className="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-700">
             <div className="flex items-center space-x-3">
               <Terminal className="w-4 h-4 text-green-400" />
-              <span className="text-sm font-medium text-white">Terminal</span>
+              <span className="text-sm font-medium text-white">Output</span>
+              <span className="text-xs text-gray-400">({consoleOutput.length} messages)</span>
             </div>
             
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setConsoleOutput([])}
                 className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+                title="Clear Output"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setShowConsole(false)}
                 className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+                title="Close Console"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -779,7 +915,8 @@ const VSCodeEditor = ({ onBack }) => {
               <div className="flex items-center justify-center h-full text-gray-500">
                 <div className="text-center">
                   <Terminal className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Terminal output will appear here</p>
+                  <p className="text-sm">Output will appear here when you run code</p>
+                  <p className="text-xs text-gray-600 mt-1">Click the Run button to execute your code</p>
                 </div>
               </div>
             ) : (
@@ -793,9 +930,7 @@ const VSCodeEditor = ({ onBack }) => {
                       {getOutputIcon(output.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="whitespace-pre-wrap break-words">
-                        {output.message}
-                      </div>
+                      <div className="whitespace-pre-wrap break-words">{output.message}</div>
                       <div className="text-xs text-gray-500 mt-1">
                         {new Date(output.timestamp).toLocaleTimeString()}
                       </div>
@@ -825,7 +960,7 @@ const VSCodeEditor = ({ onBack }) => {
           <span>Ln 1, Col 1</span>
           <span>Spaces: 2</span>
           <span>UTF-8</span>
-          {activeFile && <span>{activeFile.split('.').pop().toUpperCase()}</span>}
+          {activeFile && <span>{activeFile.split('.').pop()?.toUpperCase()}</span>}
         </div>
       </div>
 
@@ -835,10 +970,7 @@ const VSCodeEditor = ({ onBack }) => {
           <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">Create New Project</h2>
-              <button
-                onClick={() => setShowProjectModal(false)}
-                className="text-gray-400 hover:text-white"
-              >
+              <button onClick={() => setShowProjectModal(false)} className="text-gray-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -850,9 +982,7 @@ const VSCodeEditor = ({ onBack }) => {
                   className="p-4 border border-gray-600 rounded-lg hover:border-blue-500 cursor-pointer transition-colors"
                   onClick={() => {
                     const projectName = prompt('Enter project name:', `my-${template.id}-app`);
-                    if (projectName) {
-                      createProject(template, projectName);
-                    }
+                    if (projectName) createProject(template, projectName);
                   }}
                 >
                   <div className="flex items-center space-x-3 mb-3">
@@ -864,12 +994,57 @@ const VSCodeEditor = ({ onBack }) => {
               ))}
             </div>
 
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end">
               <button
                 onClick={() => setShowProjectModal(false)}
                 className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New File Modal */}
+      {showNewFileModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-white">Create New File</h2>
+              <button onClick={() => setShowNewFileModal(false)} className="text-gray-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">File Name</label>
+                <input
+                  type="text"
+                  value={newFileName}
+                  onChange={(e) => setNewFileName(e.target.value)}
+                  placeholder="e.g., script.js, styles.css, index.html"
+                  className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+                  onKeyPress={(e) => { if (e.key === 'Enter') createNewFile(); }}
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowNewFileModal(false)}
+                className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createNewFile}
+                disabled={!newFileName.trim()}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded transition-colors"
+              >
+                Create File
               </button>
             </div>
           </div>

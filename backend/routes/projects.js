@@ -9,7 +9,7 @@ let databases = [];
 // Get all projects for a user
 router.get('/', auth, async (req, res) => {
   try {
-    const userProjects = projects.filter(p => p.userId === req.user.id);
+    const userProjects = projects.filter(p => p.userId === req.user.userId);
     res.json(userProjects);
   } catch (error) {
     console.error('Error fetching projects:', error);
@@ -27,7 +27,7 @@ router.post('/', auth, async (req, res) => {
       name,
       template,
       files,
-      userId: req.user.id,
+      userId: req.user.userId,
       createdAt: new Date().toISOString(),
       lastModified: new Date().toISOString()
     };
@@ -43,7 +43,7 @@ router.post('/', auth, async (req, res) => {
 // Get a specific project
 router.get('/:id', auth, async (req, res) => {
   try {
-    const project = projects.find(p => p.id === req.params.id && p.userId === req.user.id);
+    const project = projects.find(p => p.id === req.params.id && p.userId === req.user.userId);
     
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
@@ -60,7 +60,7 @@ router.get('/:id', auth, async (req, res) => {
 router.put('/:id', auth, async (req, res) => {
   try {
     const { name, files } = req.body;
-    const projectIndex = projects.findIndex(p => p.id === req.params.id && p.userId === req.user.id);
+    const projectIndex = projects.findIndex(p => p.id === req.params.id && p.userId === req.user.userId);
     
     if (projectIndex === -1) {
       return res.status(404).json({ message: 'Project not found' });
@@ -83,7 +83,7 @@ router.put('/:id', auth, async (req, res) => {
 // Delete a project
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const projectIndex = projects.findIndex(p => p.id === req.params.id && p.userId === req.user.id);
+    const projectIndex = projects.findIndex(p => p.id === req.params.id && p.userId === req.user.userId);
     
     if (projectIndex === -1) {
       return res.status(404).json({ message: 'Project not found' });
@@ -102,7 +102,7 @@ router.delete('/:id', auth, async (req, res) => {
 // Get all databases for a user
 router.get('/databases/list', auth, async (req, res) => {
   try {
-    const userDatabases = databases.filter(db => db.userId === req.user.id);
+    const userDatabases = databases.filter(db => db.userId === req.user.userId);
     res.json(userDatabases);
   } catch (error) {
     console.error('Error fetching databases:', error);
@@ -120,7 +120,7 @@ router.post('/databases', auth, async (req, res) => {
       name,
       type,
       connectionString,
-      userId: req.user.id,
+      userId: req.user.userId,
       createdAt: new Date().toISOString(),
       status: 'connected' // In production, test the connection
     };
@@ -136,7 +136,7 @@ router.post('/databases', auth, async (req, res) => {
 // Test database connection
 router.post('/databases/:id/test', auth, async (req, res) => {
   try {
-    const database = databases.find(db => db.id === req.params.id && db.userId === req.user.id);
+    const database = databases.find(db => db.id === req.params.id && db.userId === req.user.userId);
     
     if (!database) {
       return res.status(404).json({ message: 'Database not found' });
@@ -163,7 +163,7 @@ router.post('/databases/:id/test', auth, async (req, res) => {
 router.post('/databases/:id/query', auth, async (req, res) => {
   try {
     const { query } = req.body;
-    const database = databases.find(db => db.id === req.params.id && db.userId === req.user.id);
+    const database = databases.find(db => db.id === req.params.id && db.userId === req.user.userId);
     
     if (!database) {
       return res.status(404).json({ message: 'Database not found' });
@@ -232,7 +232,7 @@ router.post('/databases/:id/query', auth, async (req, res) => {
 // Delete database connection
 router.delete('/databases/:id', auth, async (req, res) => {
   try {
-    const databaseIndex = databases.findIndex(db => db.id === req.params.id && db.userId === req.user.id);
+    const databaseIndex = databases.findIndex(db => db.id === req.params.id && db.userId === req.user.userId);
     
     if (databaseIndex === -1) {
       return res.status(404).json({ message: 'Database not found' });

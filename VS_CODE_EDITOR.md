@@ -1,4 +1,4 @@
-# VS Code-Style Editor
+cc# VS Code-Style Editor
 
 A professional VS Code-inspired editor with project management and database integration capabilities.
 

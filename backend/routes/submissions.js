@@ -80,53 +80,7 @@ router.get('/:id', (req, res) => {
   }
 });
 
-// Get user submissions with pagination
-router.get('/user/:userId', (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { page = 1, limit = 10, status, problemId } = req.query;
-
-    let userSubmissions = submissions.filter(s => s.userId === userId);
-
-    // Filter by status
-    if (status) {
-      userSubmissions = userSubmissions.filter(s => 
-        s.status.toLowerCase() === status.toLowerCase()
-      );
-    }
-
-    // Filter by problem
-    if (problemId) {
-      userSubmissions = userSubmissions.filter(s => 
-        s.problemId === parseInt(problemId)
-      );
-    }
-
-    // Sort by submission date (newest first)
-    userSubmissions.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
-
-    // Pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-    const paginatedSubmissions = userSubmissions.slice(startIndex, endIndex);
-
-    res.json({
-      submissions: paginatedSubmissions,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(userSubmissions.length / limit),
-        totalSubmissions: userSubmissions.length,
-        hasNext: endIndex < userSubmissions.length,
-        hasPrev: startIndex > 0
-      }
-    });
-
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch submissions' });
-  }
-});
-
-// Get submission statistics for a user
+// Get submission statistics for a user (MUST come before /user/:userId route)
 router.get('/user/:userId/stats', (req, res) => {
   try {
     const { userId } = req.params;
@@ -173,6 +127,52 @@ router.get('/user/:userId/stats', (req, res) => {
 
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch user statistics' });
+  }
+});
+
+// Get user submissions with pagination
+router.get('/user/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { page = 1, limit = 10, status, problemId } = req.query;
+
+    let userSubmissions = submissions.filter(s => s.userId === userId);
+
+    // Filter by status
+    if (status) {
+      userSubmissions = userSubmissions.filter(s => 
+        s.status.toLowerCase() === status.toLowerCase()
+      );
+    }
+
+    // Filter by problem
+    if (problemId) {
+      userSubmissions = userSubmissions.filter(s => 
+        s.problemId === parseInt(problemId)
+      );
+    }
+
+    // Sort by submission date (newest first)
+    userSubmissions.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+    // Pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginatedSubmissions = userSubmissions.slice(startIndex, endIndex);
+
+    res.json({
+      submissions: paginatedSubmissions,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(userSubmissions.length / limit),
+        totalSubmissions: userSubmissions.length,
+        hasNext: endIndex < userSubmissions.length,
+        hasPrev: startIndex > 0
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch submissions' });
   }
 });
 

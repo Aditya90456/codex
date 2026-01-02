@@ -3,7 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const connectDB = require('./config/database');
+const { connectDB } = require('./config/database');
 require('dotenv').config();
 
 // Import routes
@@ -14,6 +14,7 @@ const executeRouter = require('./routes/execute');
 const usersRouter = require('./routes/users');
 const dashboardRouter = require('./routes/dashboard');
 const projectsRouter = require('./routes/projects');
+const editorRouter = require('./routes/editor');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -74,12 +75,19 @@ app.use('/api/execute', executeLimit);
 
 // Health check
 app.get('/health', (req, res) => {
+  const mongoose = require('mongoose');
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     memory: process.memoryUsage(),
-    version: process.env.npm_package_version || '1.0.0'
+    version: process.env.npm_package_version || '1.0.0',
+    database: {
+      status: dbStatus,
+      message: dbStatus === 'connected' ? 'MongoDB connected' : 'Running in offline mode'
+    }
   });
 });
 
@@ -91,6 +99,7 @@ app.use('/api/execute', executeRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/projects', projectsRouter);
+app.use('/api/editor', editorRouter);
 
 // API documentation endpoint
 app.get('/api', (req, res) => { 
@@ -215,4 +224,13 @@ app.listen(PORT, () => {
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`📚 API docs: http://localhost:${PORT}/api`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  
+  // Check database connection status
+  const mongoose = require('mongoose');
+  if (mongoose.connection.readyState === 1) {
+    console.log(`🍃 Database: Connected`);
+  } else {
+    console.log(`⚠️  Database: Not connected (running in offline mode)`);
+    console.log(`   Authentication will work with JWT tokens only`);
+  }
 });
