@@ -15,12 +15,22 @@ const usersRouter = require('./routes/users');
 const dashboardRouter = require('./routes/dashboard');
 const projectsRouter = require('./routes/projects');
 const editorRouter = require('./routes/editor');
+const clerkRouter = require('./routes/clerk');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Connect to database
-connectDB();
+// Initialize database connection
+const initializeApp = async () => {
+  // Connect to database
+  const dbConnected = await connectDB();
+  
+  if (dbConnected) {
+    console.log('✅ Database connection established');
+  } else {
+    console.log('⚠️  Starting without database connection');
+  }
+};
 
 // Rate limiting
 const limiter = rateLimit({
@@ -93,6 +103,7 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRouter);
+app.use('/api/auth/clerk', clerkRouter);
 app.use('/api/problems', problemsRouter);
 app.use('/api/submissions', submissionsRouter);
 app.use('/api/execute', executeRouter);
@@ -219,18 +230,28 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Codex Playground Backend running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`📚 API docs: http://localhost:${PORT}/api`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+// Initialize and start server
+const startServer = async () => {
+  await initializeApp();
   
-  // Check database connection status
-  const mongoose = require('mongoose');
-  if (mongoose.connection.readyState === 1) {
-    console.log(`🍃 Database: Connected`);
-  } else {
-    console.log(`⚠️  Database: Not connected (running in offline mode)`);
-    console.log(`   Authentication will work with JWT tokens only`);
-  }
+  app.listen(PORT, () => {
+    console.log(`🚀 Codex Playground Backend running on port ${PORT}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/health`);
+    console.log(`📚 API docs: http://localhost:${PORT}/api`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    
+    // Check database connection status
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState === 1) {
+      console.log(`🍃 Database: Connected`);
+    } else {
+      console.log(`⚠️  Database: Not connected (running in offline mode)`);
+      console.log(`   Authentication will work with JWT tokens only`);
+    }
+  });
+};
+
+startServer().catch(error => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
 });

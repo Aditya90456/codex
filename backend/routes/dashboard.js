@@ -1,13 +1,27 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Problem = require('../models/Problem');
 const Submission = require('../models/Submission');
 const { auth, optionalAuth } = require('../middleware/auth');
 const router = express.Router();
 
+// Helper function to check if database is connected
+const isDatabaseConnected = () => {
+  return mongoose.connection.readyState === 1;
+};
+
 // Get dashboard statistics
 router.get('/stats', optionalAuth, async (req, res) => {
   try {
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. Dashboard statistics require database connection.'
+      });
+    }
+
     // Get overall platform statistics
     const [
       totalUsers,
@@ -103,6 +117,14 @@ router.get('/stats', optionalAuth, async (req, res) => {
 // Get user activity feed
 router.get('/activity', auth, async (req, res) => {
   try {
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. Activity feed requires database connection.'
+      });
+    }
+
     const { page = 1, limit = 20 } = req.query;
     
     // Get user's recent submissions and achievements
@@ -180,6 +202,14 @@ router.get('/activity', auth, async (req, res) => {
 // Get global leaderboard
 router.get('/leaderboard', optionalAuth, async (req, res) => {
   try {
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. Leaderboard requires database connection.'
+      });
+    }
+
     const { type = 'points', period = 'all', limit = 50 } = req.query;
     
     let matchStage = { isActive: true };
@@ -302,6 +332,14 @@ router.get('/leaderboard', optionalAuth, async (req, res) => {
 // Get trending problems
 router.get('/trending', optionalAuth, async (req, res) => {
   try {
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. Trending problems require database connection.'
+      });
+    }
+
     const { limit = 10 } = req.query;
     
     // Get problems with most submissions in the last 7 days
@@ -388,6 +426,14 @@ router.get('/trending', optionalAuth, async (req, res) => {
 // Get user progress analytics
 router.get('/analytics', auth, async (req, res) => {
   try {
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. Analytics require database connection.'
+      });
+    }
+
     const { period = '30d' } = req.query;
     
     let startDate;

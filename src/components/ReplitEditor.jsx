@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import Editor from '@monaco-editor/react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/ClerkAuthContext';
 import {
   Play,
   Send,

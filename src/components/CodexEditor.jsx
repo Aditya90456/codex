@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import WelcomeScreen from './WelcomeScreen';
-import AuthModal from './Auth/AuthModal';
+import ClerkAuthModal from './Auth/ClerkAuthModal';
+import ClerkDebug from './Debug/ClerkDebug';
 import TestCaseDemo from './TestCaseDemo';
 import IDEDemo from './IDEDemo';
 import IDEOutput from './IDEOutput';
 import Dashboard from './Dashboard';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/ClerkAuthContext';
 import { 
   Play, 
   Save, 
@@ -205,10 +206,10 @@ int main() {
           onShowAuth={handleShowAuth}
           onShowDashboard={() => setShowDashboard(true)}
         />
-        <AuthModal
+        <ClerkAuthModal
           isOpen={showAuth}
           onClose={() => setShowAuth(false)}
-          initialMode={authMode}
+          mode={authMode === 'login' ? 'sign-in' : 'sign-up'}
         />
       </>
     );
@@ -771,11 +772,14 @@ int main() {
       </div>
 
       {/* Auth Modal */}
-      <AuthModal
+      <ClerkAuthModal
         isOpen={showAuth}
         onClose={() => setShowAuth(false)}
-        initialMode={authMode}
+        mode={authMode === 'login' ? 'sign-in' : 'sign-up'}
       />
+
+      {/* Debug Component */}
+      <ClerkDebug />
     </div>
   );
 };

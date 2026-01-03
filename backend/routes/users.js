@@ -1,12 +1,26 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Submission = require('../models/Submission');
 const { auth, optionalAuth } = require('../middleware/auth');
 const router = express.Router();
 
+// Helper function to check if database is connected
+const isDatabaseConnected = () => {
+  return mongoose.connection.readyState === 1;
+};
+
 // Get users leaderboard
 router.get('/', optionalAuth, async (req, res) => {
   try {
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. Leaderboard requires database connection.'
+      });
+    }
+
     const { 
       page = 1, 
       limit = 20, 
@@ -82,6 +96,14 @@ router.get('/', optionalAuth, async (req, res) => {
 // Get user profile by ID or username
 router.get('/:identifier', optionalAuth, async (req, res) => {
   try {
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. User profiles require database connection.'
+      });
+    }
+
     const { identifier } = req.params;
     
     // Check if identifier is ObjectId or username
@@ -191,6 +213,14 @@ router.get('/:identifier', optionalAuth, async (req, res) => {
 // Get user statistics
 router.get('/:identifier/stats', optionalAuth, async (req, res) => {
   try {
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. User statistics require database connection.'
+      });
+    }
+
     const { identifier } = req.params;
     
     const isObjectId = /^[0-9a-fA-F]{24}$/.test(identifier);

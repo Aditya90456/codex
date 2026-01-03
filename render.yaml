@@ -17,11 +17,13 @@ services:
           type: web
           name: codex-frontend
           property: url
+      - key: MONGODB_URI
+        sync: false  # You'll need to set this manually in Render dashboard
       - key: JWT_SECRET
         generateValue: true
       - key: BCRYPT_ROUNDS
         value: 12
-      - key: RATE_LIMIT_POINTS
+      - key: RATE_LIMIT_MAX
         value: 100
       - key: RATE_LIMIT_DURATION
         value: 60

@@ -6,7 +6,7 @@ const connectDB = async () => {
     const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/codex-playground', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      serverSelectionTimeoutMS: 10000, // Timeout after 10s instead of 30s
       socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
       bufferMaxEntries: 0, // Disable mongoose buffering
       bufferCommands: false, // Disable mongoose buffering
@@ -36,6 +36,8 @@ const connectDB = async () => {
       process.exit(0);
     });
 
+    return true; // Connection successful
+
   } catch (error) {
     console.error('Database connection error:', error);
     console.log('⚠️  Running without database connection - some features may not work');
@@ -44,8 +46,10 @@ const connectDB = async () => {
     // Don't exit in development mode, allow app to run without DB
     if (process.env.NODE_ENV === 'production') {
       console.log('Production mode: Retrying database connection in 10 seconds...');
-      setTimeout(connectDB, 10000);
+      setTimeout(() => connectDB(), 10000);
     }
+    
+    return false; // Connection failed
   }
 };
 

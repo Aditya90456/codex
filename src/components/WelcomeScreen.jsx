@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/ClerkAuthContext';
 import UserProfile from './UserProfile';
 import Settings from './Settings';
 import VSCodeEditor from './VSCodeEditorClean';

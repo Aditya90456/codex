@@ -165,10 +165,57 @@ class ApiService {
     return this.request(`/users/${identifier}/stats`);
   }
 
+  // Clerk integration methods
+  async syncUserWithBackend(clerkUser) {
+    return this.request('/auth/clerk/sync', {
+      method: 'POST',
+      body: {
+        clerkId: clerkUser.id,
+        email: clerkUser.email,
+        username: clerkUser.username,
+        firstName: clerkUser.firstName,
+        lastName: clerkUser.lastName,
+        imageUrl: clerkUser.imageUrl,
+      },
+    });
+  }
+
+  async getSubscription(userId) {
+    return this.request(`/subscriptions/${userId}`);
+  }
+
+  async createSubscription(subscriptionData) {
+    return this.request('/subscriptions', {
+      method: 'POST',
+      body: subscriptionData,
+    });
+  }
+
+  async updateSubscription(subscriptionId, updateData) {
+    return this.request(`/subscriptions/${subscriptionId}`, {
+      method: 'PUT',
+      body: updateData,
+    });
+  }
+
   // Utility methods
   setToken(token) {
     this.token = token;
-    localStorage.setItem('authToken', token);
+    try {
+      localStorage.setItem('authToken', token);
+    } catch (error) {
+      console.warn('localStorage not available:', error);
+    }
+  }
+
+  clearToken() {
+    this.token = null;
+    try {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+    } catch (error) {
+      console.warn('localStorage not available:', error);
+    }
   }
 
   getToken() {
@@ -185,8 +232,13 @@ class ApiService {
   }
 
   getCurrentUserFromStorage() {
-    const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch (error) {
+      console.warn('Error accessing localStorage:', error);
+      return null;
+    }
   }
 
   // Project methods

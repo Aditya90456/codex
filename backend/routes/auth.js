@@ -1,10 +1,16 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
 const router = express.Router();
+
+// Helper function to check if database is connected
+const isDatabaseConnected = () => {
+  return mongoose.connection.readyState === 1;
+};
 
 // Register
 router.post('/register', [
@@ -37,6 +43,14 @@ router.post('/register', [
       return res.status(400).json({
         success: false,
         errors: errors.array()
+      });
+    }
+
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. Please try again later.'
       });
     }
 
@@ -104,6 +118,14 @@ router.post('/login', [
       });
     }
 
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. Please try again later.'
+      });
+    }
+
     const { login, password } = req.body;
 
     // Find user by email or username
@@ -157,6 +179,22 @@ router.post('/login', [
 // Get current user
 router.get('/me', auth, async (req, res) => {
   try {
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      // Return user info from JWT token if database is not available
+      return res.json({
+        success: true,
+        user: {
+          userId: req.user.userId,
+          username: req.user.username,
+          email: req.user.email,
+          role: req.user.role || 'user',
+          // Note: Some profile data may not be available without database
+          message: 'Limited profile data - database not available'
+        }
+      });
+    }
+
     const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({
@@ -218,6 +256,14 @@ router.put('/profile', auth, [
       return res.status(400).json({
         success: false,
         errors: errors.array()
+      });
+    }
+
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. Profile updates require database connection.'
       });
     }
 
@@ -286,6 +332,14 @@ router.put('/preferences', auth, [
       });
     }
 
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. Preferences updates require database connection.'
+      });
+    }
+
     const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({
@@ -342,6 +396,14 @@ router.put('/password', auth, [
       return res.status(400).json({
         success: false,
         errors: errors.array()
+      });
+    }
+
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not available. Password changes require database connection.'
       });
     }
 
