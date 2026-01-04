@@ -7,6 +7,9 @@ import TestCaseDemo from './TestCaseDemo';
 import IDEDemo from './IDEDemo';
 import IDEOutput from './IDEOutput';
 import Dashboard from './Dashboard';
+import WebEditor from './WebEditor';
+import AdvancedWebEditor from './AdvancedWebEditor';
+import AndroidEditor from './AndroidEditor';
 import { useAuth } from '../contexts/ClerkAuthContext';
 import { 
   Play, 
@@ -20,12 +23,18 @@ import {
   LogOut,
   FileText,
   RotateCcw,
-  BarChart3
+  BarChart3,
+  Globe,
+  Smartphone,
+  Rocket
 } from 'lucide-react';
 
 const CodexEditor = () => {
   const { user, logout } = useAuth();
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showWebEditor, setShowWebEditor] = useState(false);
+  const [showAdvancedWebEditor, setShowAdvancedWebEditor] = useState(false);
+  const [showAndroidEditor, setShowAndroidEditor] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [showTestDemo, setShowTestDemo] = useState(false);
   const [showIDEDemo, setShowIDEDemo] = useState(false);
@@ -60,7 +69,7 @@ console.log("Happy coding! 🚀");
 `);
   
   const [language, setLanguage] = useState('javascript');
-  const [theme, setTheme] = useState('vs-dark');
+  const [theme, setTheme] = useState('bright-modern');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fileName, setFileName] = useState('solution.js');
   const [showConsole, setShowConsole] = useState(true);
@@ -81,8 +90,10 @@ console.log("Happy coding! 🚀");
   ];
 
   const themes = [
+    { value: 'bright-modern', label: 'Bright Modern', icon: '✨' },
     { value: 'vs-dark', label: 'Dark Theme', icon: '🌙' },
     { value: 'light', label: 'Light Theme', icon: '☀️' },
+    { value: 'github-light', label: 'GitHub Light', icon: '🐙' },
     { value: 'hc-black', label: 'High Contrast', icon: '⚫' },
   ];
 
@@ -108,6 +119,24 @@ console.log("Happy coding! 🚀");
       }
     }
   };
+
+  if (showAndroidEditor) {
+    return (
+      <AndroidEditor onBack={() => setShowAndroidEditor(false)} />
+    );
+  }
+
+  if (showWebEditor) {
+    return (
+      <WebEditor onBack={() => setShowWebEditor(false)} />
+    );
+  }
+
+  if (showAdvancedWebEditor) {
+    return (
+      <AdvancedWebEditor onBack={() => setShowAdvancedWebEditor(false)} />
+    );
+  }
 
   if (showDashboard) {
     return (
@@ -218,7 +247,68 @@ int main() {
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
     
-    // Custom TUF+ inspired theme
+    // Custom Bright Modern theme
+    monaco.editor.defineTheme('bright-modern', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '6B7280', fontStyle: 'italic' },
+        { token: 'keyword', foreground: '7C3AED' },
+        { token: 'string', foreground: '059669' },
+        { token: 'number', foreground: 'DC2626' },
+        { token: 'function', foreground: '2563EB' },
+        { token: 'variable', foreground: '1F2937' },
+        { token: 'type', foreground: 'EA580C' },
+        { token: 'operator', foreground: '7C2D12' },
+        { token: 'delimiter', foreground: '374151' },
+      ],
+      colors: {
+        'editor.background': '#FEFEFE',
+        'editor.foreground': '#1F2937',
+        'editorLineNumber.foreground': '#9CA3AF',
+        'editorLineNumber.activeForeground': '#4B5563',
+        'editor.selectionBackground': '#DBEAFE',
+        'editor.lineHighlightBackground': '#F8FAFC',
+        'editorCursor.foreground': '#7C3AED',
+        'editor.findMatchBackground': '#FEF3C7',
+        'editor.findMatchHighlightBackground': '#FDE68A',
+        'editorWidget.background': '#FFFFFF',
+        'editorWidget.border': '#E5E7EB',
+        'editorSuggestWidget.background': '#FFFFFF',
+        'editorSuggestWidget.border': '#E5E7EB',
+        'editorSuggestWidget.selectedBackground': '#F3F4F6',
+        'scrollbarSlider.background': '#D1D5DB',
+        'scrollbarSlider.hoverBackground': '#9CA3AF',
+        'scrollbarSlider.activeBackground': '#6B7280',
+      }
+    });
+
+    // Custom GitHub Light theme
+    monaco.editor.defineTheme('github-light', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '6A737D', fontStyle: 'italic' },
+        { token: 'keyword', foreground: 'D73A49' },
+        { token: 'string', foreground: '032F62' },
+        { token: 'number', foreground: '005CC5' },
+        { token: 'function', foreground: '6F42C1' },
+        { token: 'variable', foreground: '24292E' },
+        { token: 'type', foreground: 'E36209' },
+      ],
+      colors: {
+        'editor.background': '#FFFFFF',
+        'editor.foreground': '#24292E',
+        'editorLineNumber.foreground': '#1B1F234D',
+        'editor.selectionBackground': '#0366D625',
+        'editor.lineHighlightBackground': '#F6F8FA',
+        'editorCursor.foreground': '#044289',
+        'editorWidget.background': '#F6F8FA',
+        'editorWidget.border': '#E1E4E8',
+      }
+    });
+    
+    // Custom TUF+ inspired dark theme
     monaco.editor.defineTheme('tuf-dark', {
       base: 'vs-dark',
       inherit: true,
@@ -245,7 +335,16 @@ int main() {
       }
     });
     
-    monaco.editor.setTheme('tuf-dark');
+    // Set the theme based on current selection
+    const themeMap = {
+      'bright-modern': 'bright-modern',
+      'vs-dark': 'tuf-dark',
+      'light': 'light',
+      'github-light': 'github-light',
+      'hc-black': 'hc-black'
+    };
+    
+    monaco.editor.setTheme(themeMap[theme] || 'bright-modern');
 
     // Key bindings
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -492,15 +591,15 @@ int main() {
   };
 
   return (
-    <div className={`h-screen bg-slate-900 text-white flex flex-col ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
+    <div className={`h-screen ${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-900 text-white'} flex flex-col ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
       {/* Header */}
-      <div className="bg-gray-900 border-b border-gray-800 px-4 py-3">
+      <div className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'} border-b px-4 py-3`}>
         <div className="flex items-center justify-between">
           {/* Left - Logo and Navigation */}
           <div className="flex items-center space-x-6">
             <button
               onClick={() => setShowWelcome(true)}
-              className="flex items-center space-x-3 text-white hover:text-blue-400 transition-colors"
+              className={`flex items-center space-x-3 ${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-400'} transition-colors`}
             >
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <Code className="w-5 h-5 text-white" />
@@ -509,18 +608,18 @@ int main() {
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
                   Codex
                 </h1>
-                <p className="text-xs text-gray-400">TUF+ Editor</p>
+                <p className={`text-xs ${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>TUF+ Editor</p>
               </div>
             </button>
             
             <nav className="hidden md:flex items-center space-x-6">
-              <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">Problems</a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">Practice</a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">Learn</a>
+              <a href="#" className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm`}>Problems</a>
+              <a href="#" className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm`}>Practice</a>
+              <a href="#" className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm`}>Learn</a>
               {user && (
                 <button
                   onClick={() => setShowDashboard(true)}
-                  className="text-gray-300 hover:text-white transition-colors text-sm flex items-center space-x-1"
+                  className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm flex items-center space-x-1`}
                 >
                   <BarChart3 size={14} />
                   <span>Dashboard</span>
@@ -528,15 +627,36 @@ int main() {
               )}
               <button
                 onClick={() => setShowTestDemo(true)}
-                className="text-gray-300 hover:text-white transition-colors text-sm"
+                className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm`}
               >
                 Test Cases Demo
               </button>
               <button
                 onClick={() => setShowIDEDemo(true)}
-                className="text-gray-300 hover:text-white transition-colors text-sm"
+                className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm`}
               >
                 IDE Output Demo
+              </button>
+              <button
+                onClick={() => setShowWebEditor(true)}
+                className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm flex items-center space-x-1`}
+              >
+                <Globe size={14} />
+                <span>Web Editor</span>
+              </button>
+              <button
+                onClick={() => setShowAdvancedWebEditor(true)}
+                className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm flex items-center space-x-1`}
+              >
+                <Rocket size={14} />
+                <span>Advanced Web IDE</span>
+              </button>
+              <button
+                onClick={() => setShowAndroidEditor(true)}
+                className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm flex items-center space-x-1`}
+              >
+                <Smartphone size={14} />
+                <span>Android Studio</span>
               </button>
             </nav>
           </div>
@@ -549,11 +669,11 @@ int main() {
                   <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
                     <User size={16} className="text-white" />
                   </div>
-                  <span className="text-white font-medium">{user.username}</span>
+                  <span className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-900' : 'text-white'} font-medium`}>{user.username}</span>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="text-gray-400 hover:text-white transition-colors p-2"
+                  className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-500 hover:text-gray-900' : 'text-gray-400 hover:text-white'} transition-colors p-2`}
                   title="Logout"
                 >
                   <LogOut size={16} />
@@ -563,7 +683,7 @@ int main() {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => handleShowAuth('login')}
-                  className="text-gray-300 hover:text-white transition-colors text-sm"
+                  className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm`}
                 >
                   Sign In
                 </button>
@@ -580,24 +700,24 @@ int main() {
       </div>
 
       {/* Toolbar */}
-      <div className="bg-gray-800 border-b border-gray-700 px-4 py-3">
+      <div className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-gray-800 border-gray-700'} border-b px-4 py-3`}>
         <div className="flex items-center justify-between">
           {/* Left - File Controls */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <FileText size={16} className="text-gray-400" />
+              <FileText size={16} className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`} />
               <input
                 type="text"
                 value={fileName}
                 onChange={(e) => setFileName(e.target.value)}
-                className="bg-gray-700 text-white px-3 py-1 rounded text-sm border border-gray-600 focus:border-blue-500 focus:outline-none min-w-0"
+                className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-white text-gray-900 border-gray-300 focus:border-blue-500' : 'bg-gray-700 text-white border-gray-600 focus:border-blue-500'} px-3 py-1 rounded text-sm border focus:outline-none min-w-0`}
               />
             </div>
             
             <select
               value={language}
               onChange={(e) => handleLanguageChange(e.target.value)}
-              className="bg-gray-700 text-white px-3 py-1 rounded text-sm border border-gray-600 focus:border-blue-500 focus:outline-none"
+              className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-white text-gray-900 border-gray-300 focus:border-blue-500' : 'bg-gray-700 text-white border-gray-600 focus:border-blue-500'} px-3 py-1 rounded text-sm border focus:outline-none`}
             >
               {languages.map(lang => (
                 <option key={lang.value} value={lang.value}>
@@ -609,7 +729,7 @@ int main() {
             <select
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
-              className="bg-gray-700 text-white px-3 py-1 rounded text-sm border border-gray-600 focus:border-blue-500 focus:outline-none"
+              className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-white text-gray-900 border-gray-300 focus:border-blue-500' : 'bg-gray-700 text-white border-gray-600 focus:border-blue-500'} px-3 py-1 rounded text-sm border focus:outline-none`}
             >
               {themes.map(t => (
                 <option key={t.value} value={t.value}>
@@ -686,7 +806,16 @@ int main() {
             height="100%"
             language={language}
             value={code}
-            theme={theme === 'vs-dark' ? 'tuf-dark' : theme}
+            theme={(() => {
+              const themeMap = {
+                'bright-modern': 'bright-modern',
+                'vs-dark': 'tuf-dark',
+                'light': 'light',
+                'github-light': 'github-light',
+                'hc-black': 'hc-black'
+              };
+              return themeMap[theme] || 'bright-modern';
+            })()}
             onChange={(value) => setCode(value || '')}
             onMount={handleEditorDidMount}
             options={{

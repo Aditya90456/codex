@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/ClerkAuthContext';
 import UserProfile from './UserProfile';
 import Settings from './Settings';
 import VSCodeEditor from './VSCodeEditorClean';
+import AdvancedWebEditor from './AdvancedWebEditor';
 import { 
   Code, 
   Zap, 
@@ -42,6 +43,7 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
   const [showProfile, setShowProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showVSCodeEditor, setShowVSCodeEditor] = useState(false);
+  const [showAdvancedWebEditor, setShowAdvancedWebEditor] = useState(false);
   const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
@@ -147,6 +149,11 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
   // Show VS Code Editor if requested
   if (showVSCodeEditor) {
     return <VSCodeEditor onBack={() => setShowVSCodeEditor(false)} />;
+  }
+
+  // Show Advanced Web Editor if requested
+  if (showAdvancedWebEditor) {
+    return <AdvancedWebEditor onBack={() => setShowAdvancedWebEditor(false)} />;
   }
 
   return (
@@ -426,6 +433,15 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     </button>
                     
                     <button
+                      onClick={() => setShowAdvancedWebEditor(true)}
+                      className="group bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      <Rocket className="w-5 h-5" />
+                      <span>Advanced Web IDE</span>
+                      <Zap className="w-4 h-4" />
+                    </button>
+                    
+                    <button
                       onClick={() => setShowVSCodeEditor(true)}
                       className="group bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-105"
                     >
@@ -609,6 +625,14 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
             >
               <Rocket className="w-5 h-5" />
               <span>Launch Editor</span>
+            </button>
+            
+            <button
+              onClick={() => setShowAdvancedWebEditor(true)}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3"
+            >
+              <Zap className="w-5 h-5" />
+              <span>Advanced Web IDE</span>
             </button>
             
             <button
