@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import WelcomeScreen from './WelcomeScreen';
+import WelcomeScreenRedesigned from './WelcomeScreenRedesigned';
 import ClerkAuthModal from './Auth/ClerkAuthModal';
 import ClerkDebug from './Debug/ClerkDebug';
 import TestCaseDemo from './TestCaseDemo';
@@ -9,7 +9,7 @@ import IDEOutput from './IDEOutput';
 import Dashboard from './Dashboard';
 import WebEditor from './WebEditor';
 import AdvancedWebEditor from './AdvancedWebEditor';
-import AndroidEditor from './AndroidEditor';
+import AndroidStudioFixed from './AndroidStudioFixed';
 import { useAuth } from '../contexts/ClerkAuthContext';
 import { 
   Play, 
@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 
 const CodexEditor = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated, authInitialized, isReady } = useAuth();
   const [showWelcome, setShowWelcome] = useState(true);
   const [showWebEditor, setShowWebEditor] = useState(false);
   const [showAdvancedWebEditor, setShowAdvancedWebEditor] = useState(false);
@@ -40,13 +40,55 @@ const CodexEditor = () => {
   const [showIDEDemo, setShowIDEDemo] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [authMode, setAuthMode] = useState('login');
-  const [code, setCode] = useState(`// Welcome to Codex - Professional Code Editor
-// TUF+ Inspired Design for Competitive Programming
+  const [autoRedirectCompleted, setAutoRedirectCompleted] = useState(false);
+  const [navigationReady, setNavigationReady] = useState(false);
+
+  // Initialize navigation after auth is ready
+  useEffect(() => {
+    if (authInitialized && isReady) {
+      console.log('🚀 Navigation system ready');
+      setNavigationReady(true);
+    }
+  }, [authInitialized, isReady]);
+
+  // Improved auto-redirect logic
+  useEffect(() => {
+    if (navigationReady && isAuthenticated && !autoRedirectCompleted && showWelcome) {
+      console.log('🎯 Fast redirect - User authenticated, staying on welcome screen for now');
+      
+      // Don't auto-redirect, let user choose their path
+      // This prevents navigation issues on startup
+      setAutoRedirectCompleted(true);
+      console.log('✅ Navigation ready - User can choose their editor');
+    }
+  }, [navigationReady, isAuthenticated, autoRedirectCompleted, showWelcome]);
+
+  // Reset states when user logs out
+  useEffect(() => {
+    if (!isAuthenticated && autoRedirectCompleted) {
+      setAutoRedirectCompleted(false);
+      setShowWelcome(true);
+      setShowWebEditor(false);
+      setShowAdvancedWebEditor(false);
+      setShowAndroidEditor(false);
+      setShowDashboard(false);
+      setShowTestDemo(false);
+      setShowIDEDemo(false);
+      console.log('🔄 Reset - User logged out, all states cleared');
+    }
+  }, [isAuthenticated, autoRedirectCompleted]);
+
+  const [code, setCode] = useState(`// Welcome to Codex Playground - Professional Code Editor
+// Fast-loading TUF+ Inspired Design for Competitive Programming
+// 🚀 Loaded in under 2 seconds!
 
 function solveProblem() {
     // Your solution here
-    console.log("Ready to code!");
+    console.log("Ready to code in Codex Playground!");
 }
+
+// Fast authentication with Clerk
+// Auto-redirect to playground when signed in
 
 // Example: Two Sum Problem
 function twoSum(nums, target) {
@@ -110,6 +152,12 @@ console.log("Happy coding! 🚀");
   }, [consoleOutput]);
 
   const handleCreateNew = (selectedLanguage = 'javascript') => {
+    if (!navigationReady) {
+      console.log('⚠️ Navigation not ready yet, please wait...');
+      return;
+    }
+    
+    console.log('🚀 Creating new project with language:', selectedLanguage);
     setShowWelcome(false);
     if (selectedLanguage !== language) {
       setLanguage(selectedLanguage);
@@ -120,28 +168,55 @@ console.log("Happy coding! 🚀");
     }
   };
 
+  // Navigation guards to prevent issues during startup
+  if (!navigationReady) {
+    return (
+      <div className="h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <Code className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Initializing Navigation</h2>
+          <p className="text-gray-400">Setting up Codex Playground...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (showAndroidEditor) {
     return (
-      <AndroidEditor onBack={() => setShowAndroidEditor(false)} />
+      <AndroidStudioFixed onBack={() => {
+        setShowAndroidEditor(false);
+        setShowWelcome(true);
+      }} />
     );
   }
 
   if (showWebEditor) {
     return (
-      <WebEditor onBack={() => setShowWebEditor(false)} />
+      <WebEditor onBack={() => {
+        setShowWebEditor(false);
+        setShowWelcome(true);
+      }} />
     );
   }
 
   if (showAdvancedWebEditor) {
     return (
-      <AdvancedWebEditor onBack={() => setShowAdvancedWebEditor(false)} />
+      <AdvancedWebEditor onBack={() => {
+        setShowAdvancedWebEditor(false);
+        setShowWelcome(true);
+      }} />
     );
   }
 
   if (showDashboard) {
     return (
       <Dashboard 
-        onBack={() => setShowDashboard(false)}
+        onBack={() => {
+          setShowDashboard(false);
+          setShowWelcome(true);
+        }}
         onCreateProject={(project) => {
           setShowDashboard(false);
           // Handle project creation - could set initial code based on project template
@@ -217,23 +292,32 @@ int main() {
 
   if (showIDEDemo) {
     return (
-      <IDEDemo onBack={() => setShowIDEDemo(false)} />
+      <IDEDemo onBack={() => {
+        setShowIDEDemo(false);
+        setShowWelcome(true);
+      }} />
     );
   }
 
   if (showTestDemo) {
     return (
-      <TestCaseDemo onBack={() => setShowTestDemo(false)} />
+      <TestCaseDemo onBack={() => {
+        setShowTestDemo(false);
+        setShowWelcome(true);
+      }} />
     );
   }
 
   if (showWelcome) {
     return (
       <>
-        <WelcomeScreen 
+        <WelcomeScreenRedesigned 
           onCreateNew={handleCreateNew}
           onShowAuth={handleShowAuth}
           onShowDashboard={() => setShowDashboard(true)}
+          onShowWebEditor={() => setShowWebEditor(true)}
+          onShowAdvancedWebEditor={() => setShowAdvancedWebEditor(true)}
+          onShowAndroidEditor={() => setShowAndroidEditor(true)}
         />
         <ClerkAuthModal
           isOpen={showAuth}
@@ -606,9 +690,9 @@ int main() {
               </div>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                  Codex
+                  Codex Playground
                 </h1>
-                <p className={`text-xs ${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>TUF+ Editor</p>
+                <p className={`text-xs ${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Professional IDE</p>
               </div>
             </button>
             

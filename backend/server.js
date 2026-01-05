@@ -117,7 +117,7 @@ app.get('/api', (req, res) => {
   res.json({
     name: 'Codex Playground API',
     version: '1.0.0',
-    description: 'Backend API for Codex coding playground with LeetCode-style problems',
+    description: 'Backend API for Codex Playground coding environment with LeetCode-style problems',
     endpoints: {
       auth: {
         'POST /api/auth/register': 'Register new user',

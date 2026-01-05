@@ -1,7 +1,7 @@
 {
-  "name": "codex-leetcode-backend",
+  "name": "codex-playground-backend",
   "version": "1.0.0",
-  "description": "Backend service for Codex LeetCode-style problems",
+  "description": "Backend service for Codex Playground with LeetCode-style problems",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -37,7 +37,7 @@
     "jest": "^29.6.2",
     "supertest": "^6.3.3"
   },
-  "keywords": ["leetcode", "coding", "problems", "api", "playground"],
-  "author": "Codex Team",
+  "keywords": ["codex-playground", "leetcode", "coding", "problems", "api", "playground"],
+  "author": "Codex Playground Team",
   "license": "MIT"
 }

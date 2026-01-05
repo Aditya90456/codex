@@ -435,7 +435,7 @@ const PaymentModal = ({ isOpen, onClose, plan, onPaymentSuccess }) => {
       </div>
       <h3 className="text-xl font-semibold text-white mb-2">Payment Successful!</h3>
       <p className="text-gray-400 mb-4">
-        Welcome to Codex Premium! Your subscription is now active.
+        Welcome to Codex Playground Premium! Your subscription is now active.
       </p>
       <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
         <p className="text-sm text-green-300">

@@ -284,7 +284,7 @@ getWeather('London').then(displayWeather);`
     });
 
     // Show success message
-    alert(`Payment successful! Welcome to Codex Premium. Transaction ID: ${paymentData.transactionId}`);
+    alert(`Payment successful! Welcome to Codex Playground Premium. Transaction ID: ${paymentData.transactionId}`);
     
     // Close modals
     setShowPaymentModal(false);
@@ -432,7 +432,7 @@ getWeather('London').then(displayWeather);`
             <p className="text-purple-200 mb-6">
               You've completed <span className="font-bold text-yellow-400">10 projects</span>! 
               As a reward, you've earned a <span className="font-bold text-yellow-400">FREE YEAR</span> of 
-              Codex Premium (worth $500)!
+              Codex Playground Premium (worth $500)!
             </p>
 
             <div className="bg-black/30 rounded-lg p-4 mb-6">
@@ -895,7 +895,7 @@ getWeather('London').then(displayWeather);`
               <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Crown className="w-10 h-10 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-white mb-4">Codex Premium</h2>
+              <h2 className="text-3xl font-bold text-white mb-4">Codex Playground Premium</h2>
               <p className="text-gray-400 text-lg">
                 {isUserPremium() 
                   ? "You're enjoying Premium benefits!" 

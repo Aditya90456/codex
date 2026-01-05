@@ -31,7 +31,18 @@ import {
   Monitor,
   BarChart3,
   FolderOpen,
-  Database
+  Database,
+  Gamepad2,
+  Sparkles,
+  Coffee,
+  Heart,
+  Lightbulb,
+  Palette,
+  Terminal,
+  Smartphone,
+  Layers,
+  GitBranch,
+  Package
 } from 'lucide-react';
 
 const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
@@ -91,7 +102,7 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
 
   // Mock notifications data
   const notifications = [
-    { id: 1, type: 'achievement', message: 'Welcome to Codex!', time: '1 hour ago', unread: true },
+    { id: 1, type: 'achievement', message: 'Welcome to Codex Playground!', time: '1 hour ago', unread: true },
     { id: 2, type: 'system', message: 'New features available', time: '2 hours ago', unread: true },
     { id: 3, type: 'social', message: 'Join our community', time: '1 day ago', unread: false },
   ];
@@ -169,7 +180,7 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                    Codex
+                    Codex Playground
                   </h1>
                   <p className="text-xs text-gray-400">Code. Learn. Excel.</p>
                 </div>
@@ -615,7 +626,7 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Start Your Coding Journey?</h2>
           <p className="text-xl text-gray-300 mb-8">
-            Join thousands of developers who are already coding with Codex
+            Join thousands of developers who are already coding with Codex Playground
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -677,7 +688,7 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <Code className="w-5 h-5 text-white" />
               </div>
-              <span className="text-lg font-semibold">Codex</span>
+              <span className="text-lg font-semibold">Codex Playground</span>
             </div>
             
             <div className="flex items-center space-x-6 text-sm text-gray-400">
@@ -689,7 +700,7 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
           </div>
           
           <div className="mt-6 pt-6 border-t border-gray-800 text-center text-sm text-gray-500">
-            <p>© 2024 Codex. Made with ❤️ for developers worldwide.</p>
+            <p>© 2024 Codex Playground. Made with ❤️ for developers worldwide.</p>
           </div>
         </div>
       </footer>
