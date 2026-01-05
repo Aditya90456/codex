@@ -1,257 +1,445 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const { connectDB } = require('./config/database');
+const { v4: uuidv4 } = require('uuid');
+const { VM } = require('vm2');
 require('dotenv').config();
-
-// Import routes
-const authRouter = require('./routes/auth');
-const problemsRouter = require('./routes/problems');
-const submissionsRouter = require('./routes/submissions');
-const executeRouter = require('./routes/execute');
-const usersRouter = require('./routes/users');
-const dashboardRouter = require('./routes/dashboard');
-const projectsRouter = require('./routes/projects');
-const editorRouter = require('./routes/editor');
-const clerkRouter = require('./routes/clerk');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Initialize database connection
-const initializeApp = async () => {
-  // Connect to database
-  const dbConnected = await connectDB();
-  
-  if (dbConnected) {
-    console.log('✅ Database connection established');
-  } else {
-    console.log('⚠️  Starting without database connection');
-  }
-};
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.RATE_LIMIT_MAX || 100, // limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests from this IP, please try again later.',
-    retryAfter: '15 minutes'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Code execution rate limiting (more restrictive)
-const executeLimit = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 10, // limit each IP to 10 code executions per minute
-  message: {
-    error: 'Too many code executions, please try again later.',
-    retryAfter: '1 minute'
-  }
-});
-
 // Middleware
-app.use(helmet({
-  crossOriginEmbedderPolicy: false,
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      scriptSrc: ["'self'"],
-      connectSrc: ["'self'", "ws:", "wss:"]
-    }
-  }
-}));
-
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  credentials: true
 }));
-
 app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Apply rate limiting
-app.use('/api/', limiter);
-app.use('/api/execute', executeLimit);
+// In-memory storage (for simplicity)
+let users = [];
+let problems = [];
+let submissions = [];
+
+// Sample problems data
+const sampleProblems = [
+  {
+    id: '1',
+    title: 'Two Sum',
+    difficulty: 'Easy',
+    description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
+    examples: [
+      {
+        input: 'nums = [2,7,11,15], target = 9',
+        output: '[0,1]',
+        explanation: 'Because nums[0] + nums[1] == 9, we return [0, 1].'
+      }
+    ],
+    starterCode: {
+      javascript: `function twoSum(nums, target) {
+    // Your code here
+}`,
+      python: `def two_sum(nums, target):
+    # Your code here
+    pass`,
+      java: `public int[] twoSum(int[] nums, int target) {
+    // Your code here
+}`,
+      cpp: `vector<int> twoSum(vector<int>& nums, int target) {
+    // Your code here
+}`
+    },
+    testCases: [
+      { input: [[2, 7, 11, 15], 9], expectedOutput: [0, 1] },
+      { input: [[3, 2, 4], 6], expectedOutput: [1, 2] },
+      { input: [[3, 3], 6], expectedOutput: [0, 1] }
+    ]
+  },
+  {
+    id: '2',
+    title: 'Reverse String',
+    difficulty: 'Easy',
+    description: 'Write a function that reverses a string. The input string is given as an array of characters s.',
+    examples: [
+      {
+        input: 's = ["h","e","l","l","o"]',
+        output: '["o","l","l","e","h"]'
+      }
+    ],
+    starterCode: {
+      javascript: `function reverseString(s) {
+    // Your code here
+}`,
+      python: `def reverse_string(s):
+    # Your code here
+    pass`,
+      java: `public void reverseString(char[] s) {
+    // Your code here
+}`,
+      cpp: `void reverseString(vector<char>& s) {
+    // Your code here
+}`
+    },
+    testCases: [
+      { input: [['h','e','l','l','o']], expectedOutput: ['o','l','l','e','h'] },
+      { input: [['H','a','n','n','a','h']], expectedOutput: ['h','a','n','n','a','H'] }
+    ]
+  }
+];
+
+// Initialize with sample data
+problems = sampleProblems;
 
 // Health check
 app.get('/health', (req, res) => {
-  const mongoose = require('mongoose');
-  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-  
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    version: process.env.npm_package_version || '1.0.0',
-    database: {
-      status: dbStatus,
-      message: dbStatus === 'connected' ? 'MongoDB connected' : 'Running in offline mode'
-    }
+    version: '1.0.0'
   });
 });
 
 // API Routes
-app.use('/api/auth', authRouter);
-app.use('/api/auth/clerk', clerkRouter);
-app.use('/api/problems', problemsRouter);
-app.use('/api/submissions', submissionsRouter);
-app.use('/api/execute', executeRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/dashboard', dashboardRouter);
-app.use('/api/projects', projectsRouter);
-app.use('/api/editor', editorRouter);
 
-// API documentation endpoint
-app.get('/api', (req, res) => { 
+// Get all problems
+app.get('/api/problems', (req, res) => {
+  const { difficulty, search } = req.query;
+  
+  let filteredProblems = problems;
+  
+  if (difficulty) {
+    filteredProblems = filteredProblems.filter(p => p.difficulty === difficulty);
+  }
+  
+  if (search) {
+    filteredProblems = filteredProblems.filter(p => 
+      p.title.toLowerCase().includes(search.toLowerCase()) ||
+      p.description.toLowerCase().includes(search.toLowerCase())
+    );
+  }
+  
   res.json({
-    name: 'Codex Playground API',
-    version: '1.0.0',
-    description: 'Backend API for Codex Playground coding environment with LeetCode-style problems',
-    endpoints: {
-      auth: {
-        'POST /api/auth/register': 'Register new user',
-        'POST /api/auth/login': 'User login',
-        'GET /api/auth/me': 'Get current user',
-        'PUT /api/auth/profile': 'Update user profile',
-        'PUT /api/auth/preferences': 'Update user preferences',
-        'PUT /api/auth/password': 'Change password',
-        'POST /api/auth/logout': 'User logout'
-      },
-      problems: {
-        'GET /api/problems': 'Get all problems with pagination',
-        'GET /api/problems/:id': 'Get specific problem',
-        'GET /api/problems/:id/stats': 'Get problem statistics',
-        'GET /api/problems/random/pick': 'Get random problem',
-        'POST /api/problems': 'Create new problem (admin)',
-        'PUT /api/problems/:id': 'Update problem (admin)',
-        'DELETE /api/problems/:id': 'Delete problem (admin)'
-      },
-      execute: {
-        'POST /api/execute': 'Execute code with test cases',
-        'POST /api/execute/custom': 'Run custom code'
-      },
-      submissions: {
-        'POST /api/submissions': 'Submit solution',
-        'GET /api/submissions/:id': 'Get submission details',
-        'GET /api/submissions/user/:userId': 'Get user submissions',
-        'GET /api/submissions/user/:userId/stats': 'Get user submission stats'
-      },
-      users: {
-        'GET /api/users': 'Get users leaderboard',
-        'GET /api/users/:id': 'Get user profile',
-        'GET /api/users/:id/stats': 'Get user statistics'
-      },
-      dashboard: {
-        'GET /api/dashboard/stats': 'Get dashboard statistics',
-        'GET /api/dashboard/activity': 'Get recent activity',
-        'GET /api/dashboard/leaderboard': 'Get global leaderboard'
-      }
-    },
-    documentation: 'https://github.com/codex-team/playground-api'
+    success: true,
+    data: filteredProblems.map(p => ({
+      id: p.id,
+      title: p.title,
+      difficulty: p.difficulty,
+      description: p.description.substring(0, 200) + '...'
+    }))
   });
 });
 
-// Error handling middleware
+// Get specific problem
+app.get('/api/problems/:id', (req, res) => {
+  const problem = problems.find(p => p.id === req.params.id);
+  
+  if (!problem) {
+    return res.status(404).json({
+      success: false,
+      message: 'Problem not found'
+    });
+  }
+  
+  res.json({
+    success: true,
+    data: problem
+  });
+});
+
+// Execute code
+app.post('/api/execute', (req, res) => {
+  try {
+    const { code, language, problemId, testCases: customTestCases } = req.body;
+    
+    if (!code || !language) {
+      return res.status(400).json({
+        success: false,
+        message: 'Code and language are required'
+      });
+    }
+    
+    let testCases = customTestCases;
+    
+    // If problemId provided, get test cases from problem
+    if (problemId) {
+      const problem = problems.find(p => p.id === problemId);
+      if (problem) {
+        testCases = problem.testCases;
+      }
+    }
+    
+    if (!testCases || testCases.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No test cases provided'
+      });
+    }
+    
+    // Execute code (currently only JavaScript supported)
+    if (language !== 'javascript') {
+      return res.json({
+        success: true,
+        data: {
+          status: 'Error',
+          message: `${language} execution not implemented yet`,
+          testResults: testCases.map((tc, i) => ({
+            testCase: i + 1,
+            status: 'Error',
+            input: tc.input,
+            expectedOutput: tc.expectedOutput,
+            actualOutput: null,
+            error: `${language} execution not implemented`
+          }))
+        }
+      });
+    }
+    
+    const results = executeJavaScript(code, testCases);
+    
+    res.json({
+      success: true,
+      data: results
+    });
+    
+  } catch (error) {
+    console.error('Execution error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Code execution failed',
+      error: error.message
+    });
+  }
+});
+
+// Submit solution
+app.post('/api/submit', (req, res) => {
+  try {
+    const { code, language, problemId } = req.body;
+    
+    if (!code || !language || !problemId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Code, language, and problemId are required'
+      });
+    }
+    
+    const problem = problems.find(p => p.id === problemId);
+    if (!problem) {
+      return res.status(404).json({
+        success: false,
+        message: 'Problem not found'
+      });
+    }
+    
+    // Execute code with test cases
+    const results = executeJavaScript(code, problem.testCases);
+    
+    // Create submission
+    const submission = {
+      id: uuidv4(),
+      problemId,
+      code,
+      language,
+      status: results.status,
+      testResults: results.testResults,
+      runtime: results.runtime,
+      createdAt: new Date().toISOString()
+    };
+    
+    submissions.push(submission);
+    
+    res.json({
+      success: true,
+      data: {
+        submissionId: submission.id,
+        status: submission.status,
+        testResults: submission.testResults
+      }
+    });
+    
+  } catch (error) {
+    console.error('Submit error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Submission failed',
+      error: error.message
+    });
+  }
+});
+
+// Get submissions
+app.get('/api/submissions', (req, res) => {
+  res.json({
+    success: true,
+    data: submissions.map(s => ({
+      id: s.id,
+      problemId: s.problemId,
+      language: s.language,
+      status: s.status,
+      runtime: s.runtime,
+      createdAt: s.createdAt
+    }))
+  });
+});
+
+// Custom code execution (playground)
+app.post('/api/execute/custom', (req, res) => {
+  try {
+    const { code, language, input = '' } = req.body;
+    
+    if (!code || !language) {
+      return res.status(400).json({
+        success: false,
+        message: 'Code and language are required'
+      });
+    }
+    
+    if (language !== 'javascript') {
+      return res.json({
+        success: true,
+        data: {
+          output: '',
+          status: 'Error',
+          error: `${language} execution not implemented yet`
+        }
+      });
+    }
+    
+    const result = executeCustomJavaScript(code, input);
+    
+    res.json({
+      success: true,
+      data: result
+    });
+    
+  } catch (error) {
+    console.error('Custom execution error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Code execution failed',
+      error: error.message
+    });
+  }
+});
+
+// JavaScript execution functions
+function executeJavaScript(code, testCases) {
+  const testResults = [];
+  let totalRuntime = 0;
+  
+  for (let i = 0; i < testCases.length; i++) {
+    const testCase = testCases[i];
+    const startTime = Date.now();
+    
+    try {
+      const vm = new VM({
+        timeout: 5000,
+        sandbox: {}
+      });
+      
+      // Wrap the code to call the function
+      const wrappedCode = `
+        ${code}
+        
+        // Call the function with test input
+        const args = ${JSON.stringify(testCase.input)};
+        const result = typeof twoSum !== 'undefined' ? twoSum(...args) : 
+                      typeof reverseString !== 'undefined' ? (reverseString(args[0]), args[0]) :
+                      eval('(' + ${JSON.stringify(code)} + ')(...args)');
+        result;
+      `;
+      
+      const result = vm.run(wrappedCode);
+      const runtime = Date.now() - startTime;
+      totalRuntime += runtime;
+      
+      // Compare result
+      const passed = JSON.stringify(result) === JSON.stringify(testCase.expectedOutput);
+      
+      testResults.push({
+        testCase: i + 1,
+        status: passed ? 'Passed' : 'Failed',
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+        actualOutput: result,
+        runtime
+      });
+      
+    } catch (error) {
+      testResults.push({
+        testCase: i + 1,
+        status: 'Error',
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+        actualOutput: null,
+        runtime: Date.now() - startTime,
+        error: error.message
+      });
+    }
+  }
+  
+  const allPassed = testResults.every(r => r.status === 'Passed');
+  
+  return {
+    status: allPassed ? 'Accepted' : 'Wrong Answer',
+    testResults,
+    runtime: totalRuntime
+  };
+}
+
+function executeCustomJavaScript(code, input) {
+  const startTime = Date.now();
+  
+  try {
+    const vm = new VM({
+      timeout: 5000,
+      sandbox: {
+        console: {
+          log: (...args) => args.join(' ')
+        },
+        input: input
+      }
+    });
+    
+    const result = vm.run(code);
+    const runtime = Date.now() - startTime;
+    
+    return {
+      output: result !== undefined ? String(result) : '',
+      runtime,
+      status: 'Success'
+    };
+    
+  } catch (error) {
+    return {
+      output: '',
+      runtime: Date.now() - startTime,
+      status: 'Error',
+      error: error.message
+    };
+  }
+}
+
+// Error handling
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  
-  // Mongoose validation error
-  if (err.name === 'ValidationError') {
-    const errors = Object.values(err.errors).map(e => ({
-      field: e.path,
-      message: e.message
-    }));
-    return res.status(400).json({
-      success: false,
-      message: 'Validation error',
-      errors
-    });
-  }
-  
-  // Mongoose duplicate key error
-  if (err.code === 11000) {
-    const field = Object.keys(err.keyValue)[0];
-    return res.status(400).json({
-      success: false,
-      message: `${field} already exists`
-    });
-  }
-  
-  // JWT errors
-  if (err.name === 'JsonWebTokenError') {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid token'
-    });
-  }
-  
-  if (err.name === 'TokenExpiredError') {
-    return res.status(401).json({
-      success: false,
-      message: 'Token expired'
-    });
-  }
-  
-  // Default error
-  res.status(err.status || 500).json({
+  console.error('Server error:', err);
+  res.status(500).json({
     success: false,
-    message: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    message: 'Internal server error'
   });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ 
+  res.status(404).json({
     success: false,
-    message: `Route ${req.originalUrl} not found` 
+    message: `Route ${req.originalUrl} not found`
   });
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
-
-// Initialize and start server
-const startServer = async () => {
-  await initializeApp();
-  
-  app.listen(PORT, () => {
-    console.log(`🚀 Codex Playground Backend running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    console.log(`📚 API docs: http://localhost:${PORT}/api`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    
-    // Check database connection status
-    const mongoose = require('mongoose');
-    if (mongoose.connection.readyState === 1) {
-      console.log(`🍃 Database: Connected`);
-    } else {
-      console.log(`⚠️  Database: Not connected (running in offline mode)`);
-      console.log(`   Authentication will work with JWT tokens only`);
-    }
-  });
-};
-
-startServer().catch(error => {
-  console.error('Failed to start server:', error);
-  process.exit(1);
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Codex Backend running on port ${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

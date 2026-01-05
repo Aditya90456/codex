@@ -685,9 +685,11 @@ int main() {
               onClick={() => setShowWelcome(true)}
               className={`flex items-center space-x-3 ${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-400'} transition-colors`}
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Code className="w-5 h-5 text-white" />
-              </div>
+              <img 
+                src="/codex-icon.svg" 
+                alt="Codex Logo" 
+                className="w-8 h-8"
+              />
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
                   Codex Playground

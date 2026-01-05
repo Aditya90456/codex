@@ -10,8 +10,12 @@ const LoadingScreen = ({
       <div className="text-center max-w-md mx-auto px-6">
         {/* Animated Logo */}
         <div className="relative mb-8">
-          <div className="w-24 h-24 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse shadow-2xl">
-            <Code className="w-12 h-12 text-white" />
+          <div className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse shadow-2xl">
+            <img 
+              src="/codex-icon.svg" 
+              alt="Codex Logo" 
+              className="w-20 h-20"
+            />
           </div>
           <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center animate-bounce">
             <Zap className="w-4 h-4 text-white" />
