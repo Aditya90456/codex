@@ -33,7 +33,7 @@ const DefaultClerkAuth = ({ mode = 'signup' }) => {
                 <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   <SignUp 
                     afterSignUpUrl="/"
-                    signInUrl="/sign-in"
+                    signInUrl="#"
                     appearance={{
                       elements: {
                         formButtonPrimary: {
@@ -75,7 +75,7 @@ const DefaultClerkAuth = ({ mode = 'signup' }) => {
                 <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   <SignIn 
                     afterSignInUrl="/"
-                    signUpUrl="/sign-up"
+                    signUpUrl="#"
                     appearance={{
                       elements: {
                         formButtonPrimary: {

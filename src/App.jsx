@@ -112,36 +112,33 @@ function App() {
 
   // Wrap in error boundary for Clerk issues
   try {
-    // Check if we're on auth routes
+    // Check if we're on auth routes - redirect to home with auth modal
     const path = window.location.pathname;
     const isAuthRoute = path === '/sign-in' || path === '/sign-up';
     
+    // If on auth route, redirect to home and show auth modal
     if (isAuthRoute) {
-      return (
-        <ClerkProvider 
-          publishableKey={PUBLISHABLE_KEY}
-          afterSignInUrl="/"
-          afterSignUpUrl="/"
-        >
-          <DefaultClerkAuth mode={path === '/sign-up' ? 'signup' : 'signin'} />
-        </ClerkProvider>
-      );
+      // Replace the URL without reloading the page
+      window.history.replaceState({}, '', '/');
+      // The auth modal will be handled by the main app
     }
 
     return (
       <ClerkProvider 
         publishableKey={PUBLISHABLE_KEY}
-        afterSignInUrl={window.location.origin}
-        afterSignUpUrl={window.location.origin}
+        afterSignInUrl="/"
+        afterSignUpUrl="/"
         navigate={(to) => {
-          // Prevent navigation to Clerk hosted pages
+          // Prevent navigation to Clerk hosted pages and auth routes
           console.log('Clerk trying to navigate to:', to);
           if (to.includes('clerk') || to.includes('sign-up') || to.includes('sign-in')) {
-            console.log('Preventing navigation to Clerk hosted page');
+            console.log('Preventing navigation to Clerk hosted page, staying on current page');
             return;
           }
-          // Allow other navigation
-          window.location.href = to;
+          // For other navigation, just update the URL without full page reload
+          if (to !== window.location.href) {
+            window.history.pushState({}, '', to);
+          }
         }}
       >
         <ClerkAuthProvider>
