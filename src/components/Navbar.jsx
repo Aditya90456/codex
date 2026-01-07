@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../contexts/ClerkAuthContext';
+import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import UserProfile from './UserProfile';
 import Settings from './Settings';
 import { 
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 function Navbar({ onShowAuth, onBackToWelcome }) {
-  const { user, logout } = useAuth();
+  const { user, logout } = useUniversalAuth();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);

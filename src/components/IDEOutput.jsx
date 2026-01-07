@@ -49,10 +49,13 @@ const IDEOutput = ({
     { id: 'success', label: 'Success', icon: CheckCircle }
   ];
 
-  // Auto-scroll to bottom when new output is added
+  // Auto-scroll to bottom when new output is added with smooth scrolling
   useEffect(() => {
     if (autoScroll && outputRef.current) {
-      outputRef.current.scrollTop = outputRef.current.scrollHeight;
+      outputRef.current.scrollTo({
+        top: outputRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }, [outputs, autoScroll]);
 

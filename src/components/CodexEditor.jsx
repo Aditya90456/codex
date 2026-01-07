@@ -2,7 +2,14 @@ import { useState, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import WelcomeScreenRedesigned from './WelcomeScreenRedesigned';
 import ClerkAuthModal from './Auth/ClerkAuthModal';
-import ClerkDebug from './Debug/ClerkDebug';
+import ClerkSignIn from './Auth/ClerkSignIn';
+import ClerkSignUp from './Auth/ClerkSignUp';
+import ClerkRedesigned from './Auth/ClerkRedesigned';
+import FastSignUp from './Auth/FastSignUp';
+import SimpleAuthModal from './Auth/SimpleAuthModal';
+import AuthTest from './Auth/AuthTest';
+import ClerkValidator from './Auth/ClerkValidator';
+import AuthStateDebug from './Auth/AuthStateDebug';
 import TestCaseDemo from './TestCaseDemo';
 import IDEDemo from './IDEDemo';
 import IDEOutput from './IDEOutput';
@@ -10,7 +17,8 @@ import Dashboard from './Dashboard';
 import WebEditor from './WebEditor';
 import AdvancedWebEditor from './AdvancedWebEditor';
 import AndroidStudioFixed from './AndroidStudioFixed';
-import { useAuth } from '../contexts/ClerkAuthContext';
+import ScrollToTop from './ScrollToTop';
+import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import { 
   Play, 
   Save, 
@@ -30,12 +38,17 @@ import {
 } from 'lucide-react';
 
 const CodexEditor = () => {
-  const { user, logout, isAuthenticated, authInitialized, isReady } = useAuth();
+  const { user, logout, isAuthenticated, authInitialized, isReady, authType, login } = useUniversalAuth();
   const [showWelcome, setShowWelcome] = useState(true);
   const [showWebEditor, setShowWebEditor] = useState(false);
   const [showAdvancedWebEditor, setShowAdvancedWebEditor] = useState(false);
   const [showAndroidEditor, setShowAndroidEditor] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [showClerkSignIn, setShowClerkSignIn] = useState(false);
+  const [showClerkSignUp, setShowClerkSignUp] = useState(false);
+  const [showClerkRedesigned, setShowClerkRedesigned] = useState(false);
+  const [showSignUpDebug, setShowSignUpDebug] = useState(false);
+  const [showFastSignUp, setShowFastSignUp] = useState(false);
   const [showTestDemo, setShowTestDemo] = useState(false);
   const [showIDEDemo, setShowIDEDemo] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
@@ -141,13 +154,16 @@ console.log("Happy coding! 🚀");
 
   const handleShowAuth = (mode = 'login') => {
     setAuthMode(mode);
-    setShowAuth(true);
+    setShowClerkRedesigned(true);
   };
 
-  // Auto-scroll console to bottom when new output is added
+  // Auto-scroll console to bottom when new output is added with smooth scrolling
   useEffect(() => {
     if (consoleRef.current) {
-      consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+      consoleRef.current.scrollTo({
+        top: consoleRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }, [consoleOutput]);
 
@@ -319,10 +335,48 @@ int main() {
           onShowAdvancedWebEditor={() => setShowAdvancedWebEditor(true)}
           onShowAndroidEditor={() => setShowAndroidEditor(true)}
         />
+        <ClerkRedesigned
+          isOpen={showClerkRedesigned}
+          onClose={() => setShowClerkRedesigned(false)}
+          mode={authMode === 'login' ? 'signin' : 'signup'}
+          onSwitchMode={(mode) => setAuthMode(mode === 'signin' ? 'login' : 'signup')}
+        />
+        <ClerkSignIn
+          isOpen={showClerkSignIn}
+          onClose={() => setShowClerkSignIn(false)}
+          onSwitchToSignUp={() => {
+            setShowClerkSignIn(false);
+            setShowClerkSignUp(true);
+          }}
+        />
+        <ClerkSignUp
+          isOpen={showClerkSignUp}
+          onClose={() => setShowClerkSignUp(false)}
+          onSwitchToSignIn={() => {
+            setShowClerkSignUp(false);
+            setShowClerkSignIn(true);
+          }}
+        />
+        <FastSignUp
+          isOpen={showFastSignUp}
+          onClose={() => setShowFastSignUp(false)}
+          onSwitchToSignIn={() => {
+            setShowFastSignUp(false);
+            setShowClerkSignIn(true);
+          }}
+          onSignUp={(userData) => {
+            console.log('Fast sign up completed:', userData);
+            setShowFastSignUp(false);
+          }}
+        />
         <ClerkAuthModal
           isOpen={showAuth}
           onClose={() => setShowAuth(false)}
           mode={authMode === 'login' ? 'sign-in' : 'sign-up'}
+        />
+        <SignUpDebug
+          isOpen={showSignUpDebug}
+          onClose={() => setShowSignUpDebug(false)}
         />
       </>
     );
@@ -638,6 +692,8 @@ int main() {
       editorRef.current.setPosition({ lineNumber: 1, column: 1 });
       editorRef.current.revealLine(1);
     }
+    // Also scroll the page to top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const scrollToBottom = () => {
@@ -649,6 +705,8 @@ int main() {
         editorRef.current.revealLine(lineCount);
       }
     }
+    // Also scroll the page to bottom smoothly
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   };
 
   const goToLine = () => {
@@ -675,7 +733,7 @@ int main() {
   };
 
   return (
-    <div className={`h-screen ${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-900 text-white'} flex flex-col ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
+    <div className={`h-screen ${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-white text-gray-900' : 'bg-slate-900 text-white'} flex flex-col scroll-smooth ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
       {/* Header */}
       <div className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'} border-b px-4 py-3`}>
         <div className="flex items-center justify-between">
@@ -744,6 +802,12 @@ int main() {
                 <Smartphone size={14} />
                 <span>Android Studio</span>
               </button>
+              <button
+                onClick={() => setShowSignUpDebug(true)}
+                className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm`}
+              >
+                Debug Auth
+              </button>
             </nav>
           </div>
 
@@ -768,13 +832,13 @@ int main() {
             ) : (
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => handleShowAuth('login')}
+                  onClick={() => window.location.href = '/sign-in'}
                   className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm`}
                 >
                   Sign In
                 </button>
                 <button
-                  onClick={() => handleShowAuth('signup')}
+                  onClick={() => window.location.href = '/sign-up'}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm"
                 >
                   Get Started
@@ -986,15 +1050,30 @@ int main() {
         </div>
       </div>
 
-      {/* Auth Modal */}
+      {/* Auth Modal - Demo Auth Modal as fallback */}
       <ClerkAuthModal
         isOpen={showAuth}
         onClose={() => setShowAuth(false)}
         mode={authMode === 'login' ? 'sign-in' : 'sign-up'}
       />
 
+      {/* Auth State Debug */}
+      <AuthStateDebug />
+      
+      {/* Clerk Validator */}
+      <ClerkValidator />
+      
+      {/* Clerk Test Component */}
+      <ClerkTest />
+      
       {/* Debug Component */}
       <ClerkDebug />
+      
+      {/* Auth Test Component */}
+      <AuthTest />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </div>
   );
 };

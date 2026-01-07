@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/ClerkAuthContext';
+import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import UserProfile from './UserProfile';
 import Settings from './Settings';
+import ScrollToTop from './ScrollToTop';
 import { 
   Code, Zap, Users, ArrowRight, Play, Trophy, CheckCircle,
   Rocket, Globe, Shield, Cpu, Settings as SettingsIcon, User, LogOut,
@@ -19,13 +20,14 @@ const WelcomeScreenRedesigned = ({
   onShowAdvancedWebEditor, 
   onShowAndroidEditor 
 }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, login } = useUniversalAuth();
   const [isVisible, setIsVisible] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showFastAuth, setShowFastAuth] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [currentStats, setCurrentStats] = useState({
     users: 847392,
@@ -207,12 +209,12 @@ const WelcomeScreenRedesigned = ({
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black text-white overflow-x-hidden">
-      <div className="h-screen overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black text-white overflow-x-hidden scroll-smooth">
+      <div className="h-screen overflow-y-auto scroll-smooth">
         {/* Modern Navigation */}
         <nav className="border-b border-gray-800/50 bg-black/20 backdrop-blur-xl sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-20">
+            <div className="flex justify-between items-center h-20 animate-fade-in-up">
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   <div className="w-12 h-12 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
@@ -404,13 +406,13 @@ const WelcomeScreenRedesigned = ({
                 ) : (
                   <div className="flex items-center space-x-4">
                     <button
-                      onClick={() => onShowAuth('login')}
+                      onClick={() => window.location.href = '/sign-in'}
                       className="text-gray-300 hover:text-white transition-colors px-6 py-3 rounded-xl hover:bg-gray-800/50 font-medium"
                     >
                       Sign In
                     </button>
                     <button
-                      onClick={() => onShowAuth('signup')}
+                      onClick={() => window.location.href = '/sign-up'}
                       className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                     >
                       Get Started Free
@@ -433,7 +435,7 @@ const WelcomeScreenRedesigned = ({
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               {/* Left Content */}
-              <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
+              <div className={`transition-all duration-1000 animate-slide-in-left ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
                 {user ? (
                   // Personalized content for logged-in users
                   <div>
@@ -530,7 +532,7 @@ const WelcomeScreenRedesigned = ({
                       </button>
                       
                       <button
-                        onClick={() => onShowAuth('signup')}
+                        onClick={() => window.location.href = '/sign-up'}
                         className="bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-gray-600 px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center justify-center space-x-4 backdrop-blur-sm"
                       >
                         <Users className="w-6 h-6" />
@@ -564,7 +566,7 @@ const WelcomeScreenRedesigned = ({
               </div>
 
               {/* Right Content - Advanced Features Showcase */}
-              <div className={`transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
+              <div className={`transition-all duration-1000 delay-300 animate-slide-in-right ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
                 <div className="relative">
                   {/* Main Feature Card */}
                   <div className="bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border border-gray-800/50 rounded-3xl overflow-hidden shadow-2xl">
@@ -794,6 +796,8 @@ const WelcomeScreenRedesigned = ({
         isOpen={showSettings} 
         onClose={() => setShowSettings(false)} 
       />
+
+      <ScrollToTop />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../contexts/ClerkAuthContext';
+import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import {
   User,
   Mail,
@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 const UserProfile = ({ isOpen, onClose }) => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser } = useUniversalAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     username: user?.username || '',

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/ClerkAuthContext';
+import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import PaymentModal from './PaymentModal';
 import SubscriptionManager from './SubscriptionManager';
 import {
@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 
 const Dashboard = ({ onCreateProject, onOpenProject, onBack }) => {
-  const { user } = useAuth();
+  const { user } = useUniversalAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [projects, setProjects] = useState([]);
   const [stats, setStats] = useState({

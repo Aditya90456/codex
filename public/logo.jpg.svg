@@ -1,0 +1,33 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#logoGradient)" stroke="#1E293B" stroke-width="10"/>
+  
+  <!-- Gradient definitions -->
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7C3AED;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E2E8F0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Code brackets -->
+  <path d="M50 70L70 100L50 130" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M150 70L130 100L150 130" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Center dot -->
+  <circle cx="100" cy="100" r="8" fill="white"/>
+  
+  <!-- Text "CODEX" -->
+  <text x="100" y="160" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800" fill="url(#textGradient)" text-anchor="middle">CODEX</text>
+  
+  <!-- Decorative elements -->
+  <circle cx="75" cy="60" r="3" fill="white" opacity="0.7"/>
+  <circle cx="125" cy="60" r="3" fill="white" opacity="0.7"/>
+  <circle cx="75" cy="140" r="3" fill="white" opacity="0.7"/>
+  <circle cx="125" cy="140" r="3" fill="white" opacity="0.7"/>
+</svg>

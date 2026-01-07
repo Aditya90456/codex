@@ -1,8 +1,38 @@
-import { SignIn, SignUp } from '@clerk/clerk-react';
-import { X, Zap, Rocket } from 'lucide-react';
+import { useState } from 'react';
+import { X, User, Mail, Lock, UserPlus, LogIn } from 'lucide-react';
 
 const ClerkAuthModal = ({ isOpen, onClose, mode = 'sign-in' }) => {
+  const [currentMode, setCurrentMode] = useState(mode);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+
   if (!isOpen) return null;
+
+  const handleDemoAuth = (e) => {
+    e.preventDefault();
+    
+    // Create demo user
+    const demoUser = {
+      id: Date.now().toString(),
+      email: email || 'demo@codex.dev',
+      username: name || email?.split('@')[0] || 'developer',
+      firstName: name || 'Developer',
+      lastName: '',
+      createdAt: new Date().toISOString(),
+      demo: true
+    };
+
+    // Store in localStorage
+    localStorage.setItem('codex_user', JSON.stringify(demoUser));
+    localStorage.setItem('codex_auth_token', 'demo_token_' + Date.now());
+    
+    console.log('✅ Demo authentication successful:', demoUser.username);
+    
+    // Close modal and refresh page to trigger auth state update
+    onClose();
+    window.location.reload();
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
@@ -15,103 +45,90 @@ const ClerkAuthModal = ({ isOpen, onClose, mode = 'sign-in' }) => {
           <X className="w-5 h-5" />
         </button>
 
-        {/* Fast Auth Header */}
-        <div className="p-6 pb-2">
+        {/* Header */}
+        <div className="p-6 pb-4 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
+            <div className={`w-10 h-10 bg-gradient-to-r ${currentMode === 'sign-up' ? 'from-purple-600 to-blue-600' : 'from-blue-600 to-purple-600'} rounded-xl flex items-center justify-center`}>
+              {currentMode === 'sign-up' ? <UserPlus className="w-5 h-5 text-white" /> : <LogIn className="w-5 h-5 text-white" />}
             </div>
-            <h2 className="text-xl font-bold text-white">
-              {mode === 'sign-in' ? 'Fast Sign In' : 'Quick Sign Up'}
+            <h2 className="text-2xl font-bold text-white">
+              {currentMode === 'sign-up' ? 'Join Codex Playground' : 'Welcome Back'}
             </h2>
-            <Rocket className="w-5 h-5 text-purple-400" />
           </div>
-          <p className="text-gray-300 text-sm text-center mb-4">
-            {mode === 'sign-in' 
-              ? '⚡ Sign in and get redirected to Codex Playground in 2 seconds'
-              : '🚀 Create account and start coding immediately'
-            }
+          <p className="text-gray-300 text-sm mb-4">
+            {currentMode === 'sign-up' ? '🚀 Create your account and start coding' : '⚡ Sign in and start coding instantly'}
           </p>
         </div>
 
-        {/* Clerk Auth Component */}
-        <div className="px-6 pb-6">
-          {mode === 'sign-in' ? (
-            <SignIn 
-              afterSignInUrl="/"
-              signUpUrl="#"
-              appearance={{
-                baseTheme: 'dark',
-                variables: {
-                  colorPrimary: '#7C3AED',
-                  colorBackground: 'transparent',
-                  colorInputBackground: '#1E293B',
-                  colorInputText: '#F1F5F9',
-                  borderRadius: '0.75rem',
-                },
-                elements: {
-                  formButtonPrimary: 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105',
-                  card: 'bg-transparent shadow-none',
-                  headerTitle: 'text-white text-lg font-bold',
-                  headerSubtitle: 'text-gray-300 text-sm',
-                  socialButtonsBlockButton: 'bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white rounded-xl transition-colors',
-                  formFieldInput: 'bg-gray-800 border-gray-600 text-white rounded-xl focus:border-purple-500',
-                  formFieldLabel: 'text-gray-300 font-medium',
-                  dividerLine: 'bg-gray-600',
-                  dividerText: 'text-gray-400',
-                  footerActionLink: 'text-purple-400 hover:text-purple-300',
-                }
-              }}
-            />
-          ) : (
-            <SignUp 
-              afterSignUpUrl="/"
-              signInUrl="#"
-              appearance={{
-                baseTheme: 'dark',
-                variables: {
-                  colorPrimary: '#7C3AED',
-                  colorBackground: 'transparent',
-                  colorInputBackground: '#1E293B',
-                  colorInputText: '#F1F5F9',
-                  borderRadius: '0.75rem',
-                },
-                elements: {
-                  formButtonPrimary: 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105',
-                  card: 'bg-transparent shadow-none',
-                  headerTitle: 'text-white text-lg font-bold',
-                  headerSubtitle: 'text-gray-300 text-sm',
-                  socialButtonsBlockButton: 'bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white rounded-xl transition-colors',
-                  formFieldInput: 'bg-gray-800 border-gray-600 text-white rounded-xl focus:border-purple-500',
-                  formFieldLabel: 'text-gray-300 font-medium',
-                  dividerLine: 'bg-gray-600',
-                  dividerText: 'text-gray-400',
-                  footerActionLink: 'text-purple-400 hover:text-purple-300',
-                }
-              }}
-            />
+        {/* Demo Form */}
+        <form onSubmit={handleDemoAuth} className="px-6 pb-6 scroll-smooth">
+          {currentMode === 'sign-up' && (
+            <div className="mb-4 animate-fade-in-up">
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name (optional)"
+                  className="w-full bg-gray-800 border border-gray-600 text-white rounded-xl pl-10 pr-4 py-3 focus:border-blue-500 focus:outline-none transition-all duration-200 scroll-smooth"
+                />
+              </div>
+            </div>
           )}
-        </div>
 
-        {/* Fast Auth Features */}
+          <div className="mb-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email address (optional)"
+                className="w-full bg-gray-800 border border-gray-600 text-white rounded-xl pl-10 pr-4 py-3 focus:border-blue-500 focus:outline-none transition-all duration-200 scroll-smooth"
+              />
+            </div>
+          </div>
+
+          <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password (optional)"
+                className="w-full bg-gray-800 border border-gray-600 text-white rounded-xl pl-10 pr-4 py-3 focus:border-blue-500 focus:outline-none transition-all duration-200 scroll-smooth"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className={`w-full bg-gradient-to-r ${currentMode === 'sign-up' ? 'from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' : 'from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'} p-3 rounded-xl transition-all duration-200 font-semibold flex items-center justify-center space-x-2 animate-fade-in-up hover:scale-105 transform`}
+            style={{ animationDelay: '0.3s' }}
+          >
+            {currentMode === 'sign-up' ? <UserPlus className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
+            <span>{currentMode === 'sign-up' ? 'Create Account' : 'Sign In'}</span>
+          </button>
+          
+          <p className="text-center text-xs text-gray-400 mt-3 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            Demo mode • No verification required • Instant access
+          </p>
+        </form>
+
+        {/* Switch Mode */}
         <div className="px-6 pb-6 pt-2 border-t border-gray-700">
-          <div className="grid grid-cols-2 gap-3 text-xs text-gray-400">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>2s redirect</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-              <span>Auto-login</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-              <span>Secure auth</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-              <span>Fast setup</span>
-            </div>
+          <div className="text-center">
+            <p className="text-gray-400 text-sm">
+              {currentMode === 'sign-up' ? 'Already have an account?' : "Don't have an account?"}{' '}
+              <button
+                onClick={() => setCurrentMode(currentMode === 'sign-up' ? 'sign-in' : 'sign-up')}
+                className={`${currentMode === 'sign-up' ? 'text-purple-400 hover:text-purple-300' : 'text-blue-400 hover:text-blue-300'} font-medium transition-colors`}
+              >
+                {currentMode === 'sign-up' ? 'Sign in here' : 'Create one now'}
+              </button>
+            </p>
           </div>
         </div>
       </div>

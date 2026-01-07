@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/ClerkAuthContext';
+import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import UserProfile from './UserProfile';
 import Settings from './Settings';
 import VSCodeEditor from './VSCodeEditorClean';
@@ -46,7 +46,7 @@ import {
 } from 'lucide-react';
 
 const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
-  const { user, logout } = useAuth();
+  const { user, logout } = useUniversalAuth();
   const [isVisible, setIsVisible] = useState(false);
   const [activeLanguage, setActiveLanguage] = useState(0);
   const [showUserDropdown, setShowUserDropdown] = useState(false);

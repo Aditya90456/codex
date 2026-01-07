@@ -1,4 +1,4 @@
-import { Code, Loader2, Zap, Rocket } from 'lucide-react';
+import { Code, Zap, Rocket } from 'lucide-react';
 
 const LoadingScreen = ({ 
   message = "Loading Codex Playground...", 
@@ -8,76 +8,76 @@ const LoadingScreen = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center">
       <div className="text-center max-w-md mx-auto px-6">
-        {/* Animated Logo */}
-        <div className="relative mb-8">
-          <div className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse shadow-2xl">
+        {/* Lightning Fast Logo */}
+        <div className="relative mb-6">
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse shadow-2xl">
             <img 
               src="/codex-icon.svg" 
               alt="Codex Logo" 
-              className="w-20 h-20"
+              className="w-16 h-16"
             />
           </div>
-          <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center animate-bounce">
-            <Zap className="w-4 h-4 text-white" />
+          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center animate-bounce">
+            <Zap className="w-3 h-3 text-white" />
           </div>
         </div>
         
         {/* Fast Loading Indicator */}
-        <div className="flex items-center justify-center space-x-3 mb-6">
-          <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
-          <span className="text-2xl font-bold text-white">{message}</span>
-          <Rocket className="w-6 h-6 text-blue-400 animate-pulse" />
+        <div className="flex items-center justify-center space-x-2 mb-4">
+          <Zap className="w-5 h-5 text-green-400 animate-pulse" />
+          <span className="text-xl font-bold text-white">{message}</span>
+          <Rocket className="w-5 h-5 text-blue-400 animate-pulse" />
         </div>
         
-        {/* Progress Bar */}
+        {/* Ultra Fast Progress Bar */}
         {showProgress && (
-          <div className="mb-6">
-            <div className="w-80 h-3 bg-gray-800 rounded-full mx-auto overflow-hidden border border-gray-700">
+          <div className="mb-4">
+            <div className="w-64 h-2 bg-gray-800 rounded-full mx-auto overflow-hidden border border-gray-700">
               <div 
-                className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-teal-500 rounded-full transition-all duration-300 ease-out relative"
+                className="h-full bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 rounded-full transition-all duration-100 ease-out relative"
                 style={{ width: `${progress}%` }}
               >
-                <div className="absolute inset-0 bg-white/20 animate-pulse rounded-full"></div>
+                <div className="absolute inset-0 bg-white/30 animate-pulse rounded-full"></div>
               </div>
             </div>
-            <div className="flex justify-between text-xs text-gray-400 mt-2">
+            <div className="flex justify-between text-xs text-gray-400 mt-1">
               <span>0%</span>
-              <span className="font-bold text-purple-400">{progress}%</span>
+              <span className="font-bold text-green-400">{progress}%</span>
               <span>100%</span>
             </div>
           </div>
         )}
         
-        {/* Fast Loading Features */}
-        <div className="space-y-2 text-sm text-gray-300">
+        {/* Lightning Fast Features */}
+        <div className="space-y-1 text-sm text-gray-300">
           <div className="flex items-center justify-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span>⚡ Fast 2-second loading</span>
+            <span>⚡ Lightning fast 200ms loading</span>
           </div>
           <div className="flex items-center justify-center space-x-2">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-            <span>🔐 Secure Clerk authentication</span>
+            <span>�  Instant authorization</span>
           </div>
           <div className="flex items-center justify-center space-x-2">
             <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-            <span>🚀 Auto-redirect to playground</span>
+            <span>�  Zero-delay playground access</span>
           </div>
         </div>
         
-        {/* Loading Animation */}
-        <div className="mt-8 flex justify-center space-x-1">
+        {/* Ultra Fast Animation */}
+        <div className="mt-6 flex justify-center space-x-1">
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full animate-bounce"
-              style={{ animationDelay: `${i * 0.2}s` }}
+              className="w-2 h-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full animate-bounce"
+              style={{ animationDelay: `${i * 0.1}s` }}
             ></div>
           ))}
         </div>
         
-        {/* Subtitle */}
-        <p className="text-gray-500 mt-6 text-xs">
-          Professional coding environment ready in seconds
+        {/* Speed Subtitle */}
+        <p className="text-gray-500 mt-4 text-xs">
+          ⚡ Optimized for instant access • No delays • Pure speed
         </p>
       </div>
     </div>

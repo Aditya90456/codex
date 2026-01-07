@@ -18,32 +18,31 @@ export const ClerkAuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
 
-  // Fast initialization with timeout
+  // Initialize auth state with timeout fallback
   useEffect(() => {
     const initTimer = setTimeout(() => {
-      if (!authInitialized) {
-        console.log('⚡ Fast Auth - Timeout reached, initializing with current state');
+      if (!authInitialized && userLoaded) {
+        console.log('⚡ Clerk Auth - Timeout fallback initialization');
         setLoading(false);
         setAuthInitialized(true);
       }
-    }, 2000); // 2 second timeout for fast loading
+    }, 2000); // 2 second timeout
 
     return () => clearTimeout(initTimer);
-  }, [authInitialized]);
+  }, [authInitialized, userLoaded]);
 
-  // Optimized user initialization
-  const initializeUser = useCallback(async () => {
-    if (authInitialized) return;
-
-    console.log('🚀 Fast Clerk Auth - Initializing...', { 
+  // Real-time user state updates
+  useEffect(() => {
+    console.log('🔄 Clerk Auth - State change detected:', { 
       userLoaded, 
       isSignedIn, 
-      hasClerkUser: !!clerkUser 
+      hasClerkUser: !!clerkUser,
+      authInitialized 
     });
 
-    try {
+    if (userLoaded) {
       if (isSignedIn && clerkUser) {
-        console.log('✅ Fast Auth - User authenticated:', clerkUser.emailAddresses[0]?.emailAddress);
+        console.log('✅ Clerk Auth - User authenticated:', clerkUser.emailAddresses[0]?.emailAddress);
         
         // Create optimized user object
         const enhancedUser = {
@@ -58,51 +57,46 @@ export const ClerkAuthProvider = ({ children }) => {
           imageUrl: clerkUser.imageUrl,
           createdAt: clerkUser.createdAt,
           lastSignInAt: clerkUser.lastSignInAt,
+          authType: 'clerk'
         };
 
         setUser(enhancedUser);
+        setLoading(false);
+        setAuthInitialized(true);
         
-        // Auto-redirect to Codex playground after successful auth
-        setTimeout(() => {
-          console.log('🎯 Redirecting to Codex Playground...');
-          // The redirect will be handled by the parent component
-        }, 500);
+        // Clear any demo auth data that might exist
+        localStorage.removeItem('codex_user');
+        localStorage.removeItem('codex_auth_token');
+        localStorage.removeItem('demo_current_user');
+        localStorage.removeItem('demo_auth_token');
         
-        console.log('👤 Fast Auth - User ready for Codex Playground:', enhancedUser.username);
+        console.log('👤 Clerk Auth - User updated:', enhancedUser.username);
       } else {
-        console.log('🔓 Fast Auth - No user signed in');
+        console.log('🔓 Clerk Auth - No user signed in');
         setUser(null);
+        setLoading(false);
+        setAuthInitialized(true);
       }
-    } catch (error) {
-      console.error('🚨 Fast Auth - Error:', error);
-      setUser(null);
-    } finally {
-      setLoading(false);
-      setAuthInitialized(true);
-      console.log('🏁 Fast Auth - Ready in under 2s');
     }
-  }, [isSignedIn, clerkUser, userLoaded, authInitialized]);
+  }, [userLoaded, isSignedIn, clerkUser]);
 
-  useEffect(() => {
-    if (userLoaded && !authInitialized) {
-      initializeUser();
-    }
-  }, [userLoaded, initializeUser, authInitialized]);
-
-  // Fast logout with redirect
+  // Clerk logout with proper state reset
   const handleLogout = useCallback(async () => {
     try {
-      console.log('🚪 Fast logout initiated...');
+      console.log('🚪 Clerk logout initiated...');
       setUser(null);
       setLoading(true);
-      await signOut();
-      console.log('✅ Logout complete - redirecting to welcome');
-      // Reset auth state
       setAuthInitialized(false);
-      setTimeout(() => setLoading(false), 500);
+      await signOut();
+      console.log('✅ Clerk logout complete');
+      // Force page reload to ensure clean state
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
     } catch (error) {
-      console.error('🚨 Logout error:', error);
+      console.error('🚨 Clerk logout error:', error);
       setLoading(false);
+      setAuthInitialized(true);
     }
   }, [signOut]);
 
@@ -111,23 +105,24 @@ export const ClerkAuthProvider = ({ children }) => {
     loading: loading && !authInitialized,
     isAuthenticated: isSignedIn && !!user && authInitialized,
     authInitialized,
-    // Fast auth methods
-    login: () => console.log('🔐 Use Clerk SignIn component for fast auth'),
-    register: () => console.log('📝 Use Clerk SignUp component for fast registration'),
+    // Clerk auth methods
+    login: () => console.log('🔐 Use Clerk SignIn component for authentication'),
+    register: () => console.log('📝 Use Clerk SignUp component for registration'),
     logout: handleLogout,
     updateUser: (userData) => setUser(prev => ({ ...prev, ...userData })),
-    // Performance metrics
+    // Clerk methods
     getAuthToken: getToken,
     isReady: authInitialized && !loading,
+    authType: 'clerk'
   };
 
   // Performance logging
   useEffect(() => {
     if (authInitialized) {
-      console.log('⚡ Fast Clerk Auth - Performance Summary:', {
+      console.log('⚡ Clerk Auth - Performance Summary:', {
         hasUser: !!value.user,
         isAuthenticated: value.isAuthenticated,
-        loadTime: '< 2s',
+        authType: 'clerk',
         readyForCodex: value.isReady
       });
     }

@@ -8,6 +8,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 
 html, body {
@@ -16,6 +17,50 @@ html, body {
   overflow-x: hidden; /* Allow vertical scroll but prevent horizontal */
   font-family: 'JetBrains Mono', 'Fira Code', Monaco, Consolas, monospace;
   scroll-behavior: smooth; /* Add smooth scrolling */
+  -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+}
+
+/* Enhanced scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Smooth scroll for all containers */
+.scroll-container {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scroll animations */
+@keyframes scrollFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scroll-animate {
+  animation: scrollFadeIn 0.6s ease-out;
 }
 
 /* Custom scrollbar styling */
