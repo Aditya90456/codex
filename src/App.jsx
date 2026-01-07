@@ -3,6 +3,7 @@ import { ClerkAuthProvider } from './contexts/ClerkAuthContext';
 import CodexEditor from './components/CodexEditor';
 import LoadingScreen from './components/LoadingScreen';
 import ClerkSetupGuide from './components/Auth/ClerkSetupGuide';
+import DefaultClerkAuth from './components/Auth/DefaultClerkAuth';
 import { useState, useEffect } from 'react';
 import { getClerkProviderConfig } from './utils/clerk-config';
 import './App.css';
@@ -114,17 +115,37 @@ function App() {
 
   // Wrap in error boundary for Clerk issues
   try {
-    // Check if we're on auth routes - redirect to home with auth modal
+    // Handle dedicated auth routes
     const path = window.location.pathname;
-    const isAuthRoute = path === '/sign-in' || path === '/sign-up';
+    const isSignUpRoute = path === '/sign-up';
+    const isSignInRoute = path === '/sign-in';
+    const isAuthRoute = isSignUpRoute || isSignInRoute;
     
-    // If on auth route, redirect to home and show auth modal
+    // Show dedicated auth pages for auth routes
     if (isAuthRoute) {
-      // Replace the URL without reloading the page
-      window.history.replaceState({}, '', '/');
-      // The auth modal will be handled by the main app
+      return (
+        <ClerkProvider 
+          publishableKey={PUBLISHABLE_KEY}
+          afterSignInUrl="/"
+          afterSignUpUrl="/"
+          {...getClerkProviderConfig()}
+          navigate={(to) => {
+            // Handle navigation from auth pages
+            console.log('Clerk trying to navigate to:', to);
+            if (to.includes('clerk')) {
+              console.log('Preventing navigation to Clerk hosted page');
+              return;
+            }
+            // Allow navigation to other routes
+            window.location.href = to;
+          }}
+        >
+          <DefaultClerkAuth mode={isSignUpRoute ? 'signup' : 'signin'} />
+        </ClerkProvider>
+      );
     }
 
+    // Main app for all other routes
     return (
       <ClerkProvider 
         publishableKey={PUBLISHABLE_KEY}

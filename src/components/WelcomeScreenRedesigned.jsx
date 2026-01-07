@@ -406,13 +406,13 @@ const WelcomeScreenRedesigned = ({
                 ) : (
                   <div className="flex items-center space-x-4">
                     <button
-                      onClick={() => onShowAuth('login')}
+                      onClick={() => window.location.href = '/sign-in'}
                       className="text-gray-300 hover:text-white transition-colors px-6 py-3 rounded-xl hover:bg-gray-800/50 font-medium"
                     >
                       Sign In
                     </button>
                     <button
-                      onClick={() => onShowAuth('signup')}
+                      onClick={() => window.location.href = '/sign-up'}
                       className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                     >
                       Get Started Free
@@ -532,7 +532,7 @@ const WelcomeScreenRedesigned = ({
                       </button>
                       
                       <button
-                        onClick={() => onShowAuth('signup')}
+                        onClick={() => window.location.href = '/sign-up'}
                         className="bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-gray-600 px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center justify-center space-x-4 backdrop-blur-sm"
                       >
                         <Users className="w-6 h-6" />

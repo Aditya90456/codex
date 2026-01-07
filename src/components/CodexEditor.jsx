@@ -834,7 +834,7 @@ int main() {
             ) : (
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => setShowAuth(true)}
+                  onClick={() => window.location.href = '/sign-in'}
                   className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-300 hover:text-white'} transition-colors text-sm`}
                 >
                   Sign In
