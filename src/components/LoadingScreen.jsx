@@ -1,3 +1,4 @@
+import React from 'react';
 import { Code, Zap, Rocket } from 'lucide-react';
 
 const LoadingScreen = ({ 

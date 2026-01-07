@@ -7,40 +7,29 @@ export default defineConfig({
   build: {
     // Increase chunk size warning limit to 1MB (1000kb)
     chunkSizeWarningLimit: 1000,
+    // Optimize build performance
+    target: 'esnext',
+    minify: 'esbuild',
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
+        manualChunks: {
           // React core libraries
-          if (id.includes('react') || id.includes('react-dom')) {
-            return 'react-vendor';
-          }
+          'react-vendor': ['react', 'react-dom'],
           
           // Monaco Editor (large dependency)
-          if (id.includes('@monaco-editor')) {
-            return 'monaco-editor';
-          }
+          'monaco-editor': ['@monaco-editor/react'],
           
           // Clerk authentication
-          if (id.includes('@clerk/clerk-react')) {
-            return 'clerk-auth';
-          }
+          'clerk-auth': ['@clerk/clerk-react'],
           
-          // UI libraries
-          if (id.includes('lucide-react')) {
-            return 'ui-vendor';
-          }
-          
-          // Utility libraries
-          if (id.includes('uuid')) {
-            return 'utils';
-          }
-          
-          // Node modules (other vendor libraries)
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
+          // UI and utility libraries
+          'ui-vendor': ['lucide-react', 'uuid']
         }
       }
     }
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@monaco-editor/react', '@clerk/clerk-react', 'lucide-react']
   }
 })
