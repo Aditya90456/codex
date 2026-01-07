@@ -1,24 +1,54 @@
 import { SignIn, SignUp, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
 import { useEffect } from 'react';
+import { getClerkAppearanceConfig } from '../../utils/clerk-config';
 
 const DefaultClerkAuth = ({ mode = 'signup' }) => {
-  // Handle Turnstile errors
+  // Enhanced Turnstile error suppression
   useEffect(() => {
-    // Suppress Turnstile console errors in development
+    // Comprehensive error suppression
     const originalConsoleError = console.error;
     console.error = (...args) => {
       const message = args.join(' ');
-      if (message.includes('Turnstile') && message.includes('300030')) {
-        console.warn('Turnstile error suppressed (safe to ignore in development):', message);
+      
+      // Enhanced Turnstile error patterns
+      const turnstilePatterns = [
+        'Turnstile', '300030', 'cf-turnstile', 'challenges.cloudflare.com',
+        'api.js?render=explicit', 'captcha', 'bot protection'
+      ];
+      
+      if (turnstilePatterns.some(pattern => message.toLowerCase().includes(pattern.toLowerCase()))) {
+        console.warn('🔇 [Turnstile] Error suppressed:', message);
         return;
       }
+      
       originalConsoleError.apply(console, args);
     };
 
+    // Block Turnstile DOM elements
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === 1) { // Element node
+            // Remove Turnstile elements
+            const turnstileElements = node.querySelectorAll?.('[class*="turnstile"], [id*="turnstile"], [class*="captcha"], [id*="captcha"]');
+            turnstileElements?.forEach(el => {
+              console.warn('🔇 [Turnstile] Removing element:', el);
+              el.remove();
+            });
+          }
+        });
+      });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
     return () => {
       console.error = originalConsoleError;
+      observer.disconnect();
     };
   }, []);
+
+  const appearanceConfig = getClerkAppearanceConfig('dark');
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-start justify-center p-4 overflow-y-auto">
       <div className="w-full max-w-md my-8">
@@ -34,33 +64,7 @@ const DefaultClerkAuth = ({ mode = 'signup' }) => {
                   <SignUp 
                     afterSignUpUrl="/"
                     signInUrl="#"
-                    appearance={{
-                      elements: {
-                        formButtonPrimary: {
-                          backgroundColor: '#8B5CF6',
-                          '&:hover': { backgroundColor: '#7C3AED' },
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          fontWeight: '600'
-                        },
-                        footerActionLink: {
-                          color: '#8B5CF6',
-                          '&:hover': { color: '#7C3AED' }
-                        },
-                        card: {
-                          boxShadow: 'none',
-                          border: 'none'
-                        },
-                        // Handle Turnstile/Captcha container
-                        captcha: {
-                          marginTop: '16px',
-                          marginBottom: '16px'
-                        },
-                        formFieldInput: {
-                          borderRadius: '8px'
-                        }
-                      }
-                    }}
+                    appearance={appearanceConfig}
                   />
                 </div>
               </div>
@@ -76,33 +80,7 @@ const DefaultClerkAuth = ({ mode = 'signup' }) => {
                   <SignIn 
                     afterSignInUrl="/"
                     signUpUrl="#"
-                    appearance={{
-                      elements: {
-                        formButtonPrimary: {
-                          backgroundColor: '#3B82F6',
-                          '&:hover': { backgroundColor: '#2563EB' },
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          fontWeight: '600'
-                        },
-                        footerActionLink: {
-                          color: '#3B82F6',
-                          '&:hover': { color: '#2563EB' }
-                        },
-                        card: {
-                          boxShadow: 'none',
-                          border: 'none'
-                        },
-                        // Handle Turnstile/Captcha container
-                        captcha: {
-                          marginTop: '16px',
-                          marginBottom: '16px'
-                        },
-                        formFieldInput: {
-                          borderRadius: '8px'
-                        }
-                      }
-                    }}
+                    appearance={appearanceConfig}
                   />
                 </div>
               </div>

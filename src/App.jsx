@@ -5,6 +5,7 @@ import LoadingScreen from './components/LoadingScreen';
 import ClerkSetupGuide from './components/Auth/ClerkSetupGuide';
 import DefaultClerkAuth from './components/Auth/DefaultClerkAuth';
 import { useState, useEffect } from 'react';
+import { getClerkProviderConfig } from './utils/clerk-config';
 import './App.css';
 
 // Import your publishable key
@@ -130,6 +131,7 @@ function App() {
         publishableKey={PUBLISHABLE_KEY}
         afterSignInUrl="/"
         afterSignUpUrl="/"
+        {...getClerkProviderConfig()}
         navigate={(to) => {
           // Prevent navigation to Clerk hosted pages and auth routes
           console.log('Clerk trying to navigate to:', to);
