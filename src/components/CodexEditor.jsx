@@ -6,6 +6,7 @@ import ClerkSignIn from './Auth/ClerkSignIn';
 import ClerkSignUp from './Auth/ClerkSignUp';
 import ClerkRedesigned from './Auth/ClerkRedesigned';
 import SignUpDebug from './Auth/SignUpDebug';
+import DeploymentDebug from './Auth/DeploymentDebug';
 import FastSignUp from './Auth/FastSignUp';
 import SimpleAuthModal from './Auth/SimpleAuthModal';
 import AuthTest from './Auth/AuthTest';
@@ -1075,6 +1076,9 @@ int main() {
 
       {/* Scroll to Top Button */}
       <ScrollToTop />
+      
+      {/* Deployment Debug (temporary) */}
+      <DeploymentDebug />
     </div>
   );
 };

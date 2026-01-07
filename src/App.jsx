@@ -14,7 +14,9 @@ const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const isValidClerkKey = (key) => {
   if (!key) return false;
   // Basic validation for Clerk publishable key format
-  return key.startsWith('pk_test_') || key.startsWith('pk_live_');
+  const isValidFormat = key.startsWith('pk_test_') || key.startsWith('pk_live_');
+  const hasValidEnding = !key.endsWith('$'); // Check for invalid $ ending
+  return isValidFormat && hasValidEnding;
 };
 
 function App() {
