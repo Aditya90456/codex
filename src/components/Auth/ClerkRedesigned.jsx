@@ -43,6 +43,8 @@ const ClerkRedesigned = ({ isOpen, onClose, mode = 'signup', onSwitchMode }) => 
       console.log('✅ User signed in, closing modal');
       setTimeout(() => {
         onClose();
+        // Refresh the page to ensure proper state update
+        window.location.reload();
       }, 1000); // Give time for the success message
     }
   }, [isSignedIn, isLoaded, onClose]);
@@ -309,6 +311,19 @@ const ClerkRedesigned = ({ isOpen, onClose, mode = 'signup', onSwitchMode }) => 
             {/* Footer */}
             <div className="px-6 pb-6 pt-2 border-t border-gray-700/50">
               <div className="text-center">
+                {/* Manual Navigation Links */}
+                <div className="mb-4">
+                  <p className="text-sm text-gray-400 mb-2">
+                    {currentMode === 'signup' ? 'Already have an account?' : "Don't have an account?"}
+                  </p>
+                  <button
+                    onClick={() => switchMode(currentMode === 'signup' ? 'signin' : 'signup')}
+                    className="text-blue-400 hover:text-blue-300 font-medium text-sm underline transition-colors"
+                  >
+                    {currentMode === 'signup' ? 'Sign in here' : 'Sign up here'}
+                  </button>
+                </div>
+                
                 <div className="flex items-center justify-center space-x-4 text-xs text-gray-400 mb-3">
                   <div className="flex items-center space-x-1">
                     <Zap className="w-3 h-3 text-green-400" />

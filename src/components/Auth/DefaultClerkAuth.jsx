@@ -63,9 +63,20 @@ const DefaultClerkAuth = ({ mode = 'signup' }) => {
                 <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   <SignUp 
                     afterSignUpUrl="/"
-                    signInUrl="#"
+                    signInUrl="/sign-in"
                     appearance={appearanceConfig}
                   />
+                </div>
+                <div className="mt-4 text-center">
+                  <p className="text-gray-600 text-sm">
+                    Already have an account?{' '}
+                    <button
+                      onClick={() => window.location.href = '/sign-in'}
+                      className="text-blue-600 hover:text-blue-700 font-medium underline"
+                    >
+                      Sign in here
+                    </button>
+                  </p>
                 </div>
               </div>
             </div>
@@ -79,9 +90,20 @@ const DefaultClerkAuth = ({ mode = 'signup' }) => {
                 <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   <SignIn 
                     afterSignInUrl="/"
-                    signUpUrl="#"
+                    signUpUrl="/sign-up"
                     appearance={appearanceConfig}
                   />
+                </div>
+                <div className="mt-4 text-center">
+                  <p className="text-gray-600 text-sm">
+                    Don't have an account?{' '}
+                    <button
+                      onClick={() => window.location.href = '/sign-up'}
+                      className="text-purple-600 hover:text-purple-700 font-medium underline"
+                    >
+                      Sign up here
+                    </button>
+                  </p>
                 </div>
               </div>
             </div>
