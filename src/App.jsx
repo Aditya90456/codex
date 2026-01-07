@@ -3,7 +3,6 @@ import { ClerkAuthProvider } from './contexts/ClerkAuthContext';
 import CodexEditor from './components/CodexEditor';
 import LoadingScreen from './components/LoadingScreen';
 import ClerkSetupGuide from './components/Auth/ClerkSetupGuide';
-import DefaultClerkAuth from './components/Auth/DefaultClerkAuth';
 import { useState, useEffect } from 'react';
 import { getClerkProviderConfig } from './utils/clerk-config';
 import './App.css';
