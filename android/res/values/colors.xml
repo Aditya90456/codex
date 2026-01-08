@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary_color">#2196F3</color>
+    <color name="primary_dark">#1976D2</color>
+    <color name="accent_color">#4CAF50</color>
+    
+    <!-- Background Colors -->
+    <color name="background_dark">#1E1E1E</color>
+    <color name="background_light">#FFFFFF</color>
+    <color name="secondary_background">#2D2D2D</color>
+    <color name="toolbar_background">#252526</color>
+    
+    <!-- Editor Colors -->
+    <color name="editor_background">#1E1E1E</color>
+    <color name="editor_header_background">#2D2D2D</color>
+    <color name="line_number_background">#252526</color>
+    <color name="line_number_color">#858585</color>
+    <color name="code_text_color">#D4D4D4</color>
+    <color name="cursor_color">#FFFFFF</color>
+    
+    <!-- Output Colors -->
+    <color name="output_background">#0F0F0F</color>
+    <color name="output_header_background">#1E1E1E</color>
+    <color name="output_text_color">#00FF00</color>
+    
+    <!-- UI Element Colors -->
+    <color name="quick_actions_background">#2D2D2D</color>
+    <color name="bottom_bar_background">#252526</color>
+    <color name="button_background">#0E639C</color>
+    <color name="button_background_pressed">#1177BB</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#CCCCCC</color>
+    <color name="text_hint">#808080</color>
+    <color name="hint_color">#666666</color>
+    <color name="icon_color">#CCCCCC</color>
+    
+    <!-- Status Colors -->
+    <color name="success_color">#4CAF50</color>
+    <color name="error_color">#F44336</color>
+    <color name="warning_color">#FF9800</color>
+    <color name="info_color">#2196F3</color>
+    
+    <!-- Syntax Highlighting Colors -->
+    <color name="syntax_keyword">#569CD6</color>
+    <color name="syntax_string">#CE9178</color>
+    <color name="syntax_comment">#6A9955</color>
+    <color name="syntax_number">#B5CEA8</color>
+    <color name="syntax_function">#DCDCAA</color>
+    <color name="syntax_variable">#9CDCFE</color>
+    
+    <!-- Material Design Colors -->
+    <color name="material_blue_500">#2196F3</color>
+    <color name="material_blue_700">#1976D2</color>
+    <color name="material_green_500">#4CAF50</color>
+    <color name="material_red_500">#F44336</color>
+    <color name="material_orange_500">#FF9800</color>
+    
+    <!-- Transparent Colors -->
+    <color name="transparent">#00000000</color>
+    <color name="semi_transparent_black">#80000000</color>
+    <color name="semi_transparent_white">#80FFFFFF</color>
+</resources>

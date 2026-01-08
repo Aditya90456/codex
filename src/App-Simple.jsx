@@ -1,8 +1,7 @@
 import { ClerkProvider } from '@clerk/clerk-react';
 import { AuthProvider } from './contexts/SimpleClerkAuth';
-import CodexEditor from './components/CodexEditor';
 import { useState, useEffect } from 'react';
-import './App.css';
+import SimpleCodexEditor from './components/SimpleCodexEditor';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -34,7 +33,7 @@ function App() {
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <AuthProvider>
         <div className="App">
-          <CodexEditor />
+          <SimpleCodexEditor />
         </div>
       </AuthProvider>
     </ClerkProvider>

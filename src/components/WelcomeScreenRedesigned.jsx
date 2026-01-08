@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import UserProfile from './UserProfile';
 import Settings from './Settings';
@@ -9,7 +9,7 @@ import {
   ChevronDown, UserCircle, Star, Bell, Moon, Sun, Monitor,
   BarChart3, FolderOpen, Terminal, Smartphone,
   Sparkles, TrendingUp, Activity, Wifi, Brain,
-  Workflow, Boxes, Gauge, Lock, Zap as Lightning
+  Workflow, Boxes, Gauge, Lock, Zap as Lightning, Map, Database
 } from 'lucide-react';
 
 const WelcomeScreenRedesigned = ({ 
@@ -18,7 +18,8 @@ const WelcomeScreenRedesigned = ({
   onShowDashboard, 
   onShowWebEditor, 
   onShowAdvancedWebEditor, 
-  onShowAndroidEditor 
+  onShowAndroidEditor,
+  onShowRoadmap 
 }) => {
   const { user, logout, login } = useUniversalAuth();
   const [isVisible, setIsVisible] = useState(false);
@@ -35,74 +36,10 @@ const WelcomeScreenRedesigned = ({
     executions: 15847392
   });
 
-  useEffect(() => {
-    setIsVisible(true);
-    
-    // Animate feature showcase
-    const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % advancedFeatures.length);
-    }, 4000);
+  // Ref for roadmap section
+  const roadmapSectionRef = useRef(null);
 
-    // Animate stats
-    const statsInterval = setInterval(() => {
-      setCurrentStats(prev => ({
-        users: prev.users + Math.floor(Math.random() * 10),
-        projects: prev.projects + Math.floor(Math.random() * 50),
-        executions: prev.executions + Math.floor(Math.random() * 100)
-      }));
-    }, 2000);
-    
-    return () => {
-      clearInterval(interval);
-      clearInterval(statsInterval);
-    };
-  }, []);
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest('.user-dropdown')) {
-        setShowUserDropdown(false);
-      }
-      if (!event.target.closest('.notifications-dropdown')) {
-        setShowNotifications(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleLogout = async () => {
-    await logout();
-    setShowUserDropdown(false);
-  };
-
-  const toggleTheme = () => {
-    const themes = ['light', 'dark', 'system'];
-    const currentIndex = themes.indexOf(theme);
-    const nextTheme = themes[(currentIndex + 1) % themes.length];
-    setTheme(nextTheme);
-  };
-
-  const getThemeIcon = () => {
-    switch (theme) {
-      case 'light': return <Sun size={16} />;
-      case 'dark': return <Moon size={16} />;
-      default: return <Monitor size={16} />;
-    }
-  };
-
-  // Mock notifications data
-  const notifications = [
-    { id: 1, type: 'achievement', message: 'New Advanced Web IDE features available!', time: '5 min ago', unread: true },
-    { id: 2, type: 'system', message: 'Terminal with npm support is now live', time: '1 hour ago', unread: true },
-    { id: 3, type: 'social', message: '1B user milestone reached!', time: '2 hours ago', unread: false },
-  ];
-
-  const unreadCount = notifications.filter(n => n.unread).length;
-
-  // Advanced features showcase
+  // Advanced features showcase - moved before useEffect to prevent reference errors
   const advancedFeatures = [
     {
       title: 'Advanced Web IDE',
@@ -137,6 +74,82 @@ const WelcomeScreenRedesigned = ({
       action: () => onShowWebEditor()
     }
   ];
+
+  useEffect(() => {
+    setIsVisible(true);
+    
+    // Animate feature showcase
+    const interval = setInterval(() => {
+      setActiveFeature((prev) => (prev + 1) % 4); // Use fixed number instead of array length
+    }, 4000);
+
+    // Animate stats
+    const statsInterval = setInterval(() => {
+      setCurrentStats(prev => ({
+        users: prev.users + Math.floor(Math.random() * 10),
+        projects: prev.projects + Math.floor(Math.random() * 50),
+        executions: prev.executions + Math.floor(Math.random() * 100)
+      }));
+    }, 2000);
+    
+    return () => {
+      clearInterval(interval);
+      clearInterval(statsInterval);
+    };
+  }, []); // Remove dependency to prevent re-runs
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.user-dropdown')) {
+        setShowUserDropdown(false);
+      }
+      if (!event.target.closest('.notifications-dropdown')) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    setShowUserDropdown(false);
+  };
+
+  const toggleTheme = () => {
+    const themes = ['light', 'dark', 'system'];
+    const currentIndex = themes.indexOf(theme);
+    const nextTheme = themes[(currentIndex + 1) % themes.length];
+    setTheme(nextTheme);
+  };
+
+  const scrollToRoadmap = () => {
+    if (roadmapSectionRef.current) {
+      roadmapSectionRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+  };
+
+  const getThemeIcon = () => {
+    switch (theme) {
+      case 'light': return <Sun size={16} />;
+      case 'dark': return <Moon size={16} />;
+      default: return <Monitor size={16} />;
+    }
+  };
+
+  // Mock notifications data
+  const notifications = [
+    { id: 1, type: 'achievement', message: 'New Advanced Web IDE features available!', time: '5 min ago', unread: true },
+    { id: 2, type: 'system', message: 'Terminal with npm support is now live', time: '1 hour ago', unread: true },
+    { id: 3, type: 'social', message: '1B user milestone reached!', time: '2 hours ago', unread: false },
+  ];
+
+  const unreadCount = notifications.filter(n => n.unread).length;
 
   const platformFeatures = [
     {
@@ -200,11 +213,11 @@ const WelcomeScreenRedesigned = ({
       action: () => onShowWebEditor()
     },
     { 
-      name: 'Quick Start', 
-      icon: <Zap size={20} />, 
-      color: 'bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700',
-      description: 'Start coding immediately',
-      action: () => onCreateNew()
+      name: 'Learning Paths', 
+      icon: <Map size={20} />, 
+      color: 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700',
+      description: 'Interactive learning roadmaps',
+      action: () => scrollToRoadmap()
     }
   ];
 
@@ -406,13 +419,13 @@ const WelcomeScreenRedesigned = ({
                 ) : (
                   <div className="flex items-center space-x-4">
                     <button
-                      onClick={() => window.location.href = '/sign-in'}
+                      onClick={() => onShowAuth('login')}
                       className="text-gray-300 hover:text-white transition-colors px-6 py-3 rounded-xl hover:bg-gray-800/50 font-medium"
                     >
                       Sign In
                     </button>
                     <button
-                      onClick={() => window.location.href = '/sign-up'}
+                      onClick={() => onShowAuth('register')}
                       className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                     >
                       Get Started Free
@@ -532,7 +545,7 @@ const WelcomeScreenRedesigned = ({
                       </button>
                       
                       <button
-                        onClick={() => window.location.href = '/sign-up'}
+                        onClick={() => onShowAuth('register')}
                         className="bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-gray-600 px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center justify-center space-x-4 backdrop-blur-sm"
                       >
                         <Users className="w-6 h-6" />
@@ -750,6 +763,151 @@ const WelcomeScreenRedesigned = ({
               <div className="flex items-center space-x-2">
                 <Cpu className="w-5 h-5 text-purple-400" />
                 <span>High Performance</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Interactive Learning Roadmap Section */}
+        <div className="py-20 px-4 sm:px-6 lg:px-8" ref={roadmapSectionRef}>
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                Learning Roadmaps
+              </h2>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Follow structured learning paths designed by industry experts. Track your progress and master new skills step by step.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              {/* Web Development Roadmap */}
+              <div className="group bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Globe className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-white">Web Development</h3>
+                <p className="text-gray-400 mb-6">Master modern web development from HTML/CSS basics to advanced React and Node.js</p>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">Foundation</span>
+                    <span className="text-green-400">✓ Complete</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">Frontend Frameworks</span>
+                    <span className="text-blue-400">📚 In Progress</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">Backend Development</span>
+                    <span className="text-gray-500">⏳ Locked</span>
+                  </div>
+                </div>
+
+                <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style={{ width: '35%' }}></div>
+                </div>
+
+                <button 
+                  onClick={() => onShowRoadmap && onShowRoadmap()}
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-3 rounded-lg font-semibold transition-all duration-300"
+                >
+                  Continue Learning
+                </button>
+              </div>
+
+              {/* Android Development Roadmap */}
+              <div className="group bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-green-500/50 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Smartphone className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-white">Android Development</h3>
+                <p className="text-gray-400 mb-6">Build native Android apps with Kotlin, Jetpack Compose, and modern architecture</p>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">Android Basics</span>
+                    <span className="text-blue-400">📚 In Progress</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">UI/UX Development</span>
+                    <span className="text-gray-500">⏳ Locked</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">Advanced Features</span>
+                    <span className="text-gray-500">⏳ Locked</span>
+                  </div>
+                </div>
+
+                <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full" style={{ width: '20%' }}></div>
+                </div>
+
+                <button 
+                  onClick={() => onShowRoadmap && onShowRoadmap()}
+                  className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-3 rounded-lg font-semibold transition-all duration-300"
+                >
+                  Start Learning
+                </button>
+              </div>
+
+              {/* DSA Roadmap */}
+              <div className="group bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Database className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-white">Data Structures & Algorithms</h3>
+                <p className="text-gray-400 mb-6">Master problem-solving skills and ace coding interviews with comprehensive DSA training</p>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">Fundamentals</span>
+                    <span className="text-green-400">✓ Complete</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">Algorithms</span>
+                    <span className="text-blue-400">📚 In Progress</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">Advanced Topics</span>
+                    <span className="text-gray-500">⏳ Locked</span>
+                  </div>
+                </div>
+
+                <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                </div>
+
+                <button 
+                  onClick={() => onShowRoadmap && onShowRoadmap()}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-lg font-semibold transition-all duration-300"
+                >
+                  Continue Learning
+                </button>
+              </div>
+            </div>
+
+            {/* Roadmap CTA */}
+            <div className="text-center">
+              <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-2xl p-8 border border-blue-500/30">
+                <Map className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+                <h3 className="text-2xl font-bold mb-4 text-white">Interactive Learning Experience</h3>
+                <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
+                  Our roadmaps feature interactive progress tracking, hands-on projects, and personalized learning paths. 
+                  Join thousands of developers who have successfully advanced their careers.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <button 
+                    onClick={() => onShowRoadmap && onShowRoadmap()}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center space-x-2"
+                  >
+                    <Play className="w-5 h-5" />
+                    <span>View Full Roadmap</span>
+                  </button>
+                  <button className="border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300">
+                    Track Progress
+                  </button>
+                </div>
               </div>
             </div>
           </div>

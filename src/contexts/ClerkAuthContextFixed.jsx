@@ -15,27 +15,22 @@ export const ClerkAuthProvider = ({ children }) => {
   const { user: clerkUser, isLoaded: userLoaded } = useUser();
   const { isSignedIn, getToken, signOut } = useClerkAuth();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
 
-  // Real-time user state updates - simplified to prevent loops
+  // Single useEffect to handle all auth state changes - prevents loops
   useEffect(() => {
-    console.log('🔄 Clerk Auth - State change detected:', { 
-      userLoaded, 
-      isSignedIn, 
-      hasClerkUser: !!clerkUser
-    });
+    console.log('🔄 Clerk Auth - State update:', { userLoaded, isSignedIn, hasUser: !!clerkUser });
 
-    // Only proceed when Clerk has finished loading
     if (userLoaded) {
-      setLoading(false);
-      setAuthInitialized(true);
+      // Mark as initialized immediately when Clerk finishes loading
+      if (!authInitialized) {
+        setAuthInitialized(true);
+        console.log('✅ Clerk Auth - Initialized');
+      }
 
       if (isSignedIn && clerkUser) {
-        console.log('✅ Clerk Auth - User authenticated:', clerkUser.emailAddresses[0]?.emailAddress);
-        
-        // Create optimized user object
-        const enhancedUser = {
+        // Create user object only if it's different from current
+        const newUser = {
           id: clerkUser.id,
           username: clerkUser.username || 
                    clerkUser.emailAddresses[0]?.emailAddress.split('@')[0] || 
@@ -50,68 +45,60 @@ export const ClerkAuthProvider = ({ children }) => {
           authType: 'clerk'
         };
 
-        setUser(enhancedUser);
-        
-        // Clear any demo auth data that might exist
-        localStorage.removeItem('codex_user');
-        localStorage.removeItem('codex_auth_token');
-        localStorage.removeItem('demo_current_user');
-        localStorage.removeItem('demo_auth_token');
-        
-        console.log('👤 Clerk Auth - User updated:', enhancedUser.username);
+        // Only update if user has changed to prevent unnecessary re-renders
+        setUser(prevUser => {
+          if (!prevUser || prevUser.id !== newUser.id) {
+            console.log('👤 Clerk Auth - User authenticated:', newUser.username);
+            return newUser;
+          }
+          return prevUser;
+        });
       } else {
-        console.log('🔓 Clerk Auth - No user signed in');
-        setUser(null);
+        // Clear user if not signed in
+        setUser(prevUser => {
+          if (prevUser) {
+            console.log('🔓 Clerk Auth - User signed out');
+            return null;
+          }
+          return prevUser;
+        });
       }
     }
-  }, [userLoaded, isSignedIn, clerkUser]);
+  }, [userLoaded, isSignedIn, clerkUser?.id, authInitialized]);
 
-  // Clerk logout with proper state reset
+  // Memoized logout function to prevent re-renders
   const handleLogout = useCallback(async () => {
     try {
       console.log('🚪 Clerk logout initiated...');
       setUser(null);
-      setLoading(true);
       setAuthInitialized(false);
       await signOut();
       console.log('✅ Clerk logout complete');
-      // Reset state without page reload to prevent refresh loop
-      setLoading(false);
-      setAuthInitialized(true);
+      // Simple redirect without timeout
+      window.location.href = '/';
     } catch (error) {
       console.error('🚨 Clerk logout error:', error);
-      setLoading(false);
+      // Reset state on error
       setAuthInitialized(true);
     }
   }, [signOut]);
 
+  // Memoized context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
     user,
-    loading,
-    isAuthenticated: isSignedIn && !!user,
+    loading: !userLoaded || !authInitialized,
+    isAuthenticated: !!(isSignedIn && user && authInitialized),
     authInitialized,
-    // Clerk auth methods
+    // Auth methods
     login: () => console.log('🔐 Use Clerk SignIn component for authentication'),
     register: () => console.log('📝 Use Clerk SignUp component for registration'),
     logout: handleLogout,
-    updateUser: (userData) => setUser(prev => ({ ...prev, ...userData })),
+    updateUser: (userData) => setUser(prev => prev ? { ...prev, ...userData } : null),
     // Clerk methods
     getAuthToken: getToken,
-    isReady: !loading && authInitialized,
+    isReady: !!(userLoaded && authInitialized),
     authType: 'clerk'
-  }), [user, loading, isSignedIn, authInitialized, handleLogout, getToken]);
-
-  // Performance logging - fixed dependencies to prevent loops
-  useEffect(() => {
-    if (authInitialized) {
-      console.log('⚡ Clerk Auth - Performance Summary:', {
-        hasUser: !!user,
-        isAuthenticated: isSignedIn && !!user,
-        authType: 'clerk',
-        readyForCodex: !loading && authInitialized
-      });
-    }
-  }, [authInitialized, user, isSignedIn, loading]);
+  }), [user, userLoaded, authInitialized, isSignedIn, handleLogout, getToken]);
 
   return (
     <ClerkAuthContext.Provider value={value}>

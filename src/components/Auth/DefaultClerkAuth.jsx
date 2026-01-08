@@ -1,8 +1,10 @@
 import { SignIn, SignUp, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { getClerkAppearanceConfig } from '../../utils/clerk-config';
 
-const DefaultClerkAuth = ({ mode = 'signup' }) => {
+const DefaultClerkAuth = ({ mode: initialMode = 'signup' }) => {
+  const [mode, setMode] = useState(initialMode);
+
   // Enhanced Turnstile error suppression
   useEffect(() => {
     // Comprehensive error suppression
@@ -49,6 +51,7 @@ const DefaultClerkAuth = ({ mode = 'signup' }) => {
   }, []);
 
   const appearanceConfig = getClerkAppearanceConfig('dark');
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-start justify-center p-4 overflow-y-auto">
       <div className="w-full max-w-md my-8">
@@ -63,7 +66,6 @@ const DefaultClerkAuth = ({ mode = 'signup' }) => {
                 <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   <SignUp 
                     afterSignUpUrl="/"
-                    signInUrl="/sign-in"
                     appearance={appearanceConfig}
                   />
                 </div>
@@ -71,7 +73,7 @@ const DefaultClerkAuth = ({ mode = 'signup' }) => {
                   <p className="text-gray-600 text-sm">
                     Already have an account?{' '}
                     <button
-                      onClick={() => window.location.href = '/sign-in'}
+                      onClick={() => setMode('signin')}
                       className="text-blue-600 hover:text-blue-700 font-medium underline"
                     >
                       Sign in here
@@ -90,7 +92,6 @@ const DefaultClerkAuth = ({ mode = 'signup' }) => {
                 <div className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   <SignIn 
                     afterSignInUrl="/"
-                    signUpUrl="/sign-up"
                     appearance={appearanceConfig}
                   />
                 </div>
@@ -98,7 +99,7 @@ const DefaultClerkAuth = ({ mode = 'signup' }) => {
                   <p className="text-gray-600 text-sm">
                     Don't have an account?{' '}
                     <button
-                      onClick={() => window.location.href = '/sign-up'}
+                      onClick={() => setMode('signup')}
                       className="text-purple-600 hover:text-purple-700 font-medium underline"
                     >
                       Sign up here

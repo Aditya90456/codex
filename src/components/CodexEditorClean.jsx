@@ -9,7 +9,6 @@ import Dashboard from './Dashboard';
 import WebEditor from './WebEditor';
 import AdvancedWebEditor from './AdvancedWebEditor';
 import AndroidStudioFixed from './AndroidStudioFixed';
-import InteractiveRoadmap from './Roadmap/InteractiveRoadmap';
 import ScrollToTop from './ScrollToTop';
 import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
@@ -39,7 +38,6 @@ const CodexEditor = () => {
   const [showTestDemo, setShowTestDemo] = useState(false);
   const [showIDEDemo, setShowIDEDemo] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
-  const [showRoadmap, setShowRoadmap] = useState(false);
   const [authMode, setAuthMode] = useState('login');
 
   // Reset states when user logs out
@@ -52,7 +50,6 @@ const CodexEditor = () => {
       setShowDashboard(false);
       setShowTestDemo(false);
       setShowIDEDemo(false);
-      setShowRoadmap(false);
       console.log('🔄 Reset - User logged out, all states cleared');
     }
   }, [isAuthenticated]);
@@ -241,15 +238,6 @@ int main() {
     );
   }
 
-  if (showRoadmap) {
-    return (
-      <InteractiveRoadmap onBack={() => {
-        setShowRoadmap(false);
-        setShowWelcome(true);
-      }} />
-    );
-  }
-
   if (showWelcome) {
     return (
       <WelcomeScreenRedesigned 
@@ -259,7 +247,6 @@ int main() {
         onShowWebEditor={() => setShowWebEditor(true)}
         onShowAdvancedWebEditor={() => setShowAdvancedWebEditor(true)}
         onShowAndroidEditor={() => setShowAndroidEditor(true)}
-        onShowRoadmap={() => setShowRoadmap(true)}
       />
     );
   }

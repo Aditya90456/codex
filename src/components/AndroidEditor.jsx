@@ -655,14 +655,6 @@ public class NewActivity${existingJavaFiles + 1} extends AppCompatActivity {
       return newSet;
     });
     setCurrentUsers(prev => Math.max(0, prev - 1));
-    
-    setConsoleOutput(prev => [...prev, {
-      type: 'info',
-      message: `🔒 User ${userId} deauthorized from Android preview`,
-      timestamp: Date.now()
-    }]);
-  };
-
   const createAndroidPreviewSession = (userId) => {
     if (!previewPermissions.public && !authorizedUsers.has(userId)) {
       return { success: false, message: 'Unauthorized access to Android preview' };
