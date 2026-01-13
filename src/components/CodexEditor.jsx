@@ -10,6 +10,8 @@ import WebEditor from './WebEditor';
 import AdvancedWebEditor from './AdvancedWebEditor';
 import AndroidStudioFixed from './AndroidStudioFixed';
 import InteractiveRoadmap from './Roadmap/InteractiveRoadmap';
+import DSAComicViewer from './DSA/DSAComicViewer';
+import ArticleViewer from './Articles/ArticleViewer';
 import ScrollToTop from './ScrollToTop';
 import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
@@ -40,6 +42,8 @@ const CodexEditor = () => {
   const [showIDEDemo, setShowIDEDemo] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
+  const [showDSAComic, setShowDSAComic] = useState(false);
+  const [showArticles, setShowArticles] = useState(false);
   const [authMode, setAuthMode] = useState('login');
 
   // Reset states when user logs out
@@ -53,6 +57,8 @@ const CodexEditor = () => {
       setShowTestDemo(false);
       setShowIDEDemo(false);
       setShowRoadmap(false);
+      setShowDSAComic(false);
+      setShowArticles(false);
       console.log('🔄 Reset - User logged out, all states cleared');
     }
   }, [isAuthenticated]);
@@ -241,6 +247,24 @@ int main() {
     );
   }
 
+  if (showArticles) {
+    return (
+      <ArticleViewer onBack={() => {
+        setShowArticles(false);
+        setShowWelcome(true);
+      }} />
+    );
+  }
+
+  if (showDSAComic) {
+    return (
+      <DSAComicViewer onBack={() => {
+        setShowDSAComic(false);
+        setShowWelcome(true);
+      }} />
+    );
+  }
+
   if (showRoadmap) {
     return (
       <InteractiveRoadmap onBack={() => {
@@ -260,6 +284,8 @@ int main() {
         onShowAdvancedWebEditor={() => setShowAdvancedWebEditor(true)}
         onShowAndroidEditor={() => setShowAndroidEditor(true)}
         onShowRoadmap={() => setShowRoadmap(true)}
+        onShowDSAComic={() => setShowDSAComic(true)}
+        onShowArticles={() => setShowArticles(true)}
       />
     );
   }

@@ -9,7 +9,8 @@ import {
   ChevronDown, UserCircle, Star, Bell, Moon, Sun, Monitor,
   BarChart3, FolderOpen, Terminal, Smartphone,
   Sparkles, TrendingUp, Activity, Wifi, Brain,
-  Workflow, Boxes, Gauge, Lock, Zap as Lightning, Map, Database
+  Workflow, Boxes, Gauge, Lock, Zap as Lightning, Map, Database,
+  BookOpen, Target, FileText, ChevronUp
 } from 'lucide-react';
 
 const WelcomeScreenRedesigned = ({ 
@@ -19,7 +20,9 @@ const WelcomeScreenRedesigned = ({
   onShowWebEditor, 
   onShowAdvancedWebEditor, 
   onShowAndroidEditor,
-  onShowRoadmap 
+  onShowRoadmap,
+  onShowDSAComic,
+  onShowArticles
 }) => {
   const { user, logout, login } = useUniversalAuth();
   const [isVisible, setIsVisible] = useState(false);
@@ -38,6 +41,10 @@ const WelcomeScreenRedesigned = ({
 
   // Ref for roadmap section
   const roadmapSectionRef = useRef(null);
+  const heroSectionRef = useRef(null);
+  const featuresSectionRef = useRef(null);
+  const ctaSectionRef = useRef(null);
+  const dsaSectionRef = useRef(null);
 
   // Advanced features showcase - moved before useEffect to prevent reference errors
   const advancedFeatures = [
@@ -72,6 +79,14 @@ const WelcomeScreenRedesigned = ({
       color: 'from-blue-500 to-indigo-500',
       stats: 'Professional IDE Features',
       action: () => onShowWebEditor()
+    },
+    {
+      title: 'Programming Articles',
+      description: 'Interactive tutorials with scrolling navigation and progress tracking',
+      icon: <BookOpen className="w-12 h-12" />,
+      color: 'from-orange-500 to-red-500',
+      stats: 'In-depth Learning Content',
+      action: () => onShowArticles()
     }
   ];
 
@@ -80,7 +95,7 @@ const WelcomeScreenRedesigned = ({
     
     // Animate feature showcase
     const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % 4); // Use fixed number instead of array length
+      setActiveFeature((prev) => (prev + 1) % 5); // Updated to 5 features
     }, 4000);
 
     // Animate stats
@@ -133,6 +148,63 @@ const WelcomeScreenRedesigned = ({
       });
     }
   };
+
+  // Scroll to any section function
+  const scrollToSection = (sectionRef) => {
+    if (sectionRef && sectionRef.current) {
+      sectionRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+  };
+
+  // Full screen scrolling functions
+  const scrollPageUp = () => {
+    const currentScroll = window.pageYOffset;
+    const viewportHeight = window.innerHeight;
+    const scrollAmount = viewportHeight * 0.9; // Scroll 90% of viewport height
+    window.scrollTo({ 
+      top: Math.max(0, currentScroll - scrollAmount), 
+      behavior: 'smooth' 
+    });
+  };
+
+  const scrollPageDown = () => {
+    const currentScroll = window.pageYOffset;
+    const viewportHeight = window.innerHeight;
+    const scrollAmount = viewportHeight * 0.9; // Scroll 90% of viewport height
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    window.scrollTo({ 
+      top: Math.min(maxScroll, currentScroll + scrollAmount), 
+      behavior: 'smooth' 
+    });
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      // Full screen scrolling with Page Up/Down and Space
+      if (e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey)) {
+        e.preventDefault();
+        scrollPageDown();
+      } else if (e.key === 'PageUp' || (e.key === ' ' && e.shiftKey)) {
+        e.preventDefault();
+        scrollPageUp();
+      } 
+      // Quick navigation
+      else if (e.key === 'Home' && e.ctrlKey) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (e.key === 'End' && e.ctrlKey) {
+        e.preventDefault();
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   const getThemeIcon = () => {
     switch (theme) {
@@ -213,16 +285,154 @@ const WelcomeScreenRedesigned = ({
       action: () => onShowWebEditor()
     },
     { 
-      name: 'Learning Paths', 
-      icon: <Map size={20} />, 
-      color: 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700',
-      description: 'Interactive learning roadmaps',
-      action: () => scrollToRoadmap()
+      name: 'DSA Comics', 
+      icon: <BookOpen size={20} />, 
+      color: 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700',
+      description: 'Learn algorithms like reading comics',
+      action: () => onShowDSAComic()
+    },
+    { 
+      name: 'Programming Articles', 
+      icon: <FileText size={20} />, 
+      color: 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700',
+      description: 'In-depth tutorials and guides',
+      action: () => onShowArticles()
     }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black text-white overflow-x-hidden scroll-smooth">
+      {/* Welcome Page Scrolling Navigation */}
+      <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-40 bg-gray-800/90 backdrop-blur-sm rounded-2xl p-4 border border-gray-700/50 shadow-2xl">
+        <div className="flex flex-col space-y-3">
+          {/* Scroll to top */}
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200"
+            title="Scroll to top (Ctrl+Home)"
+          >
+            <ChevronUp size={20} />
+          </button>
+
+          {/* Page Up - Full screen scroll */}
+          <button
+            onClick={scrollPageUp}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200"
+            title="Page Up (Page Up / Shift+Space)"
+          >
+            <ChevronUp size={16} className="opacity-75" />
+          </button>
+
+          {/* Section indicators */}
+          <div className="flex flex-col space-y-2">
+            <button
+              onClick={() => scrollToSection(heroSectionRef)}
+              className="group relative p-2 rounded-lg transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-700/50"
+              title="Hero Section"
+            >
+              <div className="flex items-center justify-center">
+                <span className="text-xs font-medium">1</span>
+              </div>
+              <div className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 
+                bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 
+                transition-opacity duration-200 pointer-events-none z-50 shadow-lg border border-gray-700">
+                <div className="font-medium">Hero Section</div>
+                <div className="absolute top-1/2 transform -translate-y-1/2 -right-1 w-2 h-2 bg-gray-900 border-gray-700 rotate-45 border-l border-t"></div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => scrollToSection(featuresSectionRef)}
+              className="group relative p-2 rounded-lg transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-700/50"
+              title="Features"
+            >
+              <div className="flex items-center justify-center">
+                <span className="text-xs font-medium">2</span>
+              </div>
+              <div className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 
+                bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 
+                transition-opacity duration-200 pointer-events-none z-50 shadow-lg border border-gray-700">
+                <div className="font-medium">Platform Features</div>
+                <div className="absolute top-1/2 transform -translate-y-1/2 -right-1 w-2 h-2 bg-gray-900 border-gray-700 rotate-45 border-l border-t"></div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => scrollToSection(roadmapSectionRef)}
+              className="group relative p-2 rounded-lg transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-700/50"
+              title="Learning Roadmaps"
+            >
+              <div className="flex items-center justify-center">
+                <span className="text-xs font-medium">3</span>
+              </div>
+              <div className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 
+                bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 
+                transition-opacity duration-200 pointer-events-none z-50 shadow-lg border border-gray-700">
+                <div className="font-medium">Learning Roadmaps</div>
+                <div className="absolute top-1/2 transform -translate-y-1/2 -right-1 w-2 h-2 bg-gray-900 border-gray-700 rotate-45 border-l border-t"></div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => scrollToSection(dsaSectionRef)}
+              className="group relative p-2 rounded-lg transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-700/50"
+              title="DSA Comics"
+            >
+              <div className="flex items-center justify-center">
+                <span className="text-xs font-medium">4</span>
+              </div>
+              <div className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 
+                bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 
+                transition-opacity duration-200 pointer-events-none z-50 shadow-lg border border-gray-700">
+                <div className="font-medium">DSA Comic Book</div>
+                <div className="absolute top-1/2 transform -translate-y-1/2 -right-1 w-2 h-2 bg-gray-900 border-gray-700 rotate-45 border-l border-t"></div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => scrollToSection(ctaSectionRef)}
+              className="group relative p-2 rounded-lg transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-700/50"
+              title="Get Started"
+            >
+              <div className="flex items-center justify-center">
+                <span className="text-xs font-medium">5</span>
+              </div>
+              <div className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 
+                bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 
+                transition-opacity duration-200 pointer-events-none z-50 shadow-lg border border-gray-700">
+                <div className="font-medium">Get Started</div>
+                <div className="absolute top-1/2 transform -translate-y-1/2 -right-1 w-2 h-2 bg-gray-900 border-gray-700 rotate-45 border-l border-t"></div>
+              </div>
+            </button>
+          </div>
+
+          {/* Page Down - Full screen scroll */}
+          <button
+            onClick={scrollPageDown}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200"
+            title="Page Down (Page Down / Space)"
+          >
+            <ChevronDown size={16} className="opacity-75" />
+          </button>
+          
+          {/* Scroll to bottom */}
+          <button
+            onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200"
+            title="Scroll to bottom (Ctrl+End)"
+          >
+            <ChevronDown size={20} />
+          </button>
+        </div>
+
+        {/* Shortcuts info */}
+        <div className="mt-4 pt-3 border-t border-gray-700 text-center">
+          <div className="text-xs text-gray-600">
+            Space/PgDn: Page scroll
+          </div>
+        </div>
+      </div>
+
       <div className="h-screen overflow-y-auto scroll-smooth">
         {/* Modern Navigation */}
         <nav className="border-b border-gray-800/50 bg-black/20 backdrop-blur-xl sticky top-0 z-50">
@@ -437,7 +647,7 @@ const WelcomeScreenRedesigned = ({
           </div>
         </nav>
         {/* Hero Section with Advanced Features Showcase */}
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden" ref={heroSectionRef}>
           {/* Animated Background */}
           <div className="absolute inset-0">
             <div className="absolute top-20 left-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -688,7 +898,7 @@ const WelcomeScreenRedesigned = ({
         </div>
 
         {/* Advanced Features Grid */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24" ref={featuresSectionRef}>
           <div className="text-center mb-20">
             <h2 className="text-5xl font-bold mb-6">
               Enterprise-Grade
@@ -718,7 +928,7 @@ const WelcomeScreenRedesigned = ({
         </div>
 
         {/* Enhanced CTA Section */}
-        <div className="bg-gradient-to-r from-purple-900/20 via-pink-900/20 to-red-900/20 border-y border-gray-800/50 backdrop-blur-sm">
+        <div className="bg-gradient-to-r from-purple-900/20 via-pink-900/20 to-red-900/20 border-y border-gray-800/50 backdrop-blur-sm" ref={ctaSectionRef}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
             <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Development?</h2>
             <p className="text-xl text-gray-300 mb-10 leading-relaxed">
@@ -780,7 +990,7 @@ const WelcomeScreenRedesigned = ({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
               {/* Web Development Roadmap */}
               <div className="group bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 hover:transform hover:scale-105">
                 <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
@@ -792,11 +1002,11 @@ const WelcomeScreenRedesigned = ({
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Foundation</span>
-                    <span className="text-green-400">✓ Complete</span>
+                    <span className="text-gray-500">⏳ Not Started</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Frontend Frameworks</span>
-                    <span className="text-blue-400">📚 In Progress</span>
+                    <span className="text-gray-500">⏳ Locked</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Backend Development</span>
@@ -805,14 +1015,14 @@ const WelcomeScreenRedesigned = ({
                 </div>
 
                 <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style={{ width: '35%' }}></div>
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style={{ width: '0%' }}></div>
                 </div>
 
                 <button 
                   onClick={() => onShowRoadmap && onShowRoadmap()}
                   className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-3 rounded-lg font-semibold transition-all duration-300"
                 >
-                  Continue Learning
+                  Start Learning
                 </button>
               </div>
 
@@ -827,7 +1037,7 @@ const WelcomeScreenRedesigned = ({
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Android Basics</span>
-                    <span className="text-blue-400">📚 In Progress</span>
+                    <span className="text-gray-500">⏳ Not Started</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">UI/UX Development</span>
@@ -840,7 +1050,7 @@ const WelcomeScreenRedesigned = ({
                 </div>
 
                 <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
-                  <div className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full" style={{ width: '20%' }}></div>
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full" style={{ width: '0%' }}></div>
                 </div>
 
                 <button 
@@ -862,11 +1072,11 @@ const WelcomeScreenRedesigned = ({
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Fundamentals</span>
-                    <span className="text-green-400">✓ Complete</span>
+                    <span className="text-gray-500">⏳ Not Started</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Algorithms</span>
-                    <span className="text-blue-400">📚 In Progress</span>
+                    <span className="text-gray-500">⏳ Locked</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Advanced Topics</span>
@@ -875,14 +1085,49 @@ const WelcomeScreenRedesigned = ({
                 </div>
 
                 <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
-                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style={{ width: '0%' }}></div>
                 </div>
 
                 <button 
                   onClick={() => onShowRoadmap && onShowRoadmap()}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-lg font-semibold transition-all duration-300"
                 >
-                  Continue Learning
+                  Start Learning
+                </button>
+              </div>
+
+              {/* Programming Articles */}
+              <div className="group bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-orange-500/50 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <BookOpen className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-white">Programming Articles</h3>
+                <p className="text-gray-400 mb-6">In-depth tutorials and guides on modern programming concepts with interactive examples</p>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">React Hooks Guide</span>
+                    <span className="text-green-400">✓ Available</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">Async JavaScript</span>
+                    <span className="text-green-400">✓ Available</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">CSS Grid vs Flexbox</span>
+                    <span className="text-green-400">✓ Available</span>
+                  </div>
+                </div>
+
+                <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
+                  <div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                </div>
+
+                <button 
+                  onClick={() => onShowArticles && onShowArticles()}
+                  className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white py-3 rounded-lg font-semibold transition-all duration-300"
+                >
+                  Read Articles
                 </button>
               </div>
             </div>
@@ -913,6 +1158,156 @@ const WelcomeScreenRedesigned = ({
           </div>
         </div>
 
+        {/* DSA Comic Book Section */}
+        <div className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-900/20 via-indigo-900/20 to-blue-900/20" ref={dsaSectionRef}>
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+                📚 DSA Comic Book
+              </h2>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Learn Data Structures & Algorithms like reading comic books! Interactive animations, engaging stories, and visual diagrams make complex concepts easy to understand.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* Left side - Features */}
+              <div className="space-y-8">
+                <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                      <BookOpen className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">Comic-Style Learning</h3>
+                  </div>
+                  <p className="text-gray-300">
+                    Each DSA topic is presented as an engaging comic story with characters, narratives, and visual metaphors that make learning memorable and fun.
+                  </p>
+                </div>
+
+                <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                      <Zap className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">Interactive Animations</h3>
+                  </div>
+                  <p className="text-gray-300">
+                    Watch data structures come to life with step-by-step animations. Control the speed, pause, and replay to understand every operation.
+                  </p>
+                </div>
+
+                <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:border-green-500/50 transition-all duration-300">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center">
+                      <Target className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">Visual Metaphors</h3>
+                  </div>
+                  <p className="text-gray-300">
+                    Arrays become neighborhoods, linked lists become trains, stacks become pancakes - making abstract concepts concrete and relatable.
+                  </p>
+                </div>
+              </div>
+
+              {/* Right side - Preview */}
+              <div className="relative">
+                <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-3xl border border-gray-700/50 overflow-hidden shadow-2xl">
+                  {/* Comic preview header */}
+                  <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 border-b border-gray-700/50">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex space-x-2">
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      </div>
+                      <span className="text-sm text-gray-300 font-medium">DSA Comic Viewer</span>
+                    </div>
+                  </div>
+
+                  {/* Comic preview content */}
+                  <div className="p-8">
+                    <div className="text-center mb-6">
+                      <h3 className="text-2xl font-bold text-white mb-2">🏠 Arrays: The Neighborhood</h3>
+                      <p className="text-gray-300">Meet the Array family - houses in a row!</p>
+                    </div>
+
+                    {/* Animated array preview */}
+                    <div className="flex items-center justify-center space-x-2 mb-6">
+                      {[0, 1, 2, 3, 4].map((index) => (
+                        <div
+                          key={index}
+                          className="w-12 h-12 border-2 border-blue-400 rounded-lg flex items-center justify-center text-white font-bold bg-blue-500/20 animate-pulse"
+                          style={{
+                            animationDelay: `${index * 0.2}s`
+                          }}
+                        >
+                          {index}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="bg-blue-900/20 rounded-xl p-4 border border-blue-500/30">
+                      <div className="flex items-center space-x-3">
+                        <BookOpen className="text-blue-400" size={20} />
+                        <p className="text-gray-200 italic text-sm">
+                          "Arrays are like houses on a street - each house has an address (index) and stores one family (element)!"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating elements */}
+                <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center animate-bounce">
+                  <span className="text-2xl">📖</span>
+                </div>
+                <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center animate-pulse">
+                  <span className="text-xl">✨</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Topics preview */}
+            <div className="mt-16">
+              <h3 className="text-2xl font-bold text-center text-white mb-8">Available Comic Topics</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {[
+                  { name: 'Arrays', emoji: '🏠', color: 'from-blue-500 to-cyan-500' },
+                  { name: 'Linked Lists', emoji: '🚂', color: 'from-green-500 to-emerald-500' },
+                  { name: 'Stacks', emoji: '🥞', color: 'from-yellow-500 to-orange-500' },
+                  { name: 'Queues', emoji: '🎢', color: 'from-purple-500 to-pink-500' },
+                  { name: 'Trees', emoji: '🌳', color: 'from-green-600 to-teal-500' },
+                  { name: 'Graphs', emoji: '🗺️', color: 'from-indigo-500 to-purple-500' }
+                ].map((topic, index) => (
+                  <div
+                    key={index}
+                    className={`bg-gradient-to-r ${topic.color} p-4 rounded-xl text-center text-white font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300`}
+                  >
+                    <div className="text-2xl mb-2">{topic.emoji}</div>
+                    <div className="text-sm">{topic.name}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="text-center mt-12">
+              <button
+                onClick={() => onShowDSAComic && onShowDSAComic()}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-10 py-4 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-2xl transform hover:scale-105 mx-auto"
+              >
+                <BookOpen className="w-6 h-6" />
+                <span>Start Reading DSA Comics</span>
+                <ArrowRight className="w-6 h-6" />
+              </button>
+              <p className="text-gray-400 text-sm mt-4">
+                Free interactive learning • No signup required • Visual & engaging
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Enhanced Footer */}
         <footer className="bg-black/50 border-t border-gray-800/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -938,7 +1333,7 @@ const WelcomeScreenRedesigned = ({
             </div>
             
             <div className="mt-8 pt-8 border-t border-gray-800/50 text-center text-sm text-gray-500">
-              <p>© 2024 Codex Playground Pro. Built with ❤️ for developers worldwide. Supporting 1B+ users with enterprise-grade infrastructure.</p>
+              <p>© 2025 Codex Playground Pro. Built with ❤️ for developers worldwide. Supporting 1B+ users with enterprise-grade infrastructure.</p>
             </div>
           </div>
         </footer>
