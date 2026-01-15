@@ -26,10 +26,8 @@ export const AuthProvider = ({ children }) => {
           name: clerkUser.firstName || 'User'
         };
         setUser(simpleUser);
-        console.log('✅ User signed in:', simpleUser.email);
       } else {
         setUser(null);
-        console.log('🔓 User signed out');
       }
     }
   }, [isLoaded, isSignedIn, clerkUser?.id]);
@@ -40,6 +38,8 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
     } catch (error) {
       console.error('Logout error:', error);
+      // Force logout even if there's an error
+      setUser(null);
     }
   };
 

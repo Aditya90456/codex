@@ -10,7 +10,7 @@ import {
   BarChart3, FolderOpen, Terminal, Smartphone,
   Sparkles, TrendingUp, Activity, Wifi, Brain,
   Workflow, Boxes, Gauge, Lock, Zap as Lightning, Map, Database,
-  BookOpen, Target, FileText, ChevronUp
+  BookOpen, Target, FileText, ChevronUp, Gamepad2
 } from 'lucide-react';
 
 const WelcomeScreenRedesigned = ({ 
@@ -22,10 +22,21 @@ const WelcomeScreenRedesigned = ({
   onShowAndroidEditor,
   onShowRoadmap,
   onShowDSAComic,
-  onShowArticles
+  onShowArticles,
+  onShowCodexRedesigned,
+  onShowGame
 }) => {
   const { user, logout, login } = useUniversalAuth();
   const [isVisible, setIsVisible] = useState(false);
+  
+  // Debug: Log all props to see what's being passed - Remove in production
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 WelcomeScreenRedesigned Props Debug:');
+      console.log('- onShowGame:', typeof onShowGame, onShowGame);
+      console.log('- user:', user);
+    }
+  }, [onShowGame, user]);
   const [activeFeature, setActiveFeature] = useState(0);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -87,6 +98,14 @@ const WelcomeScreenRedesigned = ({
       color: 'from-orange-500 to-red-500',
       stats: 'In-depth Learning Content',
       action: () => onShowArticles()
+    },
+    {
+      title: 'Codex Runtime Analyzer',
+      description: 'Advanced code editor with real-time runtime analysis and performance insights',
+      icon: <Brain className="w-12 h-12" />,
+      color: 'from-indigo-500 to-purple-500',
+      stats: 'Real-time Analysis',
+      action: () => onShowCodexRedesigned()
     }
   ];
 
@@ -95,7 +114,7 @@ const WelcomeScreenRedesigned = ({
     
     // Animate feature showcase
     const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % 5); // Updated to 5 features
+      setActiveFeature((prev) => (prev + 1) % 6); // Updated to 6 features
     }, 4000);
 
     // Animate stats
@@ -129,8 +148,13 @@ const WelcomeScreenRedesigned = ({
   }, []);
 
   const handleLogout = async () => {
-    await logout();
-    setShowUserDropdown(false);
+    try {
+      await logout();
+      setShowUserDropdown(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+      setShowUserDropdown(false);
+    }
   };
 
   const toggleTheme = () => {
@@ -271,6 +295,21 @@ const WelcomeScreenRedesigned = ({
       action: () => onShowAdvancedWebEditor()
     },
     { 
+      name: 'DSA Master Game', 
+      icon: <Gamepad2 size={20} />, 
+      color: 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700',
+      description: 'Interactive DSA learning game',
+      action: () => {
+        if (window.navigateToGame) {
+          window.navigateToGame();
+        } else if (typeof onShowGame === 'function') {
+          onShowGame();
+        } else {
+          alert('Please sign in to access the DSA Game!');
+        }
+      }
+    },
+    { 
       name: 'Android Studio', 
       icon: <Smartphone size={20} />, 
       color: 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700',
@@ -297,6 +336,13 @@ const WelcomeScreenRedesigned = ({
       color: 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700',
       description: 'In-depth tutorials and guides',
       action: () => onShowArticles()
+    },
+    { 
+      name: 'Runtime Analyzer', 
+      icon: <Brain size={20} />, 
+      color: 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700',
+      description: 'Real-time code analysis and performance insights',
+      action: () => onShowCodexRedesigned()
     }
   ];
 
@@ -450,6 +496,13 @@ const WelcomeScreenRedesigned = ({
                     Codex Playground Pro
                   </h1>
                   <p className="text-sm text-gray-400">Next-Generation Development Platform</p>
+                </div>
+              </div>
+              
+              {/* Debug Info - Remove in production */}
+              <div className="hidden">
+                <div className="text-xs text-gray-500 bg-gray-800/50 px-3 py-1 rounded-full">
+                  {user ? `Authenticated: ${user.name}` : 'Not Authenticated'} | onShowGame: {typeof onShowGame}
                 </div>
               </div>
               
@@ -720,6 +773,27 @@ const WelcomeScreenRedesigned = ({
                         </button>
                       ))}
                     </div>
+
+                    {/* DSA Game CTA Button */}
+                    <div className="mb-8">
+                      <button
+                        onClick={() => {
+                          if (window.navigateToGame) {
+                            window.navigateToGame();
+                          } else {
+                            alert('Please ensure you are signed in to play the DSA Game!');
+                          }
+                        }}
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-2xl font-bold text-xl shadow-lg hover:shadow-2xl transform hover:scale-105 flex items-center justify-center space-x-4 transition-all duration-300"
+                      >
+                        <Gamepad2 className="w-8 h-8" />
+                        <span>🎮 PLAY DSA GAME</span>
+                        <ArrowRight className="w-8 h-8" />
+                      </button>
+                      <p className="text-center text-sm text-gray-400 mt-2">
+                        Interactive Data Structures & Algorithms Learning
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   // Enhanced content for non-logged-in users
@@ -958,6 +1032,13 @@ const WelcomeScreenRedesigned = ({
               >
                 <Smartphone className="w-6 h-6" />
                 <span>Android Studio</span>
+              </button>
+              <button
+                onClick={() => onShowCodexRedesigned()}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-10 py-4 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-2xl transform hover:scale-105"
+              >
+                <Brain className="w-6 h-6" />
+                <span>Runtime Analyzer</span>
               </button>
             </div>
 

@@ -12,6 +12,7 @@ import AndroidStudioFixed from './AndroidStudioFixed';
 import InteractiveRoadmap from './Roadmap/InteractiveRoadmap';
 import DSAComicViewer from './DSA/DSAComicViewer';
 import ArticleViewer from './Articles/ArticleViewer';
+import CodexEditorRedesigned from './CodexEditorRedesigned';
 import ScrollToTop from './ScrollToTop';
 import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
@@ -28,7 +29,8 @@ import {
   BarChart3,
   Globe,
   Smartphone,
-  Rocket
+  Rocket,
+  Brain
 } from 'lucide-react';
 
 const CodexEditor = () => {
@@ -44,6 +46,7 @@ const CodexEditor = () => {
   const [showRoadmap, setShowRoadmap] = useState(false);
   const [showDSAComic, setShowDSAComic] = useState(false);
   const [showArticles, setShowArticles] = useState(false);
+  const [showCodexRedesigned, setShowCodexRedesigned] = useState(false);
   const [authMode, setAuthMode] = useState('login');
 
   // Reset states when user logs out
@@ -59,6 +62,7 @@ const CodexEditor = () => {
       setShowRoadmap(false);
       setShowDSAComic(false);
       setShowArticles(false);
+      setShowCodexRedesigned(false);
       console.log('🔄 Reset - User logged out, all states cleared');
     }
   }, [isAuthenticated]);
@@ -153,6 +157,15 @@ console.log("Happy coding! 🚀");
           <p className="text-gray-400">Initializing authentication...</p>
         </div>
       </div>
+    );
+  }
+
+  if (showCodexRedesigned) {
+    return (
+      <CodexEditorRedesigned onBack={() => {
+        setShowCodexRedesigned(false);
+        setShowWelcome(true);
+      }} />
     );
   }
 
@@ -286,6 +299,7 @@ int main() {
         onShowRoadmap={() => setShowRoadmap(true)}
         onShowDSAComic={() => setShowDSAComic(true)}
         onShowArticles={() => setShowArticles(true)}
+        onShowCodexRedesigned={() => setShowCodexRedesigned(true)}
       />
     );
   }
