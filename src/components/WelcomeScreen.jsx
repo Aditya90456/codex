@@ -669,6 +669,106 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard, onShowGame })
         </div>
       </div>
 
+      {/* Mentorship Section */}
+      <div className="bg-gradient-to-r from-orange-600/10 via-pink-600/10 to-purple-600/10 border-y border-gray-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="bg-gradient-to-r from-orange-500/10 to-pink-500/10 backdrop-blur-sm border border-orange-500/20 rounded-2xl p-8 md:p-12">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              {/* Left Content */}
+              <div>
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-500/10 text-orange-400 border border-orange-500/20 mb-4">
+                  <Users className="w-4 h-4 mr-2" />
+                  1-on-1 Mentorship Available
+                </div>
+                
+                <h2 className="text-4xl font-bold mb-4 text-white">
+                  Get Expert Mentorship
+                </h2>
+                
+                <p className="text-xl text-gray-300 mb-6 leading-relaxed">
+                  Learn directly from <span className="text-orange-400 font-semibold">Aditya Bakshi</span>, 
+                  an experienced developer who can guide you through your coding journey with personalized 
+                  mentorship sessions.
+                </p>
+
+                {/* Topics */}
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-center space-x-3 text-gray-300">
+                    <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                      <Code className="w-4 h-4 text-orange-400" />
+                    </div>
+                    <span>DSA & Problem Solving</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-gray-300">
+                    <div className="w-8 h-8 bg-pink-500/20 rounded-lg flex items-center justify-center">
+                      <Layers className="w-4 h-4 text-pink-400" />
+                    </div>
+                    <span>Full Stack Development</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-gray-300">
+                    <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                      <Target className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <span>Career Guidance & Interview Prep</span>
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <a
+                  href="https://topmate.io/aditya_bakshi/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center space-x-3 bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-700 hover:to-pink-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <Users className="w-5 h-5" />
+                  <span>Book a Session</span>
+                  <ArrowRight className="w-5 h-5" />
+                </a>
+              </div>
+
+              {/* Right Content - Stats/Benefits */}
+              <div className="space-y-4">
+                <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 hover:border-orange-500/30 transition-all duration-300">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-pink-500 rounded-xl flex items-center justify-center">
+                      <Lightbulb className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">Personalized Learning</h3>
+                      <p className="text-sm text-gray-400">Tailored guidance based on your goals</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 hover:border-pink-500/30 transition-all duration-300">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl flex items-center justify-center">
+                      <Rocket className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">Career Acceleration</h3>
+                      <p className="text-sm text-gray-400">Fast-track your development career</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 hover:border-purple-500/30 transition-all duration-300">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
+                      <Trophy className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">Interview Success</h3>
+                      <p className="text-sm text-gray-400">Ace your technical interviews</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* CTA Section */}
       <div className="bg-gradient-to-r from-blue-600/10 to-purple-600/10 border-y border-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">

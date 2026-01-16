@@ -100,7 +100,7 @@ const WelcomeScreenRedesigned = ({
       action: () => onShowArticles()
     },
     {
-      title: 'Codex Runtime Analyzer',
+      title: 'Codex Editor',
       description: 'Advanced code editor with real-time runtime analysis and performance insights',
       icon: <Brain className="w-12 h-12" />,
       color: 'from-indigo-500 to-purple-500',
@@ -338,7 +338,7 @@ const WelcomeScreenRedesigned = ({
       action: () => onShowArticles()
     },
     { 
-      name: 'Runtime Analyzer', 
+      name: 'Codex Editor', 
       icon: <Brain size={20} />, 
       color: 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700',
       description: 'Real-time code analysis and performance insights',
@@ -1001,6 +1001,106 @@ const WelcomeScreenRedesigned = ({
           </div>
         </div>
 
+        {/* Mentorship Section */}
+        <div className="bg-gradient-to-r from-orange-600/10 via-pink-600/10 to-purple-600/10 border-y border-gray-800/50 backdrop-blur-sm">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="bg-gradient-to-r from-orange-500/10 to-pink-500/10 backdrop-blur-sm border border-orange-500/20 rounded-3xl p-8 md:p-12">
+              <div className="grid md:grid-cols-2 gap-8 items-center">
+                {/* Left Content */}
+                <div>
+                  <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-orange-500/10 text-orange-400 border border-orange-500/20 mb-6">
+                    <Users className="w-4 h-4 mr-2" />
+                    1-on-1 Mentorship Available
+                  </div>
+                  
+                  <h2 className="text-5xl font-bold mb-6 text-white">
+                    Get Expert Mentorship
+                  </h2>
+                  
+                  <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+                    Learn directly from <span className="text-orange-400 font-semibold">Aditya Bakshi</span>, 
+                    an experienced developer who can guide you through your coding journey with personalized 
+                    mentorship sessions.
+                  </p>
+
+                  {/* Topics */}
+                  <div className="space-y-4 mb-8">
+                    <div className="flex items-center space-x-4 text-gray-300">
+                      <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
+                        <Code className="w-6 h-6 text-orange-400" />
+                      </div>
+                      <span className="text-lg">DSA & Problem Solving</span>
+                    </div>
+                    <div className="flex items-center space-x-4 text-gray-300">
+                      <div className="w-12 h-12 bg-pink-500/20 rounded-xl flex items-center justify-center">
+                        <Terminal className="w-6 h-6 text-pink-400" />
+                      </div>
+                      <span className="text-lg">Full Stack Development</span>
+                    </div>
+                    <div className="flex items-center space-x-4 text-gray-300">
+                      <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                        <Target className="w-6 h-6 text-purple-400" />
+                      </div>
+                      <span className="text-lg">Career Guidance & Interview Prep</span>
+                    </div>
+                  </div>
+
+                  {/* CTA Button */}
+                  <a
+                    href="https://topmate.io/aditya_bakshi/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center space-x-3 bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-700 hover:to-pink-700 px-10 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:scale-105"
+                  >
+                    <Users className="w-6 h-6" />
+                    <span>Book a Session</span>
+                    <ArrowRight className="w-6 h-6" />
+                  </a>
+                </div>
+
+                {/* Right Content - Stats/Benefits */}
+                <div className="space-y-6">
+                  <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 hover:border-orange-500/30 transition-all duration-300 transform hover:scale-105">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-2">Personalized Learning</h3>
+                        <p className="text-sm text-gray-400">Tailored guidance based on your goals</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 hover:border-pink-500/30 transition-all duration-300 transform hover:scale-105">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center">
+                        <Rocket className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-2">Career Acceleration</h3>
+                        <p className="text-sm text-gray-400">Fast-track your development career</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 hover:border-purple-500/30 transition-all duration-300 transform hover:scale-105">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center">
+                        <Trophy className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-2">Interview Success</h3>
+                        <p className="text-sm text-gray-400">Ace your technical interviews</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Enhanced CTA Section */}
         <div className="bg-gradient-to-r from-purple-900/20 via-pink-900/20 to-red-900/20 border-y border-gray-800/50 backdrop-blur-sm" ref={ctaSectionRef}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
@@ -1038,7 +1138,7 @@ const WelcomeScreenRedesigned = ({
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-10 py-4 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-2xl transform hover:scale-105"
               >
                 <Brain className="w-6 h-6" />
-                <span>Runtime Analyzer</span>
+                <span>Codex Editor</span>
               </button>
             </div>
 

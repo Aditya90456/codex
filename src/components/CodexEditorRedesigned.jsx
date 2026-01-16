@@ -22,11 +22,22 @@ import {
   ArrowLeft,
   Sun,
   Moon,
-  Monitor
+  Monitor,
+  Eye,
+  Layout,
+  ExternalLink,
+  Zap,
+  Award,
+  BookOpen,
+  Users,
+  X
 } from 'lucide-react';
 
 const CodexEditorRedesigned = ({ onBack }) => {
   const { user } = useUniversalAuth();
+  
+  // Welcome screen state
+  const [showWelcome, setShowWelcome] = useState(true);
   
   // Helper function for default code
   const getDefaultCode = (lang) => {
@@ -183,8 +194,10 @@ console.log("🚀 Ready to code in ${lang}!");`;
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fileName, setFileName] = useState('solution.js');
   const [showAnalysis, setShowAnalysis] = useState(true);
-  const [showConsole, setShowConsole] = useState(true);
+  const [showConsole, setShowConsole] = useState(false);
+  const [showOutput, setShowOutput] = useState(false);
   const [consoleOutput, setConsoleOutput] = useState([]);
+  const [htmlOutput, setHtmlOutput] = useState('');
   const [isExecuting, setIsExecuting] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -196,7 +209,7 @@ console.log("🚀 Ready to code in ${lang}!");`;
 
   // Custom snippets for different languages
   const getLanguageSnippets = (lang) => {
-    const snippets = {
+      const snippets = {
       javascript: [
         {
           label: 'fibonacci-optimized',
@@ -213,8 +226,34 @@ console.log("🚀 Ready to code in ${lang}!");`;
         {
           label: 'performance-timer',
           kind: 'Snippet',
-          insertText: 'console.time(\'${1:operation}\');\n${2:// Your codec here}\nconsole.timeEnd(\'${1:operation}\');',
+          insertText: 'console.time(\'${1:operation}\');\n${2:// Your code here}\nconsole.timeEnd(\'${1:operation}\');',
           documentation: 'Performance timing wrapper'
+        },
+        {
+          label: 'array-methods',
+          kind: 'Snippet',
+          insertText: 'const result = array\n  .filter(item => ${1:condition})\n  .map(item => ${2:transformation})\n  .reduce((acc, item) => ${3:accumulator}, ${4:initial});',
+          documentation: 'Chained array methods pattern'
+        }
+      ],
+      typescript: [
+        {
+          label: 'interface',
+          kind: 'Snippet',
+          insertText: 'interface ${1:InterfaceName} {\n  ${2:property}: ${3:type};\n  ${4:method}(${5:params}): ${6:returnType};\n}',
+          documentation: 'TypeScript interface definition'
+        },
+        {
+          label: 'generic-function',
+          kind: 'Snippet',
+          insertText: 'function ${1:functionName}<T>(${2:param}: T): T {\n  ${3:// Implementation}\n  return ${2:param};\n}',
+          documentation: 'Generic function template'
+        },
+        {
+          label: 'type-guard',
+          kind: 'Snippet',
+          insertText: 'function is${1:Type}(value: any): value is ${1:Type} {\n  return ${2:condition};\n}',
+          documentation: 'Type guard function'
         }
       ],
       python: [
@@ -229,6 +268,18 @@ console.log("🚀 Ready to code in ${lang}!");`;
           kind: 'Snippet',
           insertText: 'class ${1:ClassName}:\n    def __init__(self, ${2:params}):\n        ${3:pass}\n    \n    def ${4:method_name}(self, ${5:params}):\n        ${6:pass}',
           documentation: 'Python class template'
+        },
+        {
+          label: 'list-comprehension',
+          kind: 'Snippet',
+          insertText: 'result = [${1:expression} for ${2:item} in ${3:iterable} if ${4:condition}]',
+          documentation: 'List comprehension pattern'
+        },
+        {
+          label: 'decorator',
+          kind: 'Snippet',
+          insertText: 'def ${1:decorator_name}(func):\n    def wrapper(*args, **kwargs):\n        ${2:# Before function call}\n        result = func(*args, **kwargs)\n        ${3:# After function call}\n        return result\n    return wrapper',
+          documentation: 'Function decorator template'
         }
       ],
       java: [
@@ -243,6 +294,154 @@ console.log("🚀 Ready to code in ${lang}!");`;
           kind: 'Snippet',
           insertText: 'public class ${1:ClassName} {\n    private ${2:type} ${3:field};\n    \n    public ${1:ClassName}(${4:params}) {\n        ${5:// Constructor}\n    }\n    \n    public ${6:returnType} ${7:methodName}(${8:params}) {\n        ${9:// Method implementation}\n    }\n}',
           documentation: 'Java class template'
+        },
+        {
+          label: 'try-catch',
+          kind: 'Snippet',
+          insertText: 'try {\n    ${1:// Code that may throw exception}\n} catch (${2:Exception} e) {\n    ${3:// Handle exception}\n    e.printStackTrace();\n}',
+          documentation: 'Try-catch exception handling'
+        },
+        {
+          label: 'stream-api',
+          kind: 'Snippet',
+          insertText: 'List<${1:Type}> result = list.stream()\n    .filter(item -> ${2:condition})\n    .map(item -> ${3:transformation})\n    .collect(Collectors.toList());',
+          documentation: 'Java Stream API pattern'
+        }
+      ],
+      cpp: [
+        {
+          label: 'class-template',
+          kind: 'Snippet',
+          insertText: 'class ${1:ClassName} {\nprivate:\n    ${2:type} ${3:member};\n    \npublic:\n    ${1:ClassName}(${4:params}) : ${3:member}(${5:value}) {}\n    \n    ${6:returnType} ${7:methodName}(${8:params}) {\n        ${9:// Implementation}\n    }\n};',
+          documentation: 'C++ class template'
+        },
+        {
+          label: 'vector-loop',
+          kind: 'Snippet',
+          insertText: 'for (const auto& ${1:item} : ${2:vector}) {\n    ${3:// Process item}\n}',
+          documentation: 'Range-based for loop for vectors'
+        },
+        {
+          label: 'smart-pointer',
+          kind: 'Snippet',
+          insertText: 'std::unique_ptr<${1:Type}> ${2:ptr} = std::make_unique<${1:Type}>(${3:args});',
+          documentation: 'Smart pointer creation'
+        }
+      ],
+      go: [
+        {
+          label: 'struct-template',
+          kind: 'Snippet',
+          insertText: 'type ${1:StructName} struct {\n    ${2:Field} ${3:type}\n}\n\nfunc (${4:s} *${1:StructName}) ${5:MethodName}() ${6:returnType} {\n    ${7:// Implementation}\n}',
+          documentation: 'Go struct with method'
+        },
+        {
+          label: 'error-handling',
+          kind: 'Snippet',
+          insertText: 'if err != nil {\n    return ${1:nil}, fmt.Errorf("${2:error message}: %w", err)\n}',
+          documentation: 'Go error handling pattern'
+        },
+        {
+          label: 'goroutine',
+          kind: 'Snippet',
+          insertText: 'go func() {\n    ${1:// Concurrent code}\n}()',
+          documentation: 'Anonymous goroutine'
+        }
+      ],
+      rust: [
+        {
+          label: 'struct-impl',
+          kind: 'Snippet',
+          insertText: 'struct ${1:StructName} {\n    ${2:field}: ${3:type},\n}\n\nimpl ${1:StructName} {\n    fn ${4:method_name}(&self) -> ${5:ReturnType} {\n        ${6:// Implementation}\n    }\n}',
+          documentation: 'Rust struct with implementation'
+        },
+        {
+          label: 'result-handling',
+          kind: 'Snippet',
+          insertText: 'match ${1:result} {\n    Ok(${2:value}) => ${3:// Handle success},\n    Err(${4:error}) => ${5:// Handle error},\n}',
+          documentation: 'Result type pattern matching'
+        },
+        {
+          label: 'option-handling',
+          kind: 'Snippet',
+          insertText: 'if let Some(${1:value}) = ${2:option} {\n    ${3:// Use value}\n}',
+          documentation: 'Option type handling'
+        }
+      ],
+      html: [
+        {
+          label: 'html5-template',
+          kind: 'Snippet',
+          insertText: '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${1:Page Title}</title>\n</head>\n<body>\n    ${2:<!-- Content -->}\n</body>\n</html>',
+          documentation: 'HTML5 document template'
+        },
+        {
+          label: 'form-template',
+          kind: 'Snippet',
+          insertText: '<form action="${1:/submit}" method="${2:post}">\n    <label for="${3:field}">${4:Label}:</label>\n    <input type="${5:text}" id="${3:field}" name="${3:field}" required>\n    <button type="submit">${6:Submit}</button>\n</form>',
+          documentation: 'HTML form template'
+        }
+      ],
+      css: [
+        {
+          label: 'flexbox-center',
+          kind: 'Snippet',
+          insertText: '.${1:container} {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n}',
+          documentation: 'Flexbox centering pattern'
+        },
+        {
+          label: 'grid-layout',
+          kind: 'Snippet',
+          insertText: '.${1:container} {\n    display: grid;\n    grid-template-columns: repeat(${2:3}, 1fr);\n    gap: ${3:1rem};\n}',
+          documentation: 'CSS Grid layout'
+        },
+        {
+          label: 'media-query',
+          kind: 'Snippet',
+          insertText: '@media (max-width: ${1:768px}) {\n    ${2:// Responsive styles}\n}',
+          documentation: 'Media query for responsive design'
+        }
+      ],
+      sql: [
+        {
+          label: 'select-join',
+          kind: 'Snippet',
+          insertText: 'SELECT ${1:columns}\nFROM ${2:table1}\nINNER JOIN ${3:table2}\n  ON ${2:table1}.${4:id} = ${3:table2}.${5:foreign_id}\nWHERE ${6:condition};',
+          documentation: 'SELECT with JOIN statement'
+        },
+        {
+          label: 'create-table',
+          kind: 'Snippet',
+          insertText: 'CREATE TABLE ${1:table_name} (\n    ${2:id} INT PRIMARY KEY AUTO_INCREMENT,\n    ${3:column} ${4:VARCHAR(255)} NOT NULL,\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);',
+          documentation: 'CREATE TABLE statement'
+        }
+      ],
+      php: [
+        {
+          label: 'class-template',
+          kind: 'Snippet',
+          insertText: 'class ${1:ClassName} {\n    private $${2:property};\n    \n    public function __construct($${2:property}) {\n        $this->${2:property} = $${2:property};\n    }\n    \n    public function ${3:methodName}() {\n        ${4:// Implementation}\n    }\n}',
+          documentation: 'PHP class template'
+        },
+        {
+          label: 'try-catch',
+          kind: 'Snippet',
+          insertText: 'try {\n    ${1:// Code that may throw exception}\n} catch (${2:Exception} $e) {\n    ${3:// Handle exception}\n    error_log($e->getMessage());\n}',
+          documentation: 'PHP exception handling'
+        }
+      ],
+      ruby: [
+        {
+          label: 'class-template',
+          kind: 'Snippet',
+          insertText: 'class ${1:ClassName}\n  attr_accessor :${2:attribute}\n  \n  def initialize(${2:attribute})\n    @${2:attribute} = ${2:attribute}\n  end\n  \n  def ${3:method_name}\n    ${4:# Implementation}\n  end\nend',
+          documentation: 'Ruby class template'
+        },
+        {
+          label: 'each-loop',
+          kind: 'Snippet',
+          insertText: '${1:array}.each do |${2:item}|\n  ${3:# Process item}\nend',
+          documentation: 'Ruby each loop'
         }
       ]
     };
@@ -306,15 +505,18 @@ console.log("🚀 Ready to code in ${lang}!");`;
   }, [language, registerCustomSnippets]);
 
   const languages = [
-    { value: 'javascript', label: 'JavaScript', ext: '.js', icon: '🟨' },
-    { value: 'typescript', label: 'TypeScript', ext: '.ts', icon: '🔷' },
-    { value: 'python', label: 'Python', ext: '.py', icon: '🐍' },
-    
-    { value: 'java', label: 'Java', ext: '.java', icon: '☕' },
-    { value: 'cpp', label: 'C++', ext: '.cpp', icon: '⚡' },
-    { value: 'go', label: 'Go', ext: '.go', icon: '🐹' },
-    { value: 'rust', label: 'Rust', ext: '.rs', icon: '🦀' },
-    { value: 'html', label: 'HTML', ext: '.html', icon: '🌐' },
+    { value: 'javascript', label: 'JavaScript', ext: '.js', icon: '🟨', color: 'yellow' },
+    { value: 'typescript', label: 'TypeScript', ext: '.ts', icon: '🔷', color: 'blue' },
+    { value: 'python', label: 'Python', ext: '.py', icon: '🐍', color: 'green' },
+    { value: 'java', label: 'Java', ext: '.java', icon: '☕', color: 'orange' },
+    { value: 'cpp', label: 'C++', ext: '.cpp', icon: '⚡', color: 'purple' },
+    { value: 'go', label: 'Go', ext: '.go', icon: '🐹', color: 'cyan' },
+    { value: 'rust', label: 'Rust', ext: '.rs', icon: '🦀', color: 'red' },
+    { value: 'html', label: 'HTML', ext: '.html', icon: '🌐', color: 'pink' },
+    { value: 'css', label: 'CSS', ext: '.css', icon: '🎨', color: 'indigo' },
+    { value: 'sql', label: 'SQL', ext: '.sql', icon: '🗄️', color: 'teal' },
+    { value: 'php', label: 'PHP', ext: '.php', icon: '🐘', color: 'violet' },
+    { value: 'ruby', label: 'Ruby', ext: '.rb', icon: '💎', color: 'rose' },
   ];
 
   const themes = [
@@ -328,6 +530,28 @@ console.log("🚀 Ready to code in ${lang}!");`;
     const timeoutId = setTimeout(() => {
       analyzeCode();
     }, 500); // Debounce analysis
+
+    return () => clearTimeout(timeoutId);
+  }, [code, language]);
+
+  // Real-time output preview for HTML
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (language === 'html') {
+        // Direct HTML preview
+        setHtmlOutput(code);
+        // Auto-open output panel when HTML code is present
+        if (code.trim().length > 0) {
+          setShowOutput(true);
+        }
+      } else if (language === 'javascript' && code.includes('document.')) {
+        // JavaScript with DOM manipulation
+        setHtmlOutput(code);
+        if (code.trim().length > 0) {
+          setShowOutput(true);
+        }
+      }
+    }, 300); // Debounce for performance
 
     return () => clearTimeout(timeoutId);
   }, [code, language]);
@@ -586,14 +810,23 @@ console.log("🚀 Ready to code in ${lang}!");`;
   };
 
   const executeCode = async () => {
+    console.log('🚀 Execute button clicked');
     setIsExecuting(true);
-    setConsoleOutput([]);
+    setConsoleOutput([{
+      type: 'info',
+      content: '🚀 Starting execution...',
+      timestamp: new Date().toLocaleTimeString()
+    }]);
     
     const startTime = performance.now();
     
     try {
       // Simulate code execution
-      const output = [];
+      const output = [{
+        type: 'info',
+        content: '🚀 Starting execution...',
+        timestamp: new Date().toLocaleTimeString()
+      }];
       
       if (language === 'javascript') {
         // Create a safe execution environment
@@ -602,45 +835,65 @@ console.log("🚀 Ready to code in ${lang}!");`;
         const originalWarn = console.warn;
         
         console.log = (...args) => {
+          const content = args.map(arg => 
+            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+          ).join(' ');
           output.push({
             type: 'log',
-            content: args.join(' '),
+            content,
             timestamp: new Date().toLocaleTimeString()
           });
+          originalLog.apply(console, args);
         };
         
         console.error = (...args) => {
+          const content = args.map(arg => 
+            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+          ).join(' ');
           output.push({
             type: 'error',
-            content: args.join(' '),
+            content,
             timestamp: new Date().toLocaleTimeString()
           });
+          originalError.apply(console, args);
         };
         
         console.warn = (...args) => {
+          const content = args.map(arg => 
+            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+          ).join(' ');
           output.push({
             type: 'warn',
-            content: args.join(' '),
+            content,
             timestamp: new Date().toLocaleTimeString()
           });
+          originalWarn.apply(console, args);
         };
         
         try {
           // Execute the code
+          // eslint-disable-next-line no-eval
           const result = eval(code);
           if (result !== undefined) {
             output.push({
               type: 'result',
-              content: `Result: ${result}`,
+              content: `Result: ${typeof result === 'object' ? JSON.stringify(result, null, 2) : result}`,
               timestamp: new Date().toLocaleTimeString()
             });
           }
         } catch (error) {
           output.push({
             type: 'error',
-            content: `Error: ${error.message}`,
+            content: `❌ Error: ${error.message}`,
             timestamp: new Date().toLocaleTimeString()
           });
+          if (error.stack) {
+            output.push({
+              type: 'error',
+              content: error.stack.split('\n').slice(0, 3).join('\n'),
+              timestamp: new Date().toLocaleTimeString()
+            });
+          }
         }
         
         // Restore original console methods
@@ -670,26 +923,97 @@ console.log("🚀 Ready to code in ${lang}!");`;
       
       setExecutionTime(execTime);
       setMemoryUsage(Math.random() * 10 + 5); // Simulated memory usage
-      setConsoleOutput(output);
+      
+      // Generate HTML output for web languages
+      if (language === 'html' || (language === 'javascript' && code.includes('document.'))) {
+        setHtmlOutput(code);
+        setShowOutput(true);
+      } else if (language === 'javascript') {
+        // For JavaScript, create a simple visualization of the output
+        const visualOutput = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { 
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                padding: 20px; 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                margin: 0;
+              }
+              .output-container {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+              }
+              .output-item {
+                background: rgba(255, 255, 255, 0.2);
+                padding: 12px;
+                margin: 8px 0;
+                border-radius: 8px;
+                border-left: 4px solid #4ade80;
+              }
+              h2 { margin-top: 0; color: #fbbf24; }
+              pre { 
+                background: rgba(0, 0, 0, 0.3); 
+                padding: 12px; 
+                border-radius: 6px; 
+                overflow-x: auto;
+                color: #a5f3fc;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="output-container">
+              <h2>🚀 Execution Output</h2>
+              ${output.filter(o => o.type === 'log' || o.type === 'result').map(o => 
+                `<div class="output-item">${o.content}</div>`
+              ).join('')}
+              ${output.filter(o => o.type === 'log' || o.type === 'result').length === 0 ? 
+                '<div class="output-item">✅ Code executed successfully (no output)</div>' : ''}
+            </div>
+          </body>
+          </html>
+        `;
+        setHtmlOutput(visualOutput);
+      }
       
       // Add execution success message
-      if (output.length === 0) {
-        setConsoleOutput([{
+      if (output.length === 1) {
+        output.push({
           type: 'success',
-          content: 'Code executed successfully (no output)',
+          content: '✅ Code executed successfully (no output)',
           timestamp: new Date().toLocaleTimeString()
-        }]);
+        });
+      } else {
+        output.push({
+          type: 'success',
+          content: `✅ Execution completed in ${execTime.toFixed(2)}ms`,
+          timestamp: new Date().toLocaleTimeString()
+        });
+      }
+      
+      setConsoleOutput(output);
+      
+      // Auto-show console when code is executed
+      if (!showConsole) {
+        setShowConsole(true);
       }
       
     } catch (error) {
+      console.error('Execution error:', error);
       setConsoleOutput([{
         type: 'error',
-        content: `Execution Error: ${error.message}`,
+        content: `❌ Execution Error: ${error.message}`,
         timestamp: new Date().toLocaleTimeString()
       }]);
     }
     
     setIsExecuting(false);
+    console.log('✅ Execution complete');
   };
 
   const saveCode = () => {
@@ -760,238 +1084,474 @@ console.log("🚀 Ready to code in ${lang}!");`;
     setCode(getDefaultCode(language));
   };
 
-  return (
-    <div className={`h-screen ${theme === 'light' ? 'bg-gray-50 text-gray-900' : 'bg-gray-900 text-white'} flex flex-col ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
-      {/* Header */}
-      <div className={`${theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-800 border-gray-700'} border-b px-4 py-3`}>
-        <div className="flex items-center justify-between">
-          {/* Left - Logo and Navigation */}
-          <div className="flex items-center space-x-6">
-            <button
-              onClick={onBack}
-              className={`flex items-center space-x-2 ${theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-400 hover:text-white'} transition-colors`}
-            >
-              <ArrowLeft size={20} />
-              <span>Back</span>
-            </button>
-            
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                <Code className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
-                  Codex Runtime Analyzer
-                </h1>
-                <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                  Real-time code analysis • No tabs • Focused workflow
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Center - File Info */}
-          <div className="flex items-center space-x-4">
-            <div className={`px-3 py-1 rounded-lg ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-700'}`}>
-              <span className="text-sm font-medium">{fileName}</span>
-            </div>
-            
-            {analysis && (
-              <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${isAnalyzing ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></div>
-                <span className="text-xs text-gray-500">
-                  {isAnalyzing ? 'Analyzing...' : 'Analysis ready'}
-                </span>
-                {getLanguageSnippets(language).length > 0 && (
-                  <>
-                    <div className="w-px h-4 bg-gray-400"></div>
-                    <div className="flex items-center space-x-1">
-                      <Sparkles size={12} className="text-purple-500" />
-                      <span className="text-xs text-purple-500">
-                        {getLanguageSnippets(language).length} snippets ready
-                      </span>
-                      {snippetsUpdated && (
-                        <span className="text-xs text-green-500 animate-pulse">
-                          ✓ Updated
-                        </span>
-                      )}
-                      <span className="text-xs text-gray-400">
-                        (Ctrl+Space to see)
-                      </span>
-                    </div>
-                  </>
+  // Welcome Screen Component
+  const WelcomeScreen = () => (
+    <div className={`h-screen ${theme === 'light' ? 'bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900' : 'bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white'} overflow-y-auto`}>
+      <div className="min-h-screen flex flex-col">
+        {/* Header with Back Button */}
+        <div className={`${theme === 'light' ? 'bg-white/80 backdrop-blur-xl border-gray-200/50' : 'bg-gray-900/80 backdrop-blur-xl border-gray-800/50'} border-b shadow-sm sticky top-0 z-10`}>
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-6">
+                {onBack && (
+                  <button
+                    onClick={onBack}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-xl ${theme === 'light' ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' : 'text-gray-400 hover:text-white hover:bg-gray-800'} transition-all duration-200`}
+                  >
+                    <ArrowLeft size={18} />
+                    <span className="font-medium">Back</span>
+                  </button>
                 )}
+                
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
+                    <Code className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                      Codex Editor
+                    </h1>
+                    <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                      Professional code development environment
+                    </p>
+                  </div>
+                </div>
               </div>
-            )}
+
+              <div className="flex items-center space-x-2">
+                {themes.map(t => (
+                  <button
+                    key={t.value}
+                    onClick={() => setTheme(t.value)}
+                    className={`p-2 rounded-lg transition-all ${
+                      theme === t.value 
+                        ? theme === 'light' ? 'bg-gray-200' : 'bg-gray-700'
+                        : theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-800'
+                    }`}
+                    title={t.label}
+                  >
+                    {t.icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className={`max-w-6xl w-full ${theme === 'light' ? 'bg-white' : 'bg-gray-900'} rounded-2xl shadow-2xl overflow-hidden`}>
+            {/* Hero Header */}
+            <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 p-12 text-white text-center">
+              <div className="flex items-center justify-center mb-6">
+                <div className="w-20 h-20 bg-white/20 backdrop-blur-lg rounded-2xl flex items-center justify-center">
+                  <Code className="w-10 h-10" />
+                </div>
+              </div>
+              <h2 className="text-4xl font-bold mb-3">Welcome to Codex Editor</h2>
+              <p className="text-xl text-blue-100">Your professional code development environment</p>
+            </div>
+
+            {/* Content */}
+            <div className="p-8">
+              {/* Features Grid */}
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className={`p-6 rounded-xl ${theme === 'light' ? 'bg-purple-50' : 'bg-purple-900/20'} border ${theme === 'light' ? 'border-purple-200' : 'border-purple-800'}`}>
+              <Zap className="w-10 h-10 text-purple-600 mb-3" />
+              <h3 className="font-bold text-lg mb-2">Live Preview</h3>
+              <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                See your HTML/CSS/JavaScript code render in real-time as you type
+              </p>
+            </div>
+
+            <div className={`p-6 rounded-xl ${theme === 'light' ? 'bg-blue-50' : 'bg-blue-900/20'} border ${theme === 'light' ? 'border-blue-200' : 'border-blue-800'}`}>
+              <Brain className="w-10 h-10 text-blue-600 mb-3" />
+              <h3 className="font-bold text-lg mb-2">Smart Analysis</h3>
+              <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                Real-time code quality analysis, complexity metrics, and performance insights
+              </p>
+            </div>
+
+            <div className={`p-6 rounded-xl ${theme === 'light' ? 'bg-green-50' : 'bg-green-900/20'} border ${theme === 'light' ? 'border-green-200' : 'border-green-800'}`}>
+              <Sparkles className="w-10 h-10 text-green-600 mb-3" />
+              <h3 className="font-bold text-lg mb-2">Smart Snippets</h3>
+              <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                Language-specific code snippets with autocomplete support
+              </p>
+            </div>
           </div>
 
-          {/* Right - User Actions */}
-          <div className="flex items-center space-x-3">
-            <SignedIn>
+          {/* Pricing Section */}
+          <div className="mb-6">
+            <h3 className="font-bold text-xl mb-4 flex items-center space-x-2">
+              <Sparkles className="w-6 h-6 text-purple-600" />
+              <span>Pricing Plans</span>
+            </h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              {/* Free Plan */}
+              <div className={`p-6 rounded-xl ${theme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-gray-800 border-gray-700'} border-2`}>
+                <h4 className="font-bold text-lg mb-2">Free</h4>
+                <div className="text-3xl font-bold mb-4">$0<span className="text-sm font-normal">/month</span></div>
+                <ul className="space-y-2 text-sm mb-6">
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span>12 Languages Support</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span>Live HTML Preview</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span>Code Analysis</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span>Smart Snippets</span>
+                  </li>
+                </ul>
+                <button className={`w-full py-2 rounded-lg ${theme === 'light' ? 'bg-gray-200 hover:bg-gray-300' : 'bg-gray-700 hover:bg-gray-600'} transition-colors font-medium`}>
+                  Current Plan
+                </button>
+              </div>
+
+              {/* Pro Plan */}
+              <div className={`p-6 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 text-white border-2 border-purple-400 relative overflow-hidden`}>
+                <div className="absolute top-2 right-2 bg-yellow-400 text-purple-900 text-xs font-bold px-2 py-1 rounded-full">
+                  POPULAR
+                </div>
+                <h4 className="font-bold text-lg mb-2">Pro</h4>
+                <div className="text-3xl font-bold mb-4">$9<span className="text-sm font-normal">/month</span></div>
+                <ul className="space-y-2 text-sm mb-6">
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Everything in Free</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Unlimited Projects</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Cloud Save & Sync</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Advanced Analytics</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Priority Support</span>
+                  </li>
+                </ul>
+                <button className="w-full py-2 rounded-lg bg-white text-purple-600 hover:bg-gray-100 transition-colors font-bold">
+                  Upgrade to Pro
+                </button>
+              </div>
+
+              {/* Enterprise Plan */}
+              <div className={`p-6 rounded-xl ${theme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-gray-800 border-gray-700'} border-2`}>
+                <h4 className="font-bold text-lg mb-2">Enterprise</h4>
+                <div className="text-3xl font-bold mb-4">Custom</div>
+                <ul className="space-y-2 text-sm mb-6">
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span>Everything in Pro</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span>Team Collaboration</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span>Custom Integrations</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span>Dedicated Support</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span>SLA Guarantee</span>
+                  </li>
+                </ul>
+                <button className={`w-full py-2 rounded-lg ${theme === 'light' ? 'bg-gray-900 hover:bg-gray-800 text-white' : 'bg-white hover:bg-gray-100 text-gray-900'} transition-colors font-medium`}>
+                  Contact Sales
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Get Started Button */}
+          <div className="text-center">
+            <button
+              onClick={() => setShowWelcome(false)}
+              className="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 hover:from-purple-700 hover:via-blue-700 hover:to-cyan-700 text-white px-12 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              Start Coding Now →
+            </button>
+            <p className={`text-sm mt-3 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+              No credit card required • Free forever
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  );
+
+  // Show welcome screen as main view (not overlay)
+  if (showWelcome) {
+    return <WelcomeScreen />;
+  }
+
+  return (
+    <div className={`h-screen ${theme === 'light' ? 'bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900' : 'bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white'} flex flex-col ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
+      {/* Header - Modern Design */}
+      <div className={`${theme === 'light' ? 'bg-white/80 backdrop-blur-xl border-gray-200/50' : 'bg-gray-900/80 backdrop-blur-xl border-gray-800/50'} border-b shadow-sm`}>
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left - Logo and Navigation */}
+            <div className="flex items-center space-x-6">
+              <button
+                onClick={onBack}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-xl ${theme === 'light' ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' : 'text-gray-400 hover:text-white hover:bg-gray-800'} transition-all duration-200`}
+              >
+                <ArrowLeft size={18} />
+                <span className="font-medium">Back</span>
+              </button>
+              
               <div className="flex items-center space-x-3">
-                <span className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                  {user?.firstName || user?.username || 'User'}
-                </span>
-                <UserButton 
-                  appearance={{
-                    elements: {
-                      avatarBox: "w-8 h-8"
-                    }
-                  }}
-                />
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
+                  <Code className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                    Codex Editor
+                  </h1>
+                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                    Real-time analysis • Smart snippets • Live preview
+                  </p>
+                </div>
               </div>
-            </SignedIn>
-            
-            <SignedOut>
-              <div className="text-sm text-gray-500">
-                Sign in for full features
+            </div>
+
+            {/* Center - File Info with Status */}
+            <div className="flex items-center space-x-4">
+              <div className={`px-4 py-2 rounded-xl ${theme === 'light' ? 'bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200' : 'bg-gradient-to-r from-gray-800 to-gray-900 border border-gray-700'} shadow-sm`}>
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${isAnalyzing ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'} shadow-lg ${isAnalyzing ? 'shadow-yellow-500/50' : 'shadow-green-500/50'}`}></div>
+                  <span className="text-sm font-semibold">{fileName}</span>
+                </div>
               </div>
-            </SignedOut>
+              
+              {analysis && getLanguageSnippets(language).length > 0 && (
+                <div className={`px-3 py-2 rounded-xl ${theme === 'light' ? 'bg-purple-50 border border-purple-200' : 'bg-purple-900/20 border border-purple-800/50'}`}>
+                  <div className="flex items-center space-x-2">
+                    <Sparkles size={14} className="text-purple-500" />
+                    <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
+                      {getLanguageSnippets(language).length} snippets
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right - User Actions */}
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setShowWelcome(true)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-xl ${theme === 'light' ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' : 'text-gray-400 hover:text-white hover:bg-gray-800'} transition-all duration-200 text-sm`}
+                title="View pricing"
+              >
+                <Award size={16} />
+                <span className="hidden md:inline">Pricing</span>
+              </button>
+              
+              <SignedIn>
+                <div className="flex items-center space-x-3">
+                  <span className={`text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
+                    {user?.firstName || user?.username || 'User'}
+                  </span>
+                  <UserButton 
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-9 h-9 ring-2 ring-purple-500/20"
+                      }
+                    }}
+                  />
+                </div>
+              </SignedIn>
+              
+              <SignedOut>
+                <div className="text-sm text-gray-500">
+                  Sign in for full features
+                </div>
+              </SignedOut>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className={`${theme === 'light' ? 'bg-gray-100 border-gray-200' : 'bg-gray-800 border-gray-700'} border-b px-4 py-2`}>
-        <div className="flex items-center justify-between">
-          {/* Left - Language and Theme */}
-          <div className="flex items-center space-x-4">
-            <select
-              value={language}
-              onChange={(e) => {
-                const newLanguage = e.target.value;
-                console.log('Changing language to:', newLanguage);
-                setLanguage(newLanguage);
-                const lang = languages.find(l => l.value === newLanguage);
-                if (lang) {
-                  setFileName(`solution${lang.ext}`);
-                }
-                
-                // Update code to language-specific default
-                setCode(getDefaultCode(newLanguage));
-                
-                // Update Monaco Editor language
-                if (editorRef.current) {
-                  const model = editorRef.current.getModel();
-                  if (model) {
-                    window.monaco?.editor?.setModelLanguage(model, newLanguage);
+      {/* Toolbar - Redesigned */}
+      <div className={`${theme === 'light' ? 'bg-white/60 backdrop-blur-lg border-gray-200/50' : 'bg-gray-900/60 backdrop-blur-lg border-gray-800/50'} border-b`}>
+        <div className="px-6 py-3">
+          <div className="flex items-center justify-between">
+            {/* Left - Language and Theme */}
+            <div className="flex items-center space-x-3">
+              <select
+                value={language}
+                onChange={(e) => {
+                  const newLanguage = e.target.value;
+                  setLanguage(newLanguage);
+                  const lang = languages.find(l => l.value === newLanguage);
+                  if (lang) {
+                    setFileName(`solution${lang.ext}`);
                   }
-                }
-                
-                // Force re-register snippets after language change
-                setTimeout(() => {
-                  registerCustomSnippets();
-                }, 200);
-              }}
-              className={`px-3 py-1 rounded-lg border ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-700 border-gray-600'} text-sm`}
-            >
-              {languages.map(lang => (
-                <option key={lang.value} value={lang.value}>
-                  {lang.icon} {lang.label}
-                </option>
-              ))}
-            </select>
-            
-            <select
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
-              className={`px-3 py-1 rounded-lg border ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-700 border-gray-600'} text-sm`}
-            >
-              {themes.map(t => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
+                  setCode(getDefaultCode(newLanguage));
+                  
+                  // Auto-open output panel for HTML
+                  if (newLanguage === 'html') {
+                    setShowOutput(true);
+                  }
+                  
+                  if (editorRef.current) {
+                    const model = editorRef.current.getModel();
+                    if (model) {
+                      window.monaco?.editor?.setModelLanguage(model, newLanguage);
+                    }
+                  }
+                }}
+                className={`px-4 py-2 rounded-xl font-medium text-sm ${theme === 'light' ? 'bg-white border-gray-200 text-gray-700 hover:border-gray-300' : 'bg-gray-800 border-gray-700 text-gray-200 hover:border-gray-600'} border-2 transition-all cursor-pointer focus:ring-2 focus:ring-purple-500/50 focus:outline-none`}
+              >
+                {languages.map(lang => (
+                  <option key={lang.value} value={lang.value}>
+                    {lang.icon} {lang.label}
+                  </option>
+                ))}
+              </select>
 
-          {/* Center - Actions */}
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={executeCode}
-              disabled={isExecuting}
-              className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-4 py-2 rounded-lg transition-colors text-sm"
-            >
-              <Play size={16} />
-              <span>{isExecuting ? 'Running...' : 'Run'}</span>
-            </button>
-            
-            <button
-              onClick={saveCode}
-              className={`p-2 rounded-lg ${theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-700'} transition-colors`}
-              title="Save file"
-            >
-              <Save size={16} />
-            </button>
-            
-            <label className={`p-2 rounded-lg ${theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-700'} transition-colors cursor-pointer`} title="Load file">
-              <Upload size={16} />
-              <input
-                type="file"
-                onChange={loadCode}
-                className="hidden"
-                accept=".js,.ts,.py,.java,.cpp,.c,.go,.rs,.html,.css,.json"
-              />
-            </label>
-            
-            <button
-              onClick={copyCode}
-              className={`p-2 rounded-lg ${theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-700'} transition-colors`}
-              title="Copy code"
-            >
-              <Copy size={16} />
-            </button>
-            
-            <button
-              onClick={resetCode}
-              className={`p-2 rounded-lg ${theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-700'} transition-colors`}
-              title="Reset code"
-            >
-              <RotateCcw size={16} />
-            </button>
-          </div>
+              <div className="flex items-center space-x-2 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800">
+                {themes.map(t => (
+                  <button
+                    key={t.value}
+                    onClick={() => setTheme(t.value)}
+                    className={`p-2 rounded-lg transition-all ${
+                      theme === t.value 
+                        ? 'bg-white dark:bg-gray-700 shadow-md' 
+                        : 'hover:bg-white/50 dark:hover:bg-gray-700/50'
+                    }`}
+                    title={t.label}
+                  >
+                    {t.icon}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          {/* Right - View toggles */}
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setShowAnalysis(!showAnalysis)}
-              className={`flex items-center space-x-2 px-3 py-1 rounded-lg transition-colors text-sm ${
-                showAnalysis 
-                  ? 'bg-purple-600 text-white' 
-                  : theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-700'
-              }`}
-            >
-              <Brain size={16} />
-              <span>Analysis</span>
-            </button>
-            
-            <button
-              onClick={() => setShowConsole(!showConsole)}
-              className={`flex items-center space-x-2 px-3 py-1 rounded-lg transition-colors text-sm ${
-                showConsole 
-                  ? 'bg-blue-600 text-white' 
-                  : theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-700'
-              }`}
-            >
-              <Terminal size={16} />
-              <span>Console</span>
-            </button>
-            
-            <button
-              onClick={() => setIsFullscreen(!isFullscreen)}
-              className={`p-2 rounded-lg ${theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-700'} transition-colors`}
-              title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            >
-              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </button>
+            {/* Center - Action Buttons */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={executeCode}
+                disabled={isExecuting}
+                className="flex items-center space-x-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-green-500/30 hover:shadow-green-500/50 disabled:shadow-none text-sm"
+              >
+                <Play size={16} />
+                <span>{isExecuting ? 'Running...' : 'Run Code'}</span>
+              </button>
+              
+              <div className="w-px h-6 bg-gray-300 dark:bg-gray-700"></div>
+              
+              <button
+                onClick={saveCode}
+                className={`p-2.5 rounded-xl ${theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-800'} transition-all`}
+                title="Save file"
+              >
+                <Save size={18} />
+              </button>
+              
+              <label className={`p-2.5 rounded-xl ${theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-800'} transition-all cursor-pointer`} title="Load file">
+                <Upload size={18} />
+                <input
+                  type="file"
+                  onChange={loadCode}
+                  className="hidden"
+                  accept=".js,.ts,.py,.java,.cpp,.c,.go,.rs,.html,.css,.json"
+                />
+              </label>
+              
+              <button
+                onClick={copyCode}
+                className={`p-2.5 rounded-xl ${theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-800'} transition-all`}
+                title="Copy code"
+              >
+                <Copy size={18} />
+              </button>
+              
+              <button
+                onClick={resetCode}
+                className={`p-2.5 rounded-xl ${theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-800'} transition-all`}
+                title="Reset code"
+              >
+                <RotateCcw size={18} />
+              </button>
+            </div>
+
+            {/* Right - View toggles */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowAnalysis(!showAnalysis)}
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm ${
+                  showAnalysis 
+                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/30' 
+                    : theme === 'light' ? 'hover:bg-gray-100 text-gray-700' : 'hover:bg-gray-800 text-gray-300'
+                }`}
+              >
+                <Brain size={16} />
+                <span>Analysis</span>
+              </button>
+              
+              <button
+                onClick={() => setShowOutput(!showOutput)}
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm ${
+                  showOutput 
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/30' 
+                    : theme === 'light' ? 'hover:bg-gray-100 text-gray-700' : 'hover:bg-gray-800 text-gray-300'
+                }`}
+              >
+                <Eye size={16} />
+                <span>Output</span>
+              </button>
+              
+              <button
+                onClick={() => setShowConsole(!showConsole)}
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm ${
+                  showConsole 
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30' 
+                    : theme === 'light' ? 'hover:bg-gray-100 text-gray-700' : 'hover:bg-gray-800 text-gray-300'
+                }`}
+              >
+                <Terminal size={16} />
+                <span>Console</span>
+              </button>
+              
+              <button
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                className={`p-2.5 rounded-xl ${theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-800'} transition-all`}
+                title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              >
+                {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         {/* Editor */}
-        <div className={`flex-1 ${showAnalysis ? 'w-2/3' : 'w-full'}`}>
+        <div className={`${showAnalysis && showOutput ? 'w-1/3' : showAnalysis || showOutput ? 'w-2/3' : 'w-full'} flex-shrink-0`}>
           <div className="h-full flex flex-col">
             <Editor
               height="100%"
@@ -1012,59 +1572,80 @@ console.log("🚀 Ready to code in ${lang}!");`;
                 automaticLayout: true,
                 tabSize: 2,
                 wordWrap: 'on',
-                bracketPairColorization: { enabled: true },
-                guides: {
-                  bracketPairs: true,
-                  indentation: true
+                folding: true,
+                lineNumbersMinChars: 3,
+                scrollbar: {
+                  vertical: 'visible',
+                  horizontal: 'visible'
                 },
-                suggest: {
-                  showKeywords: true,
-                  showSnippets: true,
-                  showFunctions: true,
-                  showConstructors: true,
-                  showFields: true,
-                  showVariables: true,
-                  showClasses: true,
-                  showStructs: true,
-                  showInterfaces: true,
-                  showModules: true,
-                  showProperties: true,
-                  showEvents: true,
-                  showOperators: true,
-                  showUnits: true,
-                  showValues: true,
-                  showConstants: true,
-                  showEnums: true,
-                  showEnumMembers: true,
-                  showColors: true,
-                  showFiles: true,
-                  showReferences: true,
-                  showFolders: true,
-                  showTypeParameters: true,
-                  showIssues: true,
-                  showUsers: true,
-                  insertMode: 'replace'
-                },
-                quickSuggestions: {
-                  other: true,
-                  comments: true,
-                  strings: true
-                },
-                parameterHints: {
-                  enabled: true,
-                  cycle: true
-                },
-                acceptSuggestionOnCommitCharacter: true,
-                acceptSuggestionOnEnter: 'on',
-                accessibilitySupport: 'auto'
+                padding: { top: 16, bottom: 16 }
               }}
             />
           </div>
         </div>
 
+        {/* Output Panel */}
+        {showOutput && (
+          <div className={`${showAnalysis ? 'w-1/3' : 'w-1/3'} ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-800 border-gray-700'} border-l overflow-hidden flex flex-col`}>
+            <div className={`px-4 py-3 ${theme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-gray-700 border-gray-600'} border-b flex items-center justify-between`}>
+              <div className="flex items-center space-x-2">
+                <Layout className="text-green-500" size={18} />
+                <span className="font-semibold">Live Output</span>
+                <div className="flex items-center space-x-1 ml-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-green-600 dark:text-green-400">Live</span>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setHtmlOutput('')}
+                  className={`text-xs px-3 py-1.5 rounded-lg ${theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-600'} transition-colors`}
+                >
+                  Clear
+                </button>
+                <button
+                  onClick={() => setShowOutput(false)}
+                  className={`text-xs px-3 py-1.5 rounded-lg ${theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-600'} transition-colors`}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex-1 overflow-hidden">
+              {htmlOutput ? (
+                <iframe
+                  srcDoc={htmlOutput}
+                  title="Output Preview"
+                  className="w-full h-full border-0"
+                  sandbox="allow-scripts"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <Eye className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <p className={`text-lg font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
+                      Live Preview Active
+                    </p>
+                    <p className={`text-sm mt-2 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                      Start typing HTML or JavaScript to see live output
+                    </p>
+                    <div className={`mt-4 text-xs ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <p>✨ Real-time preview:</p>
+                      <p className="mt-1">• HTML updates as you type</p>
+                      <p>• JavaScript with document.* auto-renders</p>
+                      <p>• Click "Run" for console output</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Analysis Panel */}
         {showAnalysis && (
-          <div className={`w-1/3 ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-800 border-gray-700'} border-l overflow-y-auto`}>
+          <div className={`${showOutput ? 'w-1/3' : 'w-1/3'} ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-800 border-gray-700'} border-l overflow-y-auto`}>
             <div className="p-4 space-y-4">
               {/* Analysis Header */}
               <div className="flex items-center justify-between">
@@ -1307,9 +1888,9 @@ console.log("🚀 Ready to code in ${lang}!");`;
         )}
       </div>
 
-      {/* Console - Always visible for debugging */}
-      <div className={`h-64 ${theme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-gray-900 border-gray-700'} border-t`}>
-        <div className="h-full flex flex-col">
+      {/* Console - Always Visible by Default */}
+      {showConsole && (
+        <div className={`h-96 ${theme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-gray-900 border-gray-700'} border-t flex flex-col shadow-lg`}>
           <div className={`px-4 py-2 ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'} border-b flex items-center justify-between`}>
             <div className="flex items-center space-x-2">
               <Terminal size={16} className="text-blue-500" />
@@ -1325,12 +1906,6 @@ console.log("🚀 Ready to code in ${lang}!");`;
             </div>
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setShowConsole(!showConsole)}
-                className={`text-xs px-2 py-1 rounded ${showConsole ? 'bg-blue-600 text-white' : theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-700'} transition-colors`}
-              >
-                {showConsole ? 'Hide' : 'Show'}
-              </button>
-              <button
                 onClick={() => setConsoleOutput([])}
                 className={`text-xs px-2 py-1 rounded ${theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-gray-700'} transition-colors`}
               >
@@ -1339,37 +1914,35 @@ console.log("🚀 Ready to code in ${lang}!");`;
             </div>
           </div>
           
-          {showConsole && (
-            <div className="flex-1 overflow-y-auto p-4 font-mono text-sm">
-              {consoleOutput.length === 0 ? (
-                <div className="text-center py-8">
-                  <Terminal className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                  <div className="text-gray-500 italic">Console output will appear here...</div>
-                  <div className="text-xs text-gray-400 mt-2">Click the "Run" button to execute your code</div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {consoleOutput.map((output, index) => (
-                    <div key={index} className="flex items-start space-x-3 p-2 rounded-lg bg-opacity-50 hover:bg-opacity-75 transition-colors">
-                      <span className="text-xs text-gray-500 mt-0.5 min-w-[60px]">{output.timestamp}</span>
-                      <span className={`flex-1 ${
-                        output.type === 'error' ? 'text-red-500 bg-red-100 dark:bg-red-900/20' :
-                        output.type === 'warn' ? 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20' :
-                        output.type === 'success' ? 'text-green-600 bg-green-100 dark:bg-green-900/20' :
-                        output.type === 'result' ? 'text-purple-600 font-semibold bg-purple-100 dark:bg-purple-900/20' :
-                        output.type === 'info' ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/20' : 
-                        theme === 'light' ? 'text-gray-900' : 'text-gray-100'
-                      } px-2 py-1 rounded`}>
-                        {output.content}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <div className="flex-1 overflow-y-auto p-4 font-mono text-sm">
+            {consoleOutput.length === 0 ? (
+              <div className="text-center py-8">
+                <Terminal className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                <div className="text-gray-500 italic">Console output will appear here...</div>
+                <div className="text-xs text-gray-400 mt-2">Click the "Run" button to execute your code</div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {consoleOutput.map((output, index) => (
+                  <div key={index} className="flex items-start space-x-3 p-2 rounded-lg bg-opacity-50 hover:bg-opacity-75 transition-colors">
+                    <span className="text-xs text-gray-500 mt-0.5 min-w-[60px]">{output.timestamp}</span>
+                    <span className={`flex-1 ${
+                      output.type === 'error' ? 'text-red-500 bg-red-100 dark:bg-red-900/20' :
+                      output.type === 'warn' ? 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20' :
+                      output.type === 'success' ? 'text-green-600 bg-green-100 dark:bg-green-900/20' :
+                      output.type === 'result' ? 'text-purple-600 font-semibold bg-purple-100 dark:bg-purple-900/20' :
+                      output.type === 'info' ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/20' : 
+                      theme === 'light' ? 'text-gray-900' : 'text-gray-100'
+                    } px-2 py-1 rounded`}>
+                      {output.content}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
