@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Trophy, 
   Star, 
@@ -8,12 +9,14 @@ import {
   Award,
   Play,
   RotateCcw,
-  ChevronRight,
   CheckCircle,
   XCircle,
   Lightbulb,
   TrendingUp,
-  Heart
+  Heart,
+  ArrowUp,
+  Sparkles,
+  Flame
 } from 'lucide-react';
 
 const DSAGame = () => {
@@ -28,6 +31,31 @@ const DSAGame = () => {
   const [streak, setStreak] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [highScore, setHighScore] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  // Scroll tracking
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      
+      setScrollProgress(scrollPercent);
+      setShowScrollTop(scrollTop > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Smooth scroll to top
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   // DSA Challenges Database
   const challenges = [
@@ -286,163 +314,271 @@ const DSAGame = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-2000" />
+      </div>
+
+      {/* Scroll Progress Bar */}
+      <div className="fixed top-0 left-0 right-0 h-1 bg-slate-800/50 z-50">
+        <motion.div
+          className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500"
+          style={{ width: `${scrollProgress}%` }}
+          initial={{ width: 0 }}
+          animate={{ width: `${scrollProgress}%` }}
+          transition={{ duration: 0.1 }}
+        />
+      </div>
+
+      <div className="max-w-5xl mx-auto p-6 relative z-10">
         {/* Game Header with Navigation */}
-        <div className="text-center mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Trophy className="w-12 h-12 text-yellow-400" />
-            <h1 className="text-5xl font-bold text-white">DSA Master</h1>
+            <motion.div
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Trophy className="w-14 h-14 text-yellow-400" />
+            </motion.div>
+            <h1 className="text-6xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+              DSA Master
+            </h1>
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="w-10 h-10 text-pink-400" />
+            </motion.div>
           </div>
-          <p className="text-blue-200 text-lg">Test your Data Structures & Algorithms knowledge!</p>
+          <p className="text-blue-200 text-xl mb-6">Test your Data Structures & Algorithms knowledge!</p>
           
           {/* Game Navigation */}
-          <div className="flex justify-center gap-4 mt-6">
-            <button
+          <div className="flex flex-wrap justify-center gap-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={resetGame}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20"
+              className="flex items-center gap-2 px-6 py-3 bg-slate-800/50 hover:bg-slate-700/50 backdrop-blur-sm text-white rounded-xl transition-all border border-slate-700 shadow-lg"
             >
-              <RotateCcw className="w-4 h-4" />
-              <span>Reset Game</span>
-            </button>
+              <RotateCcw className="w-5 h-5" />
+              <span className="font-semibold">Reset Game</span>
+            </motion.button>
             
             {!isPlaying && !gameOver && (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={startGame}
-                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg transition-all font-semibold"
+                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl transition-all font-bold shadow-2xl shadow-green-500/50"
               >
-                <Play className="w-4 h-4" />
+                <Play className="w-5 h-5" />
                 <span>Start New Game</span>
-              </button>
+              </motion.button>
             )}
             
             {gameOver && (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={startGame}
-                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg transition-all font-semibold"
+                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl transition-all font-bold shadow-2xl shadow-green-500/50"
               >
-                <Play className="w-4 h-4" />
+                <Play className="w-5 h-5" />
                 <span>Play Again</span>
-              </button>
+              </motion.button>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Game Stats Bar */}
-        {isPlaying && (
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-white/20">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-blue-400" />
-                <div>
-                  <p className="text-xs text-blue-200">Level</p>
-                  <p className="text-xl font-bold text-white">{currentLevel}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Star className="w-5 h-5 text-yellow-400" />
-                <div>
-                  <p className="text-xs text-blue-200">Score</p>
-                  <p className="text-xl font-bold text-white">{score}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Heart className="w-5 h-5 text-red-400" />
-                <div>
-                  <p className="text-xs text-blue-200">Lives</p>
-                  <div className="flex gap-1">
-                    {[...Array(3)].map((_, i) => (
-                      <Heart 
-                        key={i} 
-                        className={`w-4 h-4 ${i < lives ? 'text-red-500 fill-red-500' : 'text-gray-500'}`} 
-                      />
-                    ))}
+        <AnimatePresence>
+          {isPlaying && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-2xl p-6 mb-6 border border-slate-700/50 shadow-2xl"
+            >
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-3 bg-blue-500/10 rounded-xl p-3 border border-blue-500/20"
+                >
+                  <Target className="w-6 h-6 text-blue-400" />
+                  <div>
+                    <p className="text-xs text-blue-300">Level</p>
+                    <p className="text-2xl font-bold text-white">{currentLevel}</p>
                   </div>
-                </div>
+                </motion.div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-3 bg-yellow-500/10 rounded-xl p-3 border border-yellow-500/20"
+                >
+                  <Star className="w-6 h-6 text-yellow-400" />
+                  <div>
+                    <p className="text-xs text-yellow-300">Score</p>
+                    <p className="text-2xl font-bold text-white">{score}</p>
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-3 bg-red-500/10 rounded-xl p-3 border border-red-500/20"
+                >
+                  <Heart className="w-6 h-6 text-red-400" />
+                  <div>
+                    <p className="text-xs text-red-300">Lives</p>
+                    <div className="flex gap-1">
+                      {[...Array(3)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: i * 0.1 }}
+                        >
+                          <Heart 
+                            className={`w-5 h-5 ${i < lives ? 'text-red-500 fill-red-500' : 'text-gray-600'}`} 
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  className={`flex items-center gap-3 rounded-xl p-3 border ${
+                    timeLeft < 10 
+                      ? 'bg-red-500/20 border-red-500/30' 
+                      : 'bg-green-500/10 border-green-500/20'
+                  }`}
+                >
+                  <Clock className={`w-6 h-6 ${timeLeft < 10 ? 'text-red-400' : 'text-green-400'}`} />
+                  <div>
+                    <p className={`text-xs ${timeLeft < 10 ? 'text-red-300' : 'text-green-300'}`}>Time</p>
+                    <p className={`text-2xl font-bold ${timeLeft < 10 ? 'text-red-400 animate-pulse' : 'text-white'}`}>
+                      {timeLeft}s
+                    </p>
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-3 bg-orange-500/10 rounded-xl p-3 border border-orange-500/20"
+                >
+                  <Flame className="w-6 h-6 text-orange-400" />
+                  <div>
+                    <p className="text-xs text-orange-300">Streak</p>
+                    <p className="text-2xl font-bold text-white">{streak} 🔥</p>
+                  </div>
+                </motion.div>
               </div>
-              
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-green-400" />
-                <div>
-                  <p className="text-xs text-blue-200">Time</p>
-                  <p className={`text-xl font-bold ${timeLeft < 10 ? 'text-red-400' : 'text-white'}`}>
-                    {timeLeft}s
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-orange-400" />
-                <div>
-                  <p className="text-xs text-blue-200">Streak</p>
-                  <p className="text-xl font-bold text-white">{streak}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Main Game Area */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 shadow-2xl"
+        >
           {!isPlaying && !gameOver && (
-            <div className="text-center py-12">
-              <Trophy className="w-24 h-24 text-yellow-400 mx-auto mb-6" />
-              <h2 className="text-3xl font-bold text-white mb-4">Ready to Master DSA?</h2>
-              <p className="text-blue-200 mb-8 max-w-md mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-12"
+            >
+              <motion.div
+                animate={{ 
+                  rotate: [0, 5, -5, 0],
+                  scale: [1, 1.1, 1]
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >
+                <Trophy className="w-28 h-28 text-yellow-400 mx-auto mb-6 drop-shadow-2xl" />
+              </motion.div>
+              <h2 className="text-4xl font-bold text-white mb-4">Ready to Master DSA?</h2>
+              <p className="text-blue-200 text-lg mb-8 max-w-md mx-auto">
                 Answer questions correctly to level up! Earn bonus points for speed and streaks.
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-2xl mx-auto">
-                <div className="bg-blue-500/20 rounded-lg p-4 border border-blue-400/30">
-                  <Target className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-                  <p className="text-white font-semibold">6 Levels</p>
-                  <p className="text-sm text-blue-200">Progress through topics</p>
-                </div>
-                <div className="bg-green-500/20 rounded-lg p-4 border border-green-400/30">
-                  <Zap className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                  <p className="text-white font-semibold">Streak Bonus</p>
-                  <p className="text-sm text-green-200">3+ correct = +5 points</p>
-                </div>
-                <div className="bg-purple-500/20 rounded-lg p-4 border border-purple-400/30">
-                  <TrendingUp className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-                  <p className="text-white font-semibold">High Score</p>
-                  <p className="text-sm text-purple-200">{highScore} points</p>
-                </div>
+                {[
+                  { icon: Target, color: 'blue', title: '6 Levels', desc: 'Progress through topics' },
+                  { icon: Zap, color: 'green', title: 'Streak Bonus', desc: '3+ correct = +5 points' },
+                  { icon: TrendingUp, color: 'purple', title: 'High Score', desc: `${highScore} points` }
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    className={`bg-${item.color}-500/20 rounded-xl p-6 border border-${item.color}-400/30 backdrop-blur-sm`}
+                  >
+                    <item.icon className={`w-10 h-10 text-${item.color}-400 mx-auto mb-3`} />
+                    <p className="text-white font-bold text-lg">{item.title}</p>
+                    <p className={`text-sm text-${item.color}-200 mt-1`}>{item.desc}</p>
+                  </motion.div>
+                ))}
               </div>
 
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={startGame}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-700 transition-all transform hover:scale-105 flex items-center gap-2 mx-auto"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-10 py-5 rounded-2xl font-bold text-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-2xl shadow-green-500/50 flex items-center gap-3 mx-auto"
               >
-                <Play className="w-6 h-6" />
+                <Play className="w-7 h-7" />
                 Start Game
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           )}
 
           {isPlaying && currentChallenge && (
-            <div className="space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
               {/* Category Badge */}
               <div className="flex items-center justify-between">
-                <span className="bg-purple-500/30 text-purple-200 px-4 py-2 rounded-full text-sm font-semibold border border-purple-400/50">
-                  {currentChallenge.category}
-                </span>
-                <span className="text-blue-200 text-sm">
-                  {currentChallenge.points} points {streak >= 3 && '+ 5 bonus!'}
-                </span>
+                <motion.span 
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-purple-200 px-6 py-3 rounded-full text-sm font-bold border-2 border-purple-400/50 backdrop-blur-sm shadow-lg"
+                >
+                  📚 {currentChallenge.category}
+                </motion.span>
+                <motion.span 
+                  whileHover={{ scale: 1.05 }}
+                  className="text-blue-200 text-sm font-semibold bg-blue-500/20 px-4 py-2 rounded-full border border-blue-400/30"
+                >
+                  ⭐ {currentChallenge.points} points {streak >= 3 && '+ 🔥 5 bonus!'}
+                </motion.span>
               </div>
 
               {/* Question */}
-              <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-                <h3 className="text-2xl font-bold text-white mb-4">
+              <motion.div 
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-2xl p-8 border-2 border-slate-600/50 shadow-2xl backdrop-blur-sm"
+              >
+                <h3 className="text-2xl font-bold text-white leading-relaxed">
                   {currentChallenge.question}
                 </h3>
-              </div>
+              </motion.div>
 
               {/* Options */}
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-4">
                 {currentChallenge.options.map((option, index) => {
                   const isSelected = selectedAnswer === index;
                   const isCorrect = index === currentChallenge.correct;
@@ -450,126 +586,232 @@ const DSAGame = () => {
                   const showWrong = showResult && isSelected && !isCorrect;
 
                   return (
-                    <button
+                    <motion.button
                       key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: showResult ? 1 : 1.02, x: showResult ? 0 : 5 }}
+                      whileTap={{ scale: showResult ? 1 : 0.98 }}
                       onClick={() => handleAnswer(index)}
                       disabled={showResult}
                       className={`
-                        p-4 rounded-xl text-left font-semibold transition-all transform hover:scale-102
-                        ${!showResult && 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}
-                        ${showCorrect && 'bg-green-500/30 text-green-100 border-2 border-green-400'}
-                        ${showWrong && 'bg-red-500/30 text-red-100 border-2 border-red-400'}
-                        ${showResult && !isSelected && !isCorrect && 'bg-white/5 text-gray-400 border border-white/10'}
+                        p-5 rounded-2xl text-left font-semibold transition-all transform border-2
+                        ${!showResult && 'bg-gradient-to-r from-slate-700/50 to-slate-800/50 hover:from-slate-600/50 hover:to-slate-700/50 text-white border-slate-600/50 hover:border-blue-400/50 shadow-lg hover:shadow-blue-500/20'}
+                        ${showCorrect && 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 text-green-100 border-green-400 shadow-2xl shadow-green-500/50'}
+                        ${showWrong && 'bg-gradient-to-r from-red-500/30 to-pink-500/30 text-red-100 border-red-400 shadow-2xl shadow-red-500/50'}
+                        ${showResult && !isSelected && !isCorrect && 'bg-slate-800/30 text-gray-500 border-slate-700/30'}
                         disabled:cursor-not-allowed
                       `}
                     >
                       <div className="flex items-center justify-between">
-                        <span>{option}</span>
-                        {showCorrect && <CheckCircle className="w-6 h-6 text-green-400" />}
-                        {showWrong && <XCircle className="w-6 h-6 text-red-400" />}
+                        <div className="flex items-center gap-4">
+                          <span className={`
+                            w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg
+                            ${!showResult && 'bg-slate-600/50 text-slate-300'}
+                            ${showCorrect && 'bg-green-500 text-white'}
+                            ${showWrong && 'bg-red-500 text-white'}
+                            ${showResult && !isSelected && !isCorrect && 'bg-slate-700/50 text-slate-500'}
+                          `}>
+                            {String.fromCharCode(65 + index)}
+                          </span>
+                          <span className="text-lg">{option}</span>
+                        </div>
+                        {showCorrect && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: "spring", stiffness: 500 }}
+                          >
+                            <CheckCircle className="w-8 h-8 text-green-400" />
+                          </motion.div>
+                        )}
+                        {showWrong && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: "spring", stiffness: 500 }}
+                          >
+                            <XCircle className="w-8 h-8 text-red-400" />
+                          </motion.div>
+                        )}
                       </div>
-                    </button>
+                    </motion.button>
                   );
                 })}
               </div>
 
               {/* Explanation */}
-              {showResult && (
-                <div className={`
-                  p-4 rounded-xl border-2 animate-fadeIn
-                  ${selectedAnswer === currentChallenge.correct 
-                    ? 'bg-green-500/20 border-green-400/50' 
-                    : 'bg-red-500/20 border-red-400/50'}
-                `}>
-                  <div className="flex items-start gap-3">
-                    <Lightbulb className={`w-6 h-6 flex-shrink-0 ${
-                      selectedAnswer === currentChallenge.correct ? 'text-green-400' : 'text-red-400'
-                    }`} />
-                    <div>
-                      <p className={`font-semibold mb-1 ${
-                        selectedAnswer === currentChallenge.correct ? 'text-green-100' : 'text-red-100'
-                      }`}>
-                        {selectedAnswer === currentChallenge.correct ? 'Correct!' : 'Incorrect'}
-                      </p>
-                      <p className="text-white/90 text-sm">{currentChallenge.explanation}</p>
+              <AnimatePresence>
+                {showResult && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                    className={`
+                      p-6 rounded-2xl border-2 backdrop-blur-sm shadow-2xl
+                      ${selectedAnswer === currentChallenge.correct 
+                        ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-400/50' 
+                        : 'bg-gradient-to-r from-red-500/20 to-pink-500/20 border-red-400/50'}
+                    `}
+                  >
+                    <div className="flex items-start gap-4">
+                      <motion.div
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        <Lightbulb className={`w-8 h-8 flex-shrink-0 ${
+                          selectedAnswer === currentChallenge.correct ? 'text-green-400' : 'text-red-400'
+                        }`} />
+                      </motion.div>
+                      <div>
+                        <p className={`font-bold text-xl mb-2 ${
+                          selectedAnswer === currentChallenge.correct ? 'text-green-100' : 'text-red-100'
+                        }`}>
+                          {selectedAnswer === currentChallenge.correct ? '🎉 Correct! Well done!' : '❌ Incorrect - Keep learning!'}
+                        </p>
+                        <p className="text-white/90 text-base leading-relaxed">{currentChallenge.explanation}</p>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              )}
-            </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           )}
 
           {gameOver && (
-            <div className="text-center py-12">
-              <Award className="w-24 h-24 text-yellow-400 mx-auto mb-6" />
-              <h2 className="text-4xl font-bold text-white mb-4">Game Over!</h2>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-12"
+            >
+              <motion.div
+                animate={{ 
+                  rotate: [0, -10, 10, -10, 10, 0],
+                  scale: [1, 1.1, 1.1, 1.1, 1.1, 1]
+                }}
+                transition={{ duration: 1 }}
+              >
+                <Award className="w-32 h-32 text-yellow-400 mx-auto mb-6 drop-shadow-2xl" />
+              </motion.div>
+              <h2 className="text-5xl font-bold bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent mb-6">
+                Game Over!
+              </h2>
               
-              <div className="bg-white/5 rounded-xl p-6 mb-8 max-w-md mx-auto border border-white/10">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-blue-200">Final Score:</span>
-                    <span className="text-3xl font-bold text-white">{score}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-blue-200">Level Reached:</span>
-                    <span className="text-2xl font-bold text-purple-400">{currentLevel}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-blue-200">Best Streak:</span>
-                    <span className="text-2xl font-bold text-orange-400">{streak}</span>
-                  </div>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-2xl p-8 mb-8 max-w-md mx-auto border-2 border-slate-600/50 shadow-2xl backdrop-blur-sm"
+              >
+                <div className="space-y-6">
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    className="flex justify-between items-center p-4 bg-yellow-500/10 rounded-xl border border-yellow-400/30"
+                  >
+                    <span className="text-blue-200 text-lg font-semibold">Final Score:</span>
+                    <span className="text-4xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">{score}</span>
+                  </motion.div>
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    className="flex justify-between items-center p-4 bg-purple-500/10 rounded-xl border border-purple-400/30"
+                  >
+                    <span className="text-blue-200 text-lg font-semibold">Level Reached:</span>
+                    <span className="text-3xl font-bold text-purple-400">{currentLevel}</span>
+                  </motion.div>
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    className="flex justify-between items-center p-4 bg-orange-500/10 rounded-xl border border-orange-400/30"
+                  >
+                    <span className="text-blue-200 text-lg font-semibold">Best Streak:</span>
+                    <span className="text-3xl font-bold text-orange-400">{streak} 🔥</span>
+                  </motion.div>
                   {score > highScore && (
-                    <div className="bg-yellow-500/20 border border-yellow-400/50 rounded-lg p-3 mt-4">
-                      <p className="text-yellow-300 font-bold flex items-center justify-center gap-2">
-                        <Trophy className="w-5 h-5" />
-                        New High Score!
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200 }}
+                      className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-2 border-yellow-400/50 rounded-xl p-4 mt-4"
+                    >
+                      <p className="text-yellow-300 font-bold text-xl flex items-center justify-center gap-3">
+                        <Trophy className="w-7 h-7" />
+                        🎉 New High Score! 🎉
                       </p>
-                    </div>
+                    </motion.div>
                   )}
                   {score === highScore && highScore > 0 && (
-                    <div className="text-blue-200 text-sm">
-                      High Score: {highScore}
+                    <div className="text-blue-200 text-sm bg-blue-500/10 rounded-lg p-3 border border-blue-400/30">
+                      Previous High Score: {highScore}
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="flex gap-4 justify-center">
-                <button
+              <div className="flex gap-4 justify-center flex-wrap">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={startGame}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:from-green-600 hover:to-emerald-700 transition-all transform hover:scale-105 flex items-center gap-2"
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-2xl shadow-green-500/50 flex items-center gap-3"
                 >
-                  <Play className="w-5 h-5" />
+                  <Play className="w-6 h-6" />
                   Play Again
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={resetGame}
-                  className="bg-white/10 text-white px-6 py-3 rounded-xl font-bold hover:bg-white/20 transition-all border border-white/20 flex items-center gap-2"
+                  className="bg-slate-700/50 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-slate-600/50 transition-all border-2 border-slate-600 flex items-center gap-3 backdrop-blur-sm"
                 >
-                  <RotateCcw className="w-5 h-5" />
+                  <RotateCcw className="w-6 h-6" />
                   Main Menu
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
         {/* Progress to Next Level */}
-        {isPlaying && !gameOver && (
-          <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-blue-200 text-sm">Progress to Level {currentLevel + 1}</span>
-              <span className="text-white font-semibold">{score} / {currentLevel * 50}</span>
-            </div>
-            <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
-              <div 
-                className="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-500 rounded-full"
-                style={{ width: `${Math.min((score / (currentLevel * 50)) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {isPlaying && !gameOver && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="mt-6 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border border-slate-700/50 shadow-xl"
+            >
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-blue-200 font-semibold">Progress to Level {currentLevel + 1}</span>
+                <span className="text-white font-bold text-lg">{score} / {currentLevel * 50}</span>
+              </div>
+              <div className="w-full bg-slate-700/50 rounded-full h-4 overflow-hidden border border-slate-600">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min((score / (currentLevel * 50)) * 100, 100)}%` }}
+                  className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-full transition-all duration-500 rounded-full"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Floating Scroll to Top Button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={scrollToTop}
+            className="fixed bottom-8 right-8 z-50 p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 transition-all group"
+          >
+            <ArrowUp className="w-6 h-6 text-white group-hover:animate-bounce" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

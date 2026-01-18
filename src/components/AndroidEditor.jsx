@@ -655,6 +655,8 @@ public class NewActivity${existingJavaFiles + 1} extends AppCompatActivity {
       return newSet;
     });
     setCurrentUsers(prev => Math.max(0, prev - 1));
+  };
+  
   const createAndroidPreviewSession = (userId) => {
     if (!previewPermissions.public && !authorizedUsers.has(userId)) {
       return { success: false, message: 'Unauthorized access to Android preview' };

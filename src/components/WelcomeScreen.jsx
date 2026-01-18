@@ -4,7 +4,6 @@ import UserProfile from './UserProfile';
 import Settings from './Settings';
 import VSCodeEditor from './VSCodeEditorClean';
 import AdvancedWebEditor from './AdvancedWebEditor';
-import DSAGame from './DSA/DSAGame';
 import { 
   Code, 
   Zap, 
@@ -33,20 +32,11 @@ import {
   BarChart3,
   FolderOpen,
   Database,
-  Gamepad2,
-  Sparkles,
-  Coffee,
-  Heart,
   Lightbulb,
-  Palette,
-  Terminal,
-  Smartphone,
-  Layers,
-  GitBranch,
-  Package
+  Layers
 } from 'lucide-react';
 
-const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard, onShowGame }) => {
+const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
   const { user, logout } = useUniversalAuth();
   const [isVisible, setIsVisible] = useState(false);
   const [activeLanguage, setActiveLanguage] = useState(0);
@@ -56,7 +46,6 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard, onShowGame })
   const [showSettings, setShowSettings] = useState(false);
   const [showVSCodeEditor, setShowVSCodeEditor] = useState(false);
   const [showAdvancedWebEditor, setShowAdvancedWebEditor] = useState(false);
-  const [showDSAGame, setShowDSAGame] = useState(false);
   const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
@@ -445,17 +434,6 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard, onShowGame })
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                     
-                    {/* Featured DSA Game Button */}
-                    <button
-                      onClick={() => setShowDSAGame(true)}
-                      className="group bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-105 relative overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-pink-400/20 animate-pulse"></div>
-                      <Gamepad2 className="w-5 h-5 group-hover:rotate-12 transition-transform relative z-10" />
-                      <span className="relative z-10">Play DSA Game</span>
-                      <Trophy className="w-4 h-4 text-yellow-400 group-hover:bounce transition-transform relative z-10" />
-                    </button>
-                    
                     <button
                       onClick={() => setShowAdvancedWebEditor(true)}
                       className="group bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -479,43 +457,6 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard, onShowGame })
                       <BarChart3 className="w-5 h-5" />
                       <span>View Dashboard</span>
                     </button>
-                  </div>
-
-                  {/* DSA Game Highlight Section */}
-                  <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-2xl p-6 border border-purple-500/20 mb-8">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
-                          <Gamepad2 className="w-8 h-8 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-2xl font-bold text-white mb-1">DSA Master Game</h3>
-                          <p className="text-purple-200">Interactive learning through gameplay</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setShowDSAGame(true)}
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
-                      >
-                        <Play className="w-5 h-5" />
-                        <span>Start Playing</span>
-                      </button>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4 mt-6">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-300">6</div>
-                        <div className="text-sm text-purple-200">Levels</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-pink-300">12</div>
-                        <div className="text-sm text-pink-200">Challenges</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-yellow-300">∞</div>
-                        <div className="text-sm text-yellow-200">Learning</div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               ) : (
@@ -828,59 +769,7 @@ const WelcomeScreen = ({ onCreateNew, onShowAuth, onShowDashboard, onShowGame })
         </div>
       </div>
 
-      {/* DSA Game Section */}
-      {showDSAGame && (
-        <div className="bg-gray-900/30 backdrop-blur-sm border-y border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h2 className="text-3xl font-bold text-white mb-2">
-                  DSA Master Game
-                </h2>
-                <p className="text-gray-400">
-                  Test your Data Structures & Algorithms knowledge with our interactive game!
-                </p>
-              </div>
-              <button
-                onClick={() => setShowDSAGame(false)}
-                className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <div className="bg-gray-900/50 rounded-2xl overflow-hidden border border-gray-800">
-              <DSAGame />
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Enhanced Floating DSA Game Button */}
-      {!showDSAGame && (
-        <div className="fixed bottom-6 right-6 z-50">
-          <div className="relative">
-            {/* Pulsing ring animation */}
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full animate-ping opacity-75"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full animate-pulse opacity-50"></div>
-            
-            <button
-              onClick={() => setShowDSAGame(true)}
-              className="relative bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white p-4 rounded-full shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-110 group"
-            >
-              <Gamepad2 className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-            </button>
-            
-            {/* Tooltip */}
-            <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-              Play DSA Game
-              <div className="absolute top-full right-4 w-2 h-2 bg-gray-900 rotate-45 transform -translate-y-1"></div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <footer className="bg-gray-900/50 border-t border-gray-800">

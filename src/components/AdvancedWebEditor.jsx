@@ -42,21 +42,12 @@ const AdvancedWebEditor = ({ onBack }) => {
           type: 'html'
         },
         'app.tsx': {
-          content: `interface User {
-  id: number;
-  name: string;
-  email: string;
-  avatar?: string;
-}
+          content: `// TypeScript-style React component (browser-compatible)
+// Interfaces are for documentation only - removed at runtime
 
-interface AppState {
-  users: User[];
-  loading: boolean;
-  error: string | null;
-}
-
-const App: React.FC = () => {
-  const [state, setState] = React.useState<AppState>({
+const App = () => {
+  // State: { users: [], loading: boolean, error: string | null }
+  const [state, setState] = React.useState({
     users: [],
     loading: false,
     error: null
@@ -71,7 +62,7 @@ const App: React.FC = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const mockUsers: User[] = [
+      const mockUsers = [
         { id: 1, name: 'John Doe', email: 'john@example.com' },
         { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
         { id: 3, name: 'Bob Johnson', email: 'bob@example.com' }
@@ -89,7 +80,7 @@ const App: React.FC = () => {
 
   const addUser = () => {
     if (newUser.name && newUser.email) {
-      const user: User = {
+      const user = {
         id: Date.now(),
         name: newUser.name,
         email: newUser.email
@@ -878,6 +869,17 @@ User Agent: \${navigator.userAgent}\`;
           }
 
           window.addEventListener('error', function(e) {
+            // Filter out generic cross-origin "Script error" messages
+            // These are browser security messages, not actual code errors
+            if (e.message === 'Script error.' && e.lineno === 0 && e.colno === 0) {
+              return; // Ignore cross-origin script errors
+            }
+            
+            // Also ignore if no meaningful error information
+            if (!e.message || e.message === 'Script error.') {
+              return;
+            }
+
             const suggestions = getSuggestions(e.message);
             const overlay = document.createElement('div');
             overlay.className = 'error-overlay';

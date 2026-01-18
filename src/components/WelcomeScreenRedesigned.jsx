@@ -10,7 +10,7 @@ import {
   BarChart3, FolderOpen, Terminal, Smartphone,
   Sparkles, TrendingUp, Activity, Wifi, Brain,
   Workflow, Boxes, Gauge, Lock, Zap as Lightning, Map, Database,
-  BookOpen, Target, FileText, ChevronUp, Gamepad2
+  BookOpen, Target, FileText, ChevronUp, Gamepad2, Flame, RotateCcw
 } from 'lucide-react';
 
 const WelcomeScreenRedesigned = ({ 
@@ -22,9 +22,11 @@ const WelcomeScreenRedesigned = ({
   onShowAndroidEditor,
   onShowRoadmap,
   onShowDSAComic,
+  onShowDSA3D,
   onShowArticles,
   onShowCodexRedesigned,
-  onShowGame
+  onShowGame,
+  onShowDSA250Sheet
 }) => {
   const { user, logout, login } = useUniversalAuth();
   const [isVisible, setIsVisible] = useState(false);
@@ -44,11 +46,6 @@ const WelcomeScreenRedesigned = ({
   const [showSettings, setShowSettings] = useState(false);
   const [showFastAuth, setShowFastAuth] = useState(false);
   const [theme, setTheme] = useState('dark');
-  const [currentStats, setCurrentStats] = useState({
-    users: 847392,
-    projects: 2847392,
-    executions: 15847392
-  });
 
   // Ref for roadmap section
   const roadmapSectionRef = useRef(null);
@@ -56,6 +53,7 @@ const WelcomeScreenRedesigned = ({
   const featuresSectionRef = useRef(null);
   const ctaSectionRef = useRef(null);
   const dsaSectionRef = useRef(null);
+  const dsaSheetSectionRef = useRef(null);
 
   // Advanced features showcase - moved before useEffect to prevent reference errors
   const advancedFeatures = [
@@ -116,19 +114,9 @@ const WelcomeScreenRedesigned = ({
     const interval = setInterval(() => {
       setActiveFeature((prev) => (prev + 1) % 6); // Updated to 6 features
     }, 4000);
-
-    // Animate stats
-    const statsInterval = setInterval(() => {
-      setCurrentStats(prev => ({
-        users: prev.users + Math.floor(Math.random() * 10),
-        projects: prev.projects + Math.floor(Math.random() * 50),
-        executions: prev.executions + Math.floor(Math.random() * 100)
-      }));
-    }, 2000);
     
     return () => {
       clearInterval(interval);
-      clearInterval(statsInterval);
     };
   }, []); // Remove dependency to prevent re-runs
 
@@ -436,12 +424,28 @@ const WelcomeScreenRedesigned = ({
             </button>
 
             <button
+              onClick={() => scrollToSection(dsaSheetSectionRef)}
+              className="group relative p-2 rounded-lg transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-700/50"
+              title="DSA 250 Sheet"
+            >
+              <div className="flex items-center justify-center">
+                <span className="text-xs font-medium">5</span>
+              </div>
+              <div className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 
+                bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 
+                transition-opacity duration-200 pointer-events-none z-50 shadow-lg border border-gray-700">
+                <div className="font-medium">DSA 250 Sheet</div>
+                <div className="absolute top-1/2 transform -translate-y-1/2 -right-1 w-2 h-2 bg-gray-900 border-gray-700 rotate-45 border-l border-t"></div>
+              </div>
+            </button>
+
+            <button
               onClick={() => scrollToSection(ctaSectionRef)}
               className="group relative p-2 rounded-lg transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-700/50"
               title="Get Started"
             >
               <div className="flex items-center justify-center">
-                <span className="text-xs font-medium">5</span>
+                <span className="text-xs font-medium">6</span>
               </div>
               <div className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 
                 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 
@@ -507,21 +511,6 @@ const WelcomeScreenRedesigned = ({
               </div>
               
               <div className="flex items-center space-x-4">
-                {/* Live Stats */}
-                <div className="hidden md:flex items-center space-x-6 px-4 py-2 bg-gray-800/30 rounded-full border border-gray-700/50">
-                  <div className="flex items-center space-x-2">
-                    <Activity size={16} className="text-green-400" />
-                    <span className="text-sm font-medium">{currentStats.users.toLocaleString()}</span>
-                    <span className="text-xs text-gray-400">users</span>
-                  </div>
-                  <div className="w-px h-4 bg-gray-600"></div>
-                  <div className="flex items-center space-x-2">
-                    <Wifi size={16} className="text-blue-400" />
-                    <span className="text-sm font-medium">{currentStats.executions.toLocaleString()}</span>
-                    <span className="text-xs text-gray-400">executions</span>
-                  </div>
-                </div>
-
                 {/* Theme Toggle */}
                 <button 
                   onClick={toggleTheme}
@@ -734,25 +723,40 @@ const WelcomeScreenRedesigned = ({
                       Access advanced terminal, npm integration, and preview management for 1B+ users.
                     </p>
 
-                    {/* Enhanced User Stats */}
-                    <div className="grid grid-cols-3 gap-6 mb-10 p-6 bg-gradient-to-r from-gray-800/30 to-gray-900/30 rounded-2xl border border-gray-700/50 backdrop-blur-sm">
+                    {/* User Streak & Stats */}
+                    <div className="grid grid-cols-3 gap-4 mb-10 p-6 bg-gradient-to-r from-gray-800/40 to-gray-900/40 rounded-2xl border border-gray-700/50 backdrop-blur-sm">
                       <div className="text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                            <Activity className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                        <div className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
+                          {user.streak || 0}
+                        </div>
+                        <div className="text-sm text-gray-400">Day Streak 🔥</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                            <Users className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
                         <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                          {user.solvedProblems || 127}
+                          50K+
                         </div>
-                        <div className="text-sm text-gray-400">Projects Built</div>
+                        <div className="text-sm text-gray-400">Active Users</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-                          {user.rating || 2847}
+                        <div className="flex items-center justify-center mb-2">
+                          <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center">
+                            <Trophy className="w-6 h-6 text-white" />
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-400">Developer Score</div>
-                      </div>
-                      <div className="text-center">
                         <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-teal-500 bg-clip-text text-transparent">
-                          {Math.floor((Date.now() - new Date(user.joinDate || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) || 42}
+                          {user.joinDate ? Math.floor((Date.now() - new Date(user.joinDate).getTime()) / (1000 * 60 * 60 * 24)) : 0}
                         </div>
-                        <div className="text-sm text-gray-400">Days Coding</div>
+                        <div className="text-sm text-gray-400">Days Active</div>
                       </div>
                     </div>
 
@@ -903,19 +907,6 @@ const WelcomeScreenRedesigned = ({
                         </div>
                       </div>
 
-                      {/* Interactive Demo */}
-                      <div className="bg-gray-950/50 rounded-2xl p-6 border border-gray-800/50">
-                        <div className="flex items-center space-x-2 mb-4">
-                          <Terminal size={16} className="text-green-400" />
-                          <span className="text-sm font-mono text-gray-300">$ npm install lodash</span>
-                        </div>
-                        <div className="space-y-2 text-sm font-mono">
-                          <div className="text-green-400">✓ Package installed successfully</div>
-                          <div className="text-blue-400">→ Added to package.json</div>
-                          <div className="text-purple-400">⚡ Ready for import</div>
-                        </div>
-                      </div>
-
                       {/* Action Button */}
                       <button
                         onClick={advancedFeatures[activeFeature].action}
@@ -947,14 +938,14 @@ const WelcomeScreenRedesigned = ({
           </div>
         </div>
 
-        {/* Live Stats Section */}
+        {/* Stats Section */}
         <div className="bg-gradient-to-r from-gray-900/30 to-black/30 backdrop-blur-sm border-y border-gray-800/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
               {[
-                { label: "Active Developers", value: currentStats.users.toLocaleString(), icon: <Users className="w-6 h-6" />, color: "text-blue-400" },
-                { label: "Code Executions", value: currentStats.executions.toLocaleString(), icon: <Play className="w-6 h-6" />, color: "text-green-400" },
-                { label: "Projects Created", value: currentStats.projects.toLocaleString(), icon: <FolderOpen className="w-6 h-6" />, color: "text-purple-400" },
+                { label: "Active Developers", value: "50K+", icon: <Users className="w-6 h-6" />, color: "text-blue-400" },
+                { label: "Code Executions", value: "10M+", icon: <Play className="w-6 h-6" />, color: "text-green-400" },
+                { label: "Projects Created", value: "2M+", icon: <FolderOpen className="w-6 h-6" />, color: "text-purple-400" },
                 { label: "Success Rate", value: "99.9%", icon: <Trophy className="w-6 h-6" />, color: "text-yellow-400" }
               ].map((stat, index) => (
                 <div key={index} className="text-center group">
@@ -1489,6 +1480,448 @@ const WelcomeScreenRedesigned = ({
           </div>
         </div>
 
+        {/* 3D DSA Tutorial Section - NEW! */}
+        <div className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-900/20 via-blue-900/20 to-indigo-900/20 relative overflow-hidden">
+          {/* Animated background elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 left-10 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          </div>
+
+          <div className="max-w-7xl mx-auto relative z-10">
+            <div className="text-center mb-16">
+              <div className="inline-block mb-4">
+                <span className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-bold px-4 py-2 rounded-full">
+                  ✨ NEW FEATURE
+                </span>
+              </div>
+              <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                🎬 3D Interactive DSA Tutorial
+              </h2>
+              <p className="text-2xl text-gray-300 max-w-3xl mx-auto mb-4">
+                Experience Data Structures in stunning 3D! Rotate, zoom, and interact with visualizations.
+              </p>
+              <p className="text-lg text-cyan-400 font-semibold">
+                👁️ Perfect for visual learners - No audio required!
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+              {/* Left side - 3D Preview */}
+              <div className="relative">
+                <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-3xl border-2 border-cyan-500/30 overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-500">
+                  {/* 3D Viewer Header */}
+                  <div className="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 p-4 border-b border-gray-700/50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex space-x-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm text-gray-300 font-medium">3D DSA Viewer</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-cyan-400">Live</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3D Content Preview */}
+                  <div className="p-8 bg-gradient-to-br from-slate-900 to-slate-950 min-h-[400px] flex items-center justify-center relative">
+                    {/* Simulated 3D Array */}
+                    <div className="relative" style={{ perspective: '1000px' }}>
+                      <div className="flex items-center gap-4" style={{ transform: 'rotateY(20deg) rotateX(10deg)', transformStyle: 'preserve-3d' }}>
+                        {[10, 20, 30, 40, 50].map((value, index) => (
+                          <div
+                            key={index}
+                            className="relative"
+                            style={{ 
+                              transform: `translateZ(${index * 20}px)`,
+                              animation: `float ${2 + index * 0.2}s ease-in-out infinite`
+                            }}
+                          >
+                            <div className={`w-20 h-20 rounded-xl flex items-center justify-center text-xl font-bold text-white shadow-2xl ${
+                              index === 2 
+                                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 scale-125 animate-pulse' 
+                                : 'bg-gradient-to-br from-blue-500 to-cyan-500'
+                            }`}>
+                              {value}
+                            </div>
+                            <div className="text-center mt-2 text-slate-400 text-sm">[{index}]</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Floating indicators */}
+                    <div className="absolute top-4 right-4 bg-cyan-500/20 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-3 py-2">
+                      <div className="text-cyan-400 text-xs font-semibold">🔄 Auto-Rotating</div>
+                    </div>
+                  </div>
+
+                  {/* Controls Preview */}
+                  <div className="bg-gray-800/50 p-4 border-t border-gray-700/50">
+                    <div className="flex items-center justify-center gap-3">
+                      <button className="p-2 bg-green-500/20 hover:bg-green-500/30 rounded-lg transition-all">
+                        <Play className="w-5 h-5 text-green-400" />
+                      </button>
+                      <button className="p-2 bg-yellow-500/20 hover:bg-yellow-500/30 rounded-lg transition-all">
+                        <RotateCcw className="w-5 h-5 text-yellow-400" />
+                      </button>
+                      <div className="flex-1 bg-slate-700 rounded-full h-2 mx-4">
+                        <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                      </div>
+                      <span className="text-slate-400 text-sm">Step 3/5</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating badges */}
+                <div className="absolute -top-6 -right-6 w-20 h-20 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center animate-bounce shadow-2xl">
+                  <span className="text-3xl">🎯</span>
+                </div>
+                <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center animate-pulse shadow-2xl">
+                  <span className="text-2xl">✨</span>
+                </div>
+              </div>
+
+              {/* Right side - Features */}
+              <div className="space-y-6">
+                <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 backdrop-blur-sm rounded-2xl p-6 border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-14 h-14 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">🎬</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-2">Stunning 3D Visualizations</h3>
+                      <p className="text-gray-300">
+                        Watch data structures rotate in real-time 3D. Arrays, trees, graphs, and more come alive with smooth animations and beautiful gradients.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-blue-900/30 to-indigo-900/30 backdrop-blur-sm rounded-2xl p-6 border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">👁️</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-2">100% Visual Learning</h3>
+                      <p className="text-gray-300">
+                        Perfect for non-verbal learners! Every concept explained through visuals, animations, and code examples. No audio required.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 backdrop-blur-sm rounded-2xl p-6 border border-indigo-500/30 hover:border-indigo-400/50 transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">🎮</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-2">Interactive Controls</h3>
+                      <p className="text-gray-300">
+                        Play, pause, rewind, and step through each operation. Control the speed and explore at your own pace with intuitive controls.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">💻</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-2">Code Examples Included</h3>
+                      <p className="text-gray-300">
+                        Each step includes real code snippets showing implementation. Learn the visual concept and the code together.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Topics Grid */}
+            <div className="mb-12">
+              <h3 className="text-3xl font-bold text-center text-white mb-8">
+                6 Data Structures in 3D
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {[
+                  { name: 'Arrays', emoji: '📦', color: 'from-blue-500 to-cyan-500', desc: '3D Boxes' },
+                  { name: 'Linked Lists', emoji: '🔗', color: 'from-green-500 to-emerald-500', desc: 'Train Cars' },
+                  { name: 'Stacks', emoji: '📚', color: 'from-yellow-500 to-orange-500', desc: 'Pancake Tower' },
+                  { name: 'Queues', emoji: '🎢', color: 'from-purple-500 to-pink-500', desc: 'Fair Line' },
+                  { name: 'Trees', emoji: '🌳', color: 'from-green-600 to-teal-500', desc: 'Family Tree' },
+                  { name: 'Graphs', emoji: '🕸️', color: 'from-indigo-500 to-purple-500', desc: 'Network' }
+                ].map((topic, index) => (
+                  <div
+                    key={index}
+                    className={`group relative bg-gradient-to-br ${topic.color} p-6 rounded-2xl text-center text-white font-semibold shadow-lg hover:shadow-2xl transform hover:scale-110 transition-all duration-300 cursor-pointer overflow-hidden`}
+                  >
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300"></div>
+                    <div className="relative z-10">
+                      <div className="text-4xl mb-3 transform group-hover:scale-125 transition-transform duration-300">{topic.emoji}</div>
+                      <div className="text-sm font-bold mb-1">{topic.name}</div>
+                      <div className="text-xs opacity-80">{topic.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Features Highlight */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+              {[
+                { icon: '🎬', text: 'Auto-Rotation', color: 'from-cyan-500 to-blue-500' },
+                { icon: '⚡', text: 'Step-by-Step', color: 'from-blue-500 to-indigo-500' },
+                { icon: '🎨', text: 'Color-Coded', color: 'from-indigo-500 to-purple-500' },
+                { icon: '📝', text: 'Code Examples', color: 'from-purple-500 to-pink-500' }
+              ].map((feature, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-800/30 border border-gray-700/50 rounded-xl p-4 text-center hover:bg-gray-800/50 transition-all"
+                >
+                  <div className="text-3xl mb-2">{feature.icon}</div>
+                  <div className={`text-sm font-semibold bg-gradient-to-r ${feature.color} bg-clip-text text-transparent`}>
+                    {feature.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div className="text-center">
+              <button
+                onClick={() => onShowDSA3D && onShowDSA3D()}
+                className="group relative bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:via-blue-500 hover:to-indigo-500 text-white px-12 py-5 rounded-2xl font-bold text-xl transition-all duration-300 flex items-center justify-center space-x-4 shadow-2xl hover:shadow-cyan-500/50 transform hover:scale-105 mx-auto overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                <span className="text-3xl relative z-10">🎬</span>
+                <span className="relative z-10">Launch 3D Tutorial</span>
+                <ArrowRight className="w-6 h-6 relative z-10 group-hover:translate-x-2 transition-transform" />
+              </button>
+              <p className="text-gray-400 text-sm mt-4 flex items-center justify-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                Free • Interactive • No Audio Required • Perfect for Visual Learners
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* DSA 250 Sheet Section */}
+        <div className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-indigo-900/20 via-purple-900/20 to-pink-900/20" ref={dsaSheetSectionRef}>
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">
+                🎯 DSA 250 Sheet
+              </h2>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Master coding interviews with our curated collection of 250 essential DSA problems. Track your progress, compete with others, and get real-time stats!
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+              {/* Problem Categories */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50">
+                  <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+                    <Target className="w-6 h-6 mr-3 text-indigo-400" />
+                    Problem Categories
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { category: 'Arrays & Strings', count: 45, difficulty: 'Easy-Medium', color: 'from-blue-500 to-cyan-500', icon: '📊' },
+                      { category: 'Linked Lists', count: 20, difficulty: 'Medium', color: 'from-green-500 to-emerald-500', icon: '🔗' },
+                      { category: 'Trees & Graphs', count: 40, difficulty: 'Medium-Hard', color: 'from-purple-500 to-pink-500', icon: '🌳' },
+                      { category: 'Dynamic Programming', count: 35, difficulty: 'Hard', color: 'from-red-500 to-orange-500', icon: '💎' },
+                      { category: 'Sorting & Searching', count: 25, difficulty: 'Easy-Medium', color: 'from-yellow-500 to-orange-500', icon: '🔍' },
+                      { category: 'Stacks & Queues', count: 18, difficulty: 'Medium', color: 'from-teal-500 to-cyan-500', icon: '📚' },
+                      { category: 'Recursion & Backtracking', count: 30, difficulty: 'Medium-Hard', color: 'from-indigo-500 to-purple-500', icon: '🔄' },
+                      { category: 'Bit Manipulation', count: 12, difficulty: 'Easy-Hard', color: 'from-pink-500 to-red-500', icon: '⚡' },
+                      { category: 'Greedy Algorithms', count: 15, difficulty: 'Medium', color: 'from-orange-500 to-yellow-500', icon: '🎯' },
+                      { category: 'Math & Logic', count: 10, difficulty: 'Easy-Medium', color: 'from-cyan-500 to-blue-500', icon: '🧮' }
+                    ].map((item, index) => (
+                      <div
+                        key={index}
+                        className={`bg-gradient-to-r ${item.color} bg-opacity-10 rounded-xl p-4 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 hover:transform hover:scale-105`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-2xl">{item.icon}</span>
+                            <h4 className="font-semibold text-white">{item.category}</h4>
+                          </div>
+                          <span className="text-sm font-bold text-gray-300 bg-gray-700/50 px-2 py-1 rounded">
+                            {item.count}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-gray-400">{item.difficulty}</span>
+                          <span className="text-gray-500">0/{item.count} solved</span>
+                        </div>
+                        <div className="w-full bg-gray-700 rounded-full h-1.5 mt-2">
+                          <div className={`bg-gradient-to-r ${item.color} h-1.5 rounded-full`} style={{ width: '0%' }}></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Features */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
+                      <BarChart3 className="w-6 h-6 text-white" />
+                    </div>
+                    <h4 className="font-semibold text-white mb-2">Real-Time Stats</h4>
+                    <p className="text-sm text-gray-400">Track your progress with live statistics and performance metrics</p>
+                  </div>
+
+                  <div className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4">
+                      <Trophy className="w-6 h-6 text-white" />
+                    </div>
+                    <h4 className="font-semibold text-white mb-2">Leaderboard</h4>
+                    <p className="text-sm text-gray-400">Compete with developers worldwide and climb the ranks</p>
+                  </div>
+
+                  <div className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 hover:border-green-500/50 transition-all duration-300">
+                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center mb-4">
+                      <Flame className="w-6 h-6 text-white" />
+                    </div>
+                    <h4 className="font-semibold text-white mb-2">Daily Streaks</h4>
+                    <p className="text-sm text-gray-400">Build consistency with daily challenges and streak tracking</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats Preview */}
+              <div className="space-y-6">
+                <div className="bg-gradient-to-br from-indigo-900/50 to-purple-900/50 backdrop-blur-sm rounded-2xl p-8 border border-indigo-500/30">
+                  <h3 className="text-xl font-bold text-white mb-6 flex items-center">
+                    <Activity className="w-5 h-5 mr-2 text-indigo-400" />
+                    Your Progress
+                  </h3>
+                  
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <div className="text-5xl font-bold bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent mb-2">
+                        0/250
+                      </div>
+                      <p className="text-gray-400 text-sm">Problems Solved</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-green-400">Easy</span>
+                          <span className="text-gray-400">0/80</span>
+                        </div>
+                        <div className="w-full bg-gray-700 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" style={{ width: '0%' }}></div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-yellow-400">Medium</span>
+                          <span className="text-gray-400">0/120</span>
+                        </div>
+                        <div className="w-full bg-gray-700 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full" style={{ width: '0%' }}></div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-red-400">Hard</span>
+                          <span className="text-gray-400">0/50</span>
+                        </div>
+                        <div className="w-full bg-gray-700 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-red-500 to-pink-500 h-2 rounded-full" style={{ width: '0%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-orange-900/50 to-red-900/50 backdrop-blur-sm rounded-2xl p-6 border border-orange-500/30">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold text-white flex items-center">
+                      <Flame className="w-5 h-5 mr-2 text-orange-400" />
+                      Current Streak
+                    </h4>
+                    <span className="text-3xl font-bold text-orange-400">0</span>
+                  </div>
+                  <p className="text-sm text-gray-400">Keep solving daily to build your streak!</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-yellow-900/50 to-orange-900/50 backdrop-blur-sm rounded-2xl p-6 border border-yellow-500/30">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold text-white flex items-center">
+                      <Trophy className="w-5 h-5 mr-2 text-yellow-400" />
+                      Global Rank
+                    </h4>
+                    <span className="text-2xl font-bold text-yellow-400">--</span>
+                  </div>
+                  <p className="text-sm text-gray-400">Start solving to get ranked!</p>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="text-center">
+              <div className="bg-gradient-to-r from-indigo-600/20 to-pink-600/20 rounded-2xl p-8 border border-indigo-500/30">
+                <h3 className="text-2xl font-bold mb-4 text-white">Ready to Master DSA?</h3>
+                <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
+                  Join thousands of developers preparing for top tech companies. Practice curated problems, track your progress, and ace your coding interviews!
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <button 
+                    onClick={() => {
+                      if (onShowDSA250Sheet) {
+                        onShowDSA250Sheet();
+                      } else {
+                        console.log('Navigate to DSA 250 Sheet');
+                        alert('DSA 250 Sheet feature coming soon!');
+                      }
+                    }}
+                    className="bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-700 hover:to-pink-700 text-white px-10 py-4 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center space-x-3 shadow-lg hover:shadow-2xl transform hover:scale-105"
+                  >
+                    <Target className="w-6 h-6" />
+                    <span>Start DSA 250 Sheet</span>
+                    <ArrowRight className="w-6 h-6" />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (onShowDSA250Sheet) {
+                        onShowDSA250Sheet();
+                      } else {
+                        console.log('Navigate to Real-Time Stats');
+                        alert('Real-Time Stats feature coming soon!');
+                      }
+                    }}
+                    className="border border-gray-600 hover:border-indigo-500 text-gray-300 hover:text-white px-10 py-4 rounded-2xl font-semibold transition-all duration-300 flex items-center space-x-3"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span>View Stats Dashboard</span>
+                  </button>
+                </div>
+                <p className="text-gray-400 text-sm mt-4">
+                  Free to start • Real-time tracking • Interview-focused problems
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Enhanced Footer */}
         <footer className="bg-black/50 border-t border-gray-800/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -1532,6 +1965,18 @@ const WelcomeScreenRedesigned = ({
       />
 
       <ScrollToTop />
+
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px) translateZ(var(--z-offset, 0px));
+          }
+          50% {
+            transform: translateY(-20px) translateZ(var(--z-offset, 0px));
+          }
+        }
+      `}</style>
     </div>
   );
 };

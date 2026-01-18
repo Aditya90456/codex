@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import WelcomeScreenRedesigned from './WelcomeScreenRedesigned';
+import WelcomeScreenModern from './WelcomeScreenModern';
 import DefaultClerkAuth from './Auth/DefaultClerkAuth';
 import TestCaseDemo from './TestCaseDemo';
 import IDEDemo from './IDEDemo';
@@ -240,13 +240,10 @@ int main() {
 
   if (showWelcome) {
     return (
-      <WelcomeScreenRedesigned 
+      <WelcomeScreenModern 
         onCreateNew={handleCreateNew}
         onShowAuth={handleShowAuth}
         onShowDashboard={() => setShowDashboard(true)}
-        onShowWebEditor={() => setShowWebEditor(true)}
-        onShowAdvancedWebEditor={() => setShowAdvancedWebEditor(true)}
-        onShowAndroidEditor={() => setShowAndroidEditor(true)}
       />
     );
   }

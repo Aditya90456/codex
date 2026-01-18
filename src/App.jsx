@@ -1,29 +1,25 @@
 import { ClerkProvider, SignIn, SignUp } from '@clerk/clerk-react';
 import { AuthProvider, useAuth } from './contexts/SimpleClerkAuth';
-import WelcomeScreenRedesigned from './components/WelcomeScreenRedesigned';
+import WelcomeScreenModern from './components/WelcomeScreenModern';
 import CodexEditor from './components/CodexEditor';
-import DSAGame from './components/DSA/DSAGame';
+import AdvancedWebEditor from './components/AdvancedWebEditor';
+import VSCodeEditor from './components/VSCodeEditorClean';
+import AndroidEditor from './components/AndroidEditor';
 import { useState, useEffect } from 'react';
-import { Gamepad2, Code, LogOut, User, Home } from 'lucide-react';
+import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Terminal } from 'lucide-react';
 import './App.css';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-// Global navigation function that can be called from anywhere
-window.navigateToGame = () => {
-  const event = new CustomEvent('forceNavigateToGame');
-  window.dispatchEvent(event);
-};
-
 function AuthenticatedApp() {
   const { user, isAuthenticated, loading, logout } = useAuth();
-  const [currentView, setCurrentView] = useState('welcome'); // 'welcome', 'editor', or 'game'
+  const [currentView, setCurrentView] = useState('welcome'); // 'welcome', 'editor', 'web-editor', 'vscode', 'android'
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState('sign-up'); // 'sign-in' or 'sign-up' - Default to sign-up for new users
-  const [showPublicLanding, setShowPublicLanding] = useState(true); // Show public landing first
-  const [isLoggingOut, setIsLoggingOut] = useState(false); // Track logout state
+  const [authMode, setAuthMode] = useState('sign-up');
+  const [showPublicLanding, setShowPublicLanding] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Debug: Log authentication state changes - Development only
+  // Debug: Log authentication state changes
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       console.log('🔍 App Authentication State:');
@@ -35,28 +31,7 @@ function AuthenticatedApp() {
     }
   }, [isAuthenticated, loading, showPublicLanding, showAuthModal, user]);
 
-  // Emergency navigation event listener
-  useEffect(() => {
-    const handleNavigateToGame = (event) => {
-      console.log('🚨 Emergency navigation event received:', event.detail);
-      setCurrentView('game');
-    };
-
-    const handleForceNavigateToGame = () => {
-      console.log('🚨 FORCE navigate to game!');
-      setCurrentView('game');
-    };
-
-    window.addEventListener('navigateToGame', handleNavigateToGame);
-    window.addEventListener('forceNavigateToGame', handleForceNavigateToGame);
-    
-    return () => {
-      window.removeEventListener('navigateToGame', handleNavigateToGame);
-      window.removeEventListener('forceNavigateToGame', handleForceNavigateToGame);
-    };
-  }, []);
-
-  // Handle logout - reset to public landing when user logs out
+  // Handle logout
   useEffect(() => {
     if (!loading && !isAuthenticated && !isLoggingOut) {
       setCurrentView('welcome');
@@ -65,7 +40,7 @@ function AuthenticatedApp() {
     }
   }, [loading, isAuthenticated, isLoggingOut]);
 
-  // Show auth modal only when user clicks sign up/sign in from landing page
+  // Show auth modal
   useEffect(() => {
     if (!loading && !isAuthenticated && !showPublicLanding) {
       setShowAuthModal(true);
@@ -90,7 +65,7 @@ function AuthenticatedApp() {
     <div className="App">
       {/* Public Landing Page - Shows first for non-authenticated users */}
       {!isAuthenticated && showPublicLanding && (
-        <WelcomeScreenRedesigned 
+        <WelcomeScreenModern 
           onCreateNew={() => {
             setShowPublicLanding(false);
             setAuthMode('sign-up');
@@ -102,38 +77,6 @@ function AuthenticatedApp() {
           onShowDashboard={() => {
             setShowPublicLanding(false);
             setAuthMode('sign-in');
-          }}
-          onShowGame={() => {
-            setShowPublicLanding(false);
-            setAuthMode('sign-up');
-          }}
-          onShowWebEditor={() => {
-            setShowPublicLanding(false);
-            setAuthMode('sign-up');
-          }}
-          onShowAdvancedWebEditor={() => {
-            setShowPublicLanding(false);
-            setAuthMode('sign-up');
-          }}
-          onShowAndroidEditor={() => {
-            setShowPublicLanding(false);
-            setAuthMode('sign-up');
-          }}
-          onShowRoadmap={() => {
-            setShowPublicLanding(false);
-            setAuthMode('sign-up');
-          }}
-          onShowDSAComic={() => {
-            setShowPublicLanding(false);
-            setAuthMode('sign-up');
-          }}
-          onShowArticles={() => {
-            setShowPublicLanding(false);
-            setAuthMode('sign-up');
-          }}
-          onShowCodexRedesigned={() => {
-            setShowPublicLanding(false);
-            setAuthMode('sign-up');
           }}
         />
       )}
@@ -198,61 +141,10 @@ function AuthenticatedApp() {
         </div>
       )}
 
-      {/* Development Test Buttons - Hidden in production */}
-      {isAuthenticated && process.env.NODE_ENV === 'development' && (
-        <div className="fixed top-4 left-4 z-50 flex gap-2">
-          <button
-            onClick={() => {
-              console.log('🔥 DIRECT GAME TEST FROM APP');
-              console.log('Current view before:', currentView);
-              setCurrentView('game');
-              console.log('View changed to: game');
-            }}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg hover:bg-red-700"
-          >
-            🎮 DEV TEST
-          </button>
-          <button
-            onClick={() => setCurrentView('welcome')}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold"
-          >
-            WELCOME
-          </button>
-        </div>
-      )}
-
-      {/* Floating DSA Game Button */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <button
-          onClick={() => {
-            if (isAuthenticated) {
-              setCurrentView('game');
-            } else {
-              alert('Please sign in first to play the DSA Game!');
-            }
-          }}
-          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-110 transition-all duration-300 group"
-          title="Play DSA Game"
-        >
-          <Gamepad2 className="w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
-        </button>
-      </div>
-
       {/* Main App - Only visible when authenticated */}
       {isAuthenticated && (
         <>
-          {/* Debug Button - Remove after testing */}
-          <button
-            onClick={() => {
-              console.log('Debug: Forcing game view');
-              setCurrentView('game');
-            }}
-            className="fixed bottom-4 left-4 z-50 bg-red-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg hover:bg-red-700"
-          >
-            Test Game
-          </button>
-
-          {/* Navigation Bar - Only show on Editor and Game views */}
+          {/* Navigation Bar - Only show on Editor view */}
           {currentView !== 'welcome' && (
             <div className="fixed top-4 right-4 z-40 flex gap-2">
               <button
@@ -262,6 +154,7 @@ function AuthenticatedApp() {
                 <Home className="w-5 h-5" />
                 Home
               </button>
+              
               <button
                 onClick={() => setCurrentView('editor')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
@@ -271,18 +164,43 @@ function AuthenticatedApp() {
                 }`}
               >
                 <Code className="w-5 h-5" />
-                Editor
+                Code Editor
               </button>
+              
               <button
-                onClick={() => setCurrentView('game')}
+                onClick={() => setCurrentView('web-editor')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  currentView === 'game'
+                  currentView === 'web-editor'
+                    ? 'bg-green-600 text-white shadow-lg'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                <Rocket className="w-5 h-5" />
+                Web IDE
+              </button>
+              
+              <button
+                onClick={() => setCurrentView('vscode')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
+                  currentView === 'vscode'
+                    ? 'bg-cyan-600 text-white shadow-lg'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                <FolderOpen className="w-5 h-5" />
+                VS Code
+              </button>
+              
+              <button
+                onClick={() => setCurrentView('android')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
+                  currentView === 'android'
                     ? 'bg-purple-600 text-white shadow-lg'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
-                <Gamepad2 className="w-5 h-5" />
-                DSA Game
+                <Smartphone className="w-5 h-5" />
+                Android
               </button>
               
               {/* User Menu */}
@@ -294,7 +212,6 @@ function AuthenticatedApp() {
                     setIsLoggingOut(true);
                     try {
                       await logout();
-                      // Force reset to public landing
                       setCurrentView('welcome');
                       setShowPublicLanding(true);
                       setShowAuthModal(false);
@@ -316,85 +233,24 @@ function AuthenticatedApp() {
 
           {/* Content */}
           {currentView === 'welcome' && (
-            <WelcomeScreenRedesigned 
+            <WelcomeScreenModern 
               onCreateNew={() => {
                 console.log('Opening editor');
                 setCurrentView('editor');
               }}
               onShowAuth={() => {}}
               onShowDashboard={() => {}}
-              onShowGame={() => {
-                console.log('🎮 DSA Game button clicked from WelcomeScreenRedesigned');
-                console.log('Current view before:', currentView);
-                setCurrentView('game');
-                console.log('View set to: game');
-              }}
-              onShowWebEditor={() => setCurrentView('editor')}
-              onShowAdvancedWebEditor={() => setCurrentView('editor')}
-              onShowAndroidEditor={() => setCurrentView('editor')}
-              onShowRoadmap={() => {}}
-              onShowDSAComic={() => {}}
-              onShowArticles={() => {}}
-              onShowCodexRedesigned={() => setCurrentView('editor')}
             />
           )}
           {currentView === 'editor' && <CodexEditor />}
-          {currentView === 'game' && (
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-              {/* Game Navigation Header */}
-              <div className="bg-black/20 backdrop-blur-sm border-b border-white/10 p-4">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                      <Gamepad2 className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h1 className="text-2xl font-bold text-white">DSA Master Game</h1>
-                      <p className="text-sm text-purple-200">Interactive Data Structures & Algorithms Learning</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => setCurrentView('welcome')}
-                      className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all"
-                    >
-                      <Home className="w-4 h-4" />
-                      <span>Home</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => setCurrentView('editor')}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all"
-                    >
-                      <Code className="w-4 h-4" />
-                      <span>Editor</span>
-                    </button>
-                    
-                    <div className="flex items-center gap-2 bg-white/10 text-white px-3 py-2 rounded-lg">
-                      <User className="w-4 h-4" />
-                      <span className="text-sm">{user?.name}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Game Content */}
-              <div className="p-4">
-                <DSAGame />
-              </div>
-            </div>
-          )}
-
-          {/* Debug Info */}
-          <div className="fixed bottom-4 left-4 bg-black/80 text-white p-2 rounded text-sm z-50 hidden">
-            Current View: {currentView}
-          </div>
+          {currentView === 'web-editor' && <AdvancedWebEditor onBack={() => setCurrentView('welcome')} />}
+          {currentView === 'vscode' && <VSCodeEditor onBack={() => setCurrentView('welcome')} />}
+          {currentView === 'android' && <AndroidEditor onBack={() => setCurrentView('welcome')} />}
         </>
       )}
     </div>
   );
-}
+} 
 
 function App() {
   const [isReady, setIsReady] = useState(false);
