@@ -533,7 +533,7 @@ int main() {
   return (
     <div className={`h-screen ${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900' : 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 text-white'} flex flex-col ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
       {/* Modern Header with Glassmorphism */}
-      <div className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-white/80 backdrop-blur-xl border-gray-200/50' : 'bg-gray-800/80 backdrop-blur-xl border-gray-700/50'} border-b shadow-sm`}>
+      <div className={`${theme === 'bright-modern' || theme === 'github-light' || theme === 'light' ? 'bg-white/80 backdrop-blur-xl border-gray-200/50' : 'bg-gray-800/80 backdrop-blur-xl border-gray-700/50'} border-b shadow-sm ${isFullscreen ? '' : 'mt-16'}`}>
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Left - Logo and Title */}

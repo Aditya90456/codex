@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import { useAuth } from '../contexts/ClerkAuthContext';
+import { useAuth } from '../contexts/SimpleClerkAuth';
 import { languageConfigs, generateProjectTemplates } from '../utils/languageTemplates';
 import {
   Play, Save, Settings, FolderOpen, Folder, File, Terminal, GitBranch, Code,
@@ -544,7 +544,7 @@ const VSCodeEditor = ({ onBack }) => {
   return (
     <div className="h-screen bg-gray-900 text-white flex flex-col">
       {/* Title Bar */}
-      <div className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between flex-shrink-0">
+      <div className="bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between flex-shrink-0 mt-16">
         <div className="flex items-center space-x-4">
           <button onClick={onBack} className="text-gray-400 hover:text-white transition-colors">←</button>
           <div className="flex items-center space-x-3">

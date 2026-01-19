@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/ClerkAuthContext';
+import { useAuth } from '../contexts/SimpleClerkAuth';
 import TestCaseRenderer from './TestCaseRenderer';
 import apiService from '../services/api';
 import {

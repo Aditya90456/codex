@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import { useAuth } from '../contexts/ClerkAuthContext';
+import { useAuth } from '../contexts/SimpleClerkAuth';
 import {
   Play, Save, Settings, FolderOpen, Folder, File, Terminal, GitBranch, Code,
   FileText, X, Search, Trash2, Loader, CheckCircle, AlertCircle, Info,

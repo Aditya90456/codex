@@ -1173,7 +1173,7 @@ public class NewActivity${existingJavaFiles + 1} extends AppCompatActivity {
   return (
     <div className="h-screen bg-white text-gray-900 flex flex-col">
       {/* Header */}
-      <div className="bg-green-600 text-white px-4 py-3">
+      <div className="bg-green-600 text-white px-4 py-3 mt-16">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {onBack && (

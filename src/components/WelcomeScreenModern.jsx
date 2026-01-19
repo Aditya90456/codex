@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import UserProfile from './UserProfile';
 import Settings from './Settings';
@@ -66,6 +67,7 @@ import {
 
 const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
   const { user, logout } = useUniversalAuth();
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [activeLanguage, setActiveLanguage] = useState(0);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -607,7 +609,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                       </button>
                       
                       <button
-                        onClick={() => setShowDSA250(true)}
+                        onClick={() => navigate('/dsa')}
                         className="group relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-green-500/25 hover:shadow-2xl hover:shadow-green-500/40 transform hover:scale-105"
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
@@ -863,7 +865,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     </div>
                   </div>
                   <button 
-                    onClick={() => setShowVisualTutorials(true)}
+                    onClick={() => navigate('/dsa/tutorials')}
                     className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
                   >
                     <Play className="w-5 h-5" />
@@ -898,7 +900,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     </div>
                   </div>
                   <button 
-                    onClick={() => setShowDSA250(true)}
+                    onClick={() => navigate('/dsa')}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
                   >
                     <Code className="w-5 h-5" />
@@ -933,7 +935,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     </div>
                   </div>
                   <button 
-                    onClick={() => setShowInterviewReady(true)}
+                    onClick={() => navigate('/dsa/interview')}
                     className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
                   >
                     <Trophy className="w-5 h-5" />
@@ -1072,7 +1074,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               </button>
               
               <button
-                onClick={() => setShowDSA250(true)}
+                onClick={() => navigate('/dsa')}
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-green-500/25 hover:shadow-2xl hover:shadow-green-500/40 transform hover:scale-105 flex items-center justify-center space-x-3"
               >
                 <Trophy className="w-6 h-6" />
@@ -1080,7 +1082,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               </button>
               
               <button
-                onClick={() => setShowAdvancedWebEditor(true)}
+                onClick={() => navigate('/web-editor')}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transform hover:scale-105 flex items-center justify-center space-x-3"
               >
                 <Zap className="w-6 h-6" />
@@ -1088,7 +1090,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               </button>
               
               <button
-                onClick={() => setShowVSCodeEditor(true)}
+                onClick={() => navigate('/vscode')}
                 className="bg-slate-800/50 hover:bg-slate-700/50 border-2 border-slate-700 hover:border-slate-600 px-8 py-5 rounded-2xl font-bold transition-all transform hover:scale-105 flex items-center justify-center space-x-3"
               >
                 <FolderOpen className="w-6 h-6" />
@@ -1096,7 +1098,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               </button>
 
               <button
-                onClick={() => setShowAndroidEditor(true)}
+                onClick={() => navigate('/android')}
                 className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-orange-500/25 hover:shadow-2xl hover:shadow-orange-500/40 transform hover:scale-105 flex items-center justify-center space-x-3"
               >
                 <Smartphone className="w-6 h-6" />

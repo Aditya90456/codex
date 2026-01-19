@@ -1,23 +1,30 @@
 import { ClerkProvider, SignIn, SignUp } from '@clerk/clerk-react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/SimpleClerkAuth';
 import WelcomeScreenModern from './components/WelcomeScreenModern';
 import CodexEditor from './components/CodexEditor';
+import CodexEditorModern from './components/CodexEditorModern';
+import CodexEditorUltra from './components/CodexEditorUltra';
 import AdvancedWebEditor from './components/AdvancedWebEditor';
 import VSCodeEditor from './components/VSCodeEditorClean';
-import AndroidEditor from './components/AndroidEditor';
+import AndroidEditor from './components/AndroidEditorModern';
+import DSA250Awesome from './components/DSA/DSA250Awesome';
+import VisualTutorials from './components/DSA/VisualTutorials';
+import InterviewReady from './components/DSA/InterviewReady';
 import { useState, useEffect } from 'react';
-import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Terminal } from 'lucide-react';
+import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Trophy } from 'lucide-react';
 import './App.css';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 function AuthenticatedApp() {
   const { user, isAuthenticated, loading, logout } = useAuth();
-  const [currentView, setCurrentView] = useState('welcome'); // 'welcome', 'editor', 'web-editor', 'vscode', 'android'
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('sign-up');
   const [showPublicLanding, setShowPublicLanding] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Debug: Log authentication state changes
   useEffect(() => {
@@ -28,17 +35,20 @@ function AuthenticatedApp() {
       console.log('- showPublicLanding:', showPublicLanding);
       console.log('- showAuthModal:', showAuthModal);
       console.log('- user:', user);
+      console.log('- current path:', location.pathname);
     }
-  }, [isAuthenticated, loading, showPublicLanding, showAuthModal, user]);
+  }, [isAuthenticated, loading, showPublicLanding, showAuthModal, user, location.pathname]);
 
   // Handle logout
   useEffect(() => {
     if (!loading && !isAuthenticated && !isLoggingOut) {
-      setCurrentView('welcome');
       setShowPublicLanding(true);
       setShowAuthModal(false);
+      if (location.pathname !== '/') {
+        navigate('/');
+      }
     }
-  }, [loading, isAuthenticated, isLoggingOut]);
+  }, [loading, isAuthenticated, isLoggingOut, navigate, location.pathname]);
 
   // Show auth modal
   useEffect(() => {
@@ -64,7 +74,7 @@ function AuthenticatedApp() {
   return (
     <div className="App">
       {/* Public Landing Page - Shows first for non-authenticated users */}
-      {!isAuthenticated && showPublicLanding && (
+      {!isAuthenticated && showPublicLanding && location.pathname === '/' && (
         <WelcomeScreenModern 
           onCreateNew={() => {
             setShowPublicLanding(false);
@@ -144,11 +154,11 @@ function AuthenticatedApp() {
       {/* Main App - Only visible when authenticated */}
       {isAuthenticated && (
         <>
-          {/* Navigation Bar - Only show on Editor view */}
-          {currentView !== 'welcome' && (
-            <div className="fixed top-4 right-4 z-40 flex gap-2">
+          {/* Navigation Bar - Only show on non-home routes */}
+          {location.pathname !== '/' && (
+            <div className="fixed top-4 right-4 z-50 flex gap-2">
               <button
-                onClick={() => setCurrentView('welcome')}
+                onClick={() => navigate('/')}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all bg-white/10 text-white hover:bg-white/20"
               >
                 <Home className="w-5 h-5" />
@@ -156,21 +166,21 @@ function AuthenticatedApp() {
               </button>
               
               <button
-                onClick={() => setCurrentView('editor')}
+                onClick={() => navigate('/editor-modern')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  currentView === 'editor'
+                  location.pathname.startsWith('/editor')
                     ? 'bg-blue-600 text-white shadow-lg'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
                 <Code className="w-5 h-5" />
-                Code Editor
+                Editor
               </button>
               
               <button
-                onClick={() => setCurrentView('web-editor')}
+                onClick={() => navigate('/web-editor')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  currentView === 'web-editor'
+                  location.pathname === '/web-editor'
                     ? 'bg-green-600 text-white shadow-lg'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
@@ -180,9 +190,9 @@ function AuthenticatedApp() {
               </button>
               
               <button
-                onClick={() => setCurrentView('vscode')}
+                onClick={() => navigate('/vscode')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  currentView === 'vscode'
+                  location.pathname === '/vscode'
                     ? 'bg-cyan-600 text-white shadow-lg'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
@@ -192,15 +202,27 @@ function AuthenticatedApp() {
               </button>
               
               <button
-                onClick={() => setCurrentView('android')}
+                onClick={() => navigate('/android')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  currentView === 'android'
-                    ? 'bg-purple-600 text-white shadow-lg'
+                  location.pathname === '/android'
+                    ? 'bg-pink-600 text-white shadow-lg'
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
                 <Smartphone className="w-5 h-5" />
                 Android
+              </button>
+
+              <button
+                onClick={() => navigate('/dsa')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
+                  location.pathname.startsWith('/dsa')
+                    ? 'bg-indigo-600 text-white shadow-lg'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                <Trophy className="w-5 h-5" />
+                DSA
               </button>
               
               {/* User Menu */}
@@ -212,7 +234,7 @@ function AuthenticatedApp() {
                     setIsLoggingOut(true);
                     try {
                       await logout();
-                      setCurrentView('welcome');
+                      navigate('/');
                       setShowPublicLanding(true);
                       setShowAuthModal(false);
                     } catch (error) {
@@ -231,22 +253,35 @@ function AuthenticatedApp() {
             </div>
           )}
 
-          {/* Content */}
-          {currentView === 'welcome' && (
-            <WelcomeScreenModern 
-              onCreateNew={() => {
-                console.log('Opening editor');
-                setCurrentView('editor');
-              }}
-              onShowAuth={() => {}}
-              onShowDashboard={() => {}}
+          {/* Routes */}
+          <Routes>
+            <Route 
+              path="/" 
+              element={
+                <WelcomeScreenModern 
+                  onCreateNew={() => navigate('/editor-modern')}
+                  onShowAuth={() => {}}
+                  onShowDashboard={() => {}}
+                />
+              } 
             />
-          )}
-          {currentView === 'editor' && <CodexEditor />}
-          {currentView === 'web-editor' && <AdvancedWebEditor onBack={() => setCurrentView('welcome')} />}
-          {currentView === 'vscode' && <VSCodeEditor onBack={() => setCurrentView('welcome')} />}
-          {currentView === 'android' && <AndroidEditor onBack={() => setCurrentView('welcome')} />}
+            <Route path="/editor" element={<CodexEditor />} />
+            <Route path="/editor-modern" element={<CodexEditorModern />} />
+            <Route path="/editor-ultra" element={<CodexEditorUltra onBack={() => navigate('/')} />} />
+            <Route path="/web-editor" element={<AdvancedWebEditor onBack={() => navigate('/')} />} />
+            <Route path="/vscode" element={<VSCodeEditor onBack={() => navigate('/')} />} />
+            <Route path="/android" element={<AndroidEditor onBack={() => navigate('/')} />} />
+            <Route path="/dsa" element={<DSA250Awesome onBack={() => navigate('/')} />} />
+            <Route path="/dsa/tutorials" element={<VisualTutorials onBack={() => navigate('/')} />} />
+            <Route path="/dsa/interview" element={<InterviewReady onBack={() => navigate('/')} />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </>
+      )}
+
+      {/* Redirect non-authenticated users trying to access protected routes */}
+      {!isAuthenticated && location.pathname !== '/' && (
+        <Navigate to="/" replace />
       )}
     </div>
   );
@@ -278,7 +313,9 @@ function App() {
   return (
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <AuthProvider>
-        <AuthenticatedApp />
+        <Router>
+          <AuthenticatedApp />
+        </Router>
       </AuthProvider>
     </ClerkProvider>
   );

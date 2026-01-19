@@ -1256,7 +1256,7 @@ User Agent: \${navigator.userAgent}\`;
   return (
     <div className={`h-screen bg-gray-900 text-white flex flex-col ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
       {/* Advanced Header */}
-      <div className="bg-gray-800 border-gray-700 border-b px-6 py-3">
+      <div className="bg-gray-800 border-gray-700 border-b px-6 py-3 mt-16">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             {onBack && (

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { 
-  dsa250Problems, 
-  getProgressStats,
+  dsa250Problems,
   getTopCompanies
 } from '../../data/dsa250Problems';
 import {
@@ -16,10 +16,16 @@ import {
   ExternalLink,
   Play,
   ChevronUp,
-  ArrowUp
+  ArrowUp,
+  Cloud,
+  CloudOff
 } from 'lucide-react';
 
 const DSA250Awesome = ({ onBack }) => {
+  const { user } = useUser();
+  const [solvedProblems, setSolvedProblems] = useState(new Set());
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [selectedCompany, setSelectedCompany] = useState('All');
@@ -33,12 +39,96 @@ const DSA250Awesome = ({ onBack }) => {
   const containerRef = useRef(null);
   const problemsGridRef = useRef(null);
   
-  const stats = getProgressStats();
   const topCompanies = getTopCompanies();
 
   const categories = ['All', ...new Set(dsa250Problems.map(p => p.category))];
   const difficulties = ['All', 'Easy', 'Medium', 'Hard'];
   const companies = ['All', ...topCompanies.slice(0, 10).map(c => c.company)];
+
+  // Load solved problems from Clerk user metadata on mount
+  useEffect(() => {
+    const loadProgress = async () => {
+      if (user) {
+        try {
+          // Load from unsafeMetadata (user-writable)
+          const savedProgress = user.unsafeMetadata?.dsa250Progress || [];
+          setSolvedProblems(new Set(savedProgress));
+          setLastSyncTime(new Date());
+        } catch (error) {
+          console.error('Error loading progress:', error);
+          // Fallback to localStorage
+          const localProgress = localStorage.getItem('dsa250-progress');
+          if (localProgress) {
+            setSolvedProblems(new Set(JSON.parse(localProgress)));
+          }
+        }
+      } else {
+        // Load from localStorage if not logged in
+        const localProgress = localStorage.getItem('dsa250-progress');
+        if (localProgress) {
+          setSolvedProblems(new Set(JSON.parse(localProgress)));
+        }
+      }
+    };
+    loadProgress();
+  }, [user]);
+
+  // Save progress to cloud (Clerk) and localStorage
+  const saveProgress = async (newSolvedSet) => {
+    setSolvedProblems(newSolvedSet);
+    const progressArray = Array.from(newSolvedSet);
+    
+    // Always save to localStorage
+    localStorage.setItem('dsa250-progress', JSON.stringify(progressArray));
+    
+    // Save to cloud if user is logged in
+    if (user) {
+      setIsSyncing(true);
+      try {
+        // Use unsafeMetadata for user-writable data
+        await user.update({
+          unsafeMetadata: {
+            dsa250Progress: progressArray,
+            lastUpdated: new Date().toISOString()
+          }
+        });
+        setLastSyncTime(new Date());
+      } catch (error) {
+        console.error('Error syncing to cloud:', error);
+        // Silently fail - localStorage still works
+      } finally {
+        setIsSyncing(false);
+      }
+    }
+  };
+
+  // Toggle problem solved status
+  const toggleProblemSolved = (problemId) => {
+    const newSolved = new Set(solvedProblems);
+    if (newSolved.has(problemId)) {
+      newSolved.delete(problemId);
+    } else {
+      newSolved.add(problemId);
+    }
+    saveProgress(newSolved);
+  };
+
+  // Calculate stats based on solved problems
+  const solvedCount = solvedProblems.size;
+  const totalCount = dsa250Problems.length;
+  const progressPercentage = Math.round((solvedCount / totalCount) * 100);
+  
+  const solvedByDifficulty = {
+    Easy: dsa250Problems.filter(p => p.difficulty === 'Easy' && solvedProblems.has(p.id)).length,
+    Medium: dsa250Problems.filter(p => p.difficulty === 'Medium' && solvedProblems.has(p.id)).length,
+    Hard: dsa250Problems.filter(p => p.difficulty === 'Hard' && solvedProblems.has(p.id)).length
+  };
+
+  const totalByDifficulty = {
+    Easy: dsa250Problems.filter(p => p.difficulty === 'Easy').length,
+    Medium: dsa250Problems.filter(p => p.difficulty === 'Medium').length,
+    Hard: dsa250Problems.filter(p => p.difficulty === 'Hard').length
+  };
 
   // Scroll handling
   useEffect(() => {
@@ -226,19 +316,19 @@ const DSA250Awesome = ({ onBack }) => {
               <div className="flex items-center space-x-4">
                 <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-4 text-center">
                   <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                    {stats.solved}
+                    {solvedCount}
                   </div>
                   <div className="text-xs text-slate-400 mt-1">Solved</div>
                 </div>
                 <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-4 text-center">
                   <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                    {stats.percentage}%
+                    {progressPercentage}%
                   </div>
                   <div className="text-xs text-slate-400 mt-1">Progress</div>
                 </div>
                 <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-4 text-center">
                   <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                    {stats.total}
+                    {totalCount}
                   </div>
                   <div className="text-xs text-slate-400 mt-1">Total</div>
                 </div>
@@ -249,16 +339,39 @@ const DSA250Awesome = ({ onBack }) => {
             <div className="mb-6">
               <div className="flex justify-between text-sm text-slate-400 mb-2">
                 <span>Overall Progress</span>
-                <span>{stats.solved} / {stats.total} problems</span>
+                <span>{solvedCount} / {totalCount} problems</span>
               </div>
               <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden">
                 <div 
-                  className="h-full bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 transition-all duration-1000 ease-out relative"
-                  style={{ width: `${stats.percentage}%` }}
-                >
-                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-                </div>
+                  className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-500"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
               </div>
+              <div className="text-right text-xs text-slate-400 mt-1">{progressPercentage}%</div>
+
+              {/* Cloud Sync Status */}
+              {user && (
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-700">
+                  <div className="flex items-center space-x-2 text-xs text-slate-400">
+                    {isSyncing ? (
+                      <>
+                        <Cloud className="w-4 h-4 animate-pulse text-blue-400" />
+                        <span>Syncing...</span>
+                      </>
+                    ) : lastSyncTime ? (
+                      <>
+                        <Cloud className="w-4 h-4 text-green-400" />
+                        <span>Synced {lastSyncTime.toLocaleTimeString()}</span>
+                      </>
+                    ) : (
+                      <>
+                        <CloudOff className="w-4 h-4 text-slate-500" />
+                        <span>Not synced</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Difficulty Breakdown */}
@@ -266,19 +379,19 @@ const DSA250Awesome = ({ onBack }) => {
               <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-green-400 font-semibold">Easy</span>
-                  <span className="text-2xl font-bold text-green-400">{stats.byDifficulty.easy}</span>
+                  <span className="text-2xl font-bold text-green-400">{solvedByDifficulty.Easy}/{totalByDifficulty.Easy}</span>
                 </div>
               </div>
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-yellow-400 font-semibold">Medium</span>
-                  <span className="text-2xl font-bold text-yellow-400">{stats.byDifficulty.medium}</span>
+                  <span className="text-2xl font-bold text-yellow-400">{solvedByDifficulty.Medium}/{totalByDifficulty.Medium}</span>
                 </div>
               </div>
               <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-red-400 font-semibold">Hard</span>
-                  <span className="text-2xl font-bold text-red-400">{stats.byDifficulty.hard}</span>
+                  <span className="text-2xl font-bold text-red-400">{solvedByDifficulty.Hard}/{totalByDifficulty.Hard}</span>
                 </div>
               </div>
             </div>
@@ -412,10 +525,14 @@ const DSA250Awesome = ({ onBack }) => {
             ref={problemsGridRef}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 scroll-mt-8"
           >
-            {filteredProblems.map((problem) => (
+            {filteredProblems.map((problem) => {
+              const isSolved = solvedProblems.has(problem.id);
+              return (
               <div
                 key={problem.id}
-                className="group relative bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-6 hover:border-blue-500/50 transition-all duration-300 hover:transform hover:scale-105"
+                className={`group relative bg-slate-800/50 backdrop-blur border rounded-2xl p-6 transition-all duration-300 hover:transform hover:scale-105 ${
+                  isSolved ? 'border-green-500/50 bg-green-900/10' : 'border-slate-700 hover:border-blue-500/50'
+                }`}
               >
                 {/* Problem Header */}
                 <div className="flex items-start justify-between mb-4">
@@ -430,11 +547,17 @@ const DSA250Awesome = ({ onBack }) => {
                       <p className="text-xs text-slate-400">{problem.category}</p>
                     </div>
                   </div>
-                  {problem.solved ? (
-                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
-                  ) : (
-                    <Circle className="w-6 h-6 text-slate-600 flex-shrink-0" />
-                  )}
+                  <button
+                    onClick={() => toggleProblemSolved(problem.id)}
+                    className="flex-shrink-0 transition-all hover:scale-110"
+                    title={isSolved ? 'Mark as unsolved' : 'Mark as solved'}
+                  >
+                    {isSolved ? (
+                      <CheckCircle className="w-6 h-6 text-green-400" />
+                    ) : (
+                      <Circle className="w-6 h-6 text-slate-600 hover:text-slate-400" />
+                    )}
+                  </button>
                 </div>
 
                 {/* Difficulty & Importance */}
@@ -504,7 +627,8 @@ const DSA250Awesome = ({ onBack }) => {
                   <ExternalLink size={14} />
                 </a>
               </div>
-            ))}
+            );
+            })}
           </div>
 
           {/* Empty State */}
