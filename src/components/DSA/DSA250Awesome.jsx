@@ -75,11 +75,17 @@ const DSA250Awesome = ({ onBack }) => {
 
   // Save progress to cloud (Clerk) and localStorage
   const saveProgress = async (newSolvedSet) => {
+    console.log('Saving progress...', newSolvedSet.size, 'problems');
     setSolvedProblems(newSolvedSet);
     const progressArray = Array.from(newSolvedSet);
     
     // Always save to localStorage
-    localStorage.setItem('dsa250-progress', JSON.stringify(progressArray));
+    try {
+      localStorage.setItem('dsa250-progress', JSON.stringify(progressArray));
+      console.log('Saved to localStorage:', progressArray.length, 'problems');
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+    }
     
     // Save to cloud if user is logged in
     if (user) {
@@ -93,23 +99,30 @@ const DSA250Awesome = ({ onBack }) => {
           }
         });
         setLastSyncTime(new Date());
+        console.log('Synced to cloud successfully');
       } catch (error) {
         console.error('Error syncing to cloud:', error);
         // Silently fail - localStorage still works
       } finally {
         setIsSyncing(false);
       }
+    } else {
+      console.log('User not logged in, skipping cloud sync');
     }
   };
 
   // Toggle problem solved status
   const toggleProblemSolved = (problemId) => {
+    console.log('Toggling problem:', problemId);
     const newSolved = new Set(solvedProblems);
     if (newSolved.has(problemId)) {
       newSolved.delete(problemId);
+      console.log('Unmarked as solved');
     } else {
       newSolved.add(problemId);
+      console.log('Marked as solved');
     }
+    console.log('New solved count:', newSolved.size);
     saveProgress(newSolved);
   };
 

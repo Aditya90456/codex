@@ -11,9 +11,11 @@ import AndroidEditor from './components/AndroidEditorModern';
 import DSA250Awesome from './components/DSA/DSA250Awesome';
 import VisualTutorials from './components/DSA/VisualTutorials';
 import InterviewReady from './components/DSA/InterviewReady';
+import MobileNav from './components/MobileNav';
 import { useState, useEffect } from 'react';
-import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Trophy } from 'lucide-react';
+import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Trophy, Menu, X } from 'lucide-react';
 import './App.css';
+import './styles/responsive.css';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -154,9 +156,24 @@ function AuthenticatedApp() {
       {/* Main App - Only visible when authenticated */}
       {isAuthenticated && (
         <>
-          {/* Navigation Bar - Only show on non-home routes */}
+          {/* Mobile Navigation */}
+          <MobileNav user={user} onLogout={async () => {
+            setIsLoggingOut(true);
+            try {
+              await logout();
+              navigate('/');
+              setShowPublicLanding(true);
+              setShowAuthModal(false);
+            } catch (error) {
+              console.error('Logout error:', error);
+            } finally {
+              setIsLoggingOut(false);
+            }
+          }} />
+
+          {/* Desktop Navigation Bar - Only show on non-home routes */}
           {location.pathname !== '/' && (
-            <div className="fixed top-4 right-4 z-50 flex gap-2">
+            <div className="hidden md:flex fixed top-4 right-4 z-50 gap-2 desktop-nav">
               <button
                 onClick={() => navigate('/')}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all bg-white/10 text-white hover:bg-white/20"
