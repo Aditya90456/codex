@@ -470,3 +470,33 @@ const OpenSourceLearning = () => {
 };
 
 export default OpenSourceLearning;
+          <p className="text-blue-100 mb-6 text-lg">
+            Start contributing today and make an impact on projects used by millions worldwide.
+          </p>
+          <div className="flex items-center justify-center space-x-4">
+            <button className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-xl">
+              Find Your First Issue
+            </button>
+            <button className="bg-blue-800 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-900 transition-all transform hover:scale-105 shadow-xl">
+              Join Community
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* License Footer */}
+      <div className="max-w-7xl mx-auto px-6 pb-12">
+        <div className="bg-gray-800/50 backdrop-blur border border-gray-700 rounded-xl p-6 text-center">
+          <p className="text-gray-400 text-sm">
+            Open Source Learning Path • MIT Licensed • Free to use and share
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            © 2026 Codex Platform • Made with ❤️ for the community
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OpenSourceLearning;
