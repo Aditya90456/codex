@@ -11,7 +11,7 @@ import AndroidEditor from './components/AndroidEditorModern';
 import DSA250Awesome from './components/DSA/DSA250Awesome';
 import VisualTutorials from './components/DSA/VisualTutorials';
 import InterviewReady from './components/DSA/InterviewReady';
-import A2ZDSASheet from './components/DSA/A2ZDSASheet';
+import StriverTributePage from './pages/StriverTributePage';
 import GSoCMentorPlan from './components/GSoC/GSoCMentorPlan';
 import OpenSourceLearning from './components/OpenSource/OpenSourceLearning';
 import MobileNav from './components/MobileNav';
@@ -294,7 +294,7 @@ function AuthenticatedApp() {
             <Route path="/dsa" element={<DSA250Awesome onBack={() => navigate('/')} />} />
             <Route path="/dsa/tutorials" element={<VisualTutorials onBack={() => navigate('/')} />} />
             <Route path="/dsa/interview" element={<InterviewReady onBack={() => navigate('/')} />} />
-            <Route path="/dsa/a2z" element={<A2ZDSASheet />} />
+            <Route path="/dsa/tribute" element={<StriverTributePage onBack={() => navigate('/')} />} />
             <Route path="/gsoc" element={<GSoCMentorPlan />} />
             <Route path="/opensource" element={<OpenSourceLearning />} />
             <Route path="*" element={<Navigate to="/" replace />} />

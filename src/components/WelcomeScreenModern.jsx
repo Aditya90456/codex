@@ -9,6 +9,7 @@ import AndroidEditor from './AndroidEditor';
 import DSA250Awesome from './DSA/DSA250Awesome';
 import VisualTutorials from './DSA/VisualTutorials';
 import InterviewReady from './DSA/InterviewReady';
+import StriverTributePage from '../pages/StriverTributePage';
 import { 
   Code, 
   Zap, 
@@ -57,6 +58,7 @@ import {
   RotateCcw,
   Trash2,
   Edit3,
+  Heart,
   FileCode,
   GitBranch,
   Search,
@@ -90,6 +92,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
   const [showDSA250, setShowDSA250] = useState(false);
   const [showVisualTutorials, setShowVisualTutorials] = useState(false);
   const [showInterviewReady, setShowInterviewReady] = useState(false);
+  const [showStriverTribute, setShowStriverTribute] = useState(false);
   const [showFileManager, setShowFileManager] = useState(false);
   const [showSnippetsLibrary, setShowSnippetsLibrary] = useState(false);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
@@ -346,12 +349,8 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
     return <InterviewReady onBack={() => setShowInterviewReady(false)} />;
   }
 
-  if (showVisualTutorials) {
-    return <VisualTutorials onBack={() => setShowVisualTutorials(false)} />;
-  }
-
-  if (showInterviewReady) {
-    return <InterviewReady onBack={() => setShowInterviewReady(false)} />;
+  if (showStriverTribute) {
+    return <StriverTributePage onBack={() => setShowStriverTribute(false)} />;
   }
 
   return (
@@ -838,7 +837,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
               {/* Tutorial Card 1 - Visual Learning */}
               <div className="group relative">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
@@ -944,37 +943,37 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                 </div>
               </div>
 
-              {/* Tutorial Card 4 - A2Z DSA Sheet */}
+              {/* Tutorial Card 4 - Striver Tribute */}
               <div className="group relative">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
-                <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-2xl p-8 hover:border-indigo-500/50 transition-all duration-300 h-full">
-                  <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mb-6">
-                    <GraduationCap className="w-8 h-8 text-white" />
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-red-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-2xl p-8 hover:border-pink-500/50 transition-all duration-300 h-full">
+                  <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-red-500 rounded-2xl flex items-center justify-center mb-6">
+                    <Heart className="w-8 h-8 text-white fill-white" />
                   </div>
-                  <h3 className="text-2xl font-bold mb-4 text-white">A2Z DSA Sheet</h3>
+                  <h3 className="text-2xl font-bold mb-4 text-white">Tribute to Striver</h3>
                   <p className="text-slate-400 mb-6 leading-relaxed">
-                    Striver's comprehensive A2Z DSA learning path. Master every concept step by step.
+                    Honoring Striver's incredible contribution to DSA education. Free resources for millions.
                   </p>
                   <div className="space-y-2 mb-6">
                     <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-indigo-400" />
-                      <span>7 Complete Steps</span>
+                      <CheckCircle className="w-4 h-4 text-pink-400" />
+                      <span>YouTube Playlists</span>
                     </div>
                     <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-indigo-400" />
-                      <span>Structured Learning</span>
+                      <CheckCircle className="w-4 h-4 text-pink-400" />
+                      <span>Learning Resources</span>
                     </div>
                     <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-indigo-400" />
-                      <span>Track Progress</span>
+                      <CheckCircle className="w-4 h-4 text-pink-400" />
+                      <span>Success Stories</span>
                     </div>
                   </div>
                   <button 
-                    onClick={() => navigate('/dsa/a2z')}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
+                    onClick={() => setShowStriverTribute(true)}
+                    className="w-full bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
                   >
-                    <BookOpen className="w-5 h-5" />
-                    <span>Start Learning</span>
+                    <Heart className="w-5 h-5" />
+                    <span>View Tribute</span>
                   </button>
                 </div>
               </div>

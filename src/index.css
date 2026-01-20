@@ -36,6 +36,25 @@
   .smooth-scroll {
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Smooth scroll snap */
+  .scroll-snap-y {
+    scroll-snap-type: y proximity;
+  }
+
+  .scroll-snap-start {
+    scroll-snap-align: start;
+  }
 }
 
 * {
@@ -146,7 +165,7 @@ html, body {
 }
 
 #root {
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
 }
 
