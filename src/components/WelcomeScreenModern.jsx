@@ -1046,6 +1046,44 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                 </div>
               </div>
             </div>
+
+            {/* Open Source Learning Banner */}
+            <div className="mt-8">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 rounded-3xl blur-xl opacity-30 group-hover:opacity-50 transition duration-500"></div>
+                <div className="relative bg-gradient-to-r from-cyan-900/50 to-blue-900/50 backdrop-blur border border-cyan-500/30 rounded-3xl p-8 hover:border-cyan-500/50 transition-all">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <GitBranch className="w-8 h-8 text-cyan-400" />
+                        <h3 className="text-3xl font-bold text-white">Open Source Learning</h3>
+                      </div>
+                      <p className="text-slate-300 text-lg mb-4">
+                        Master open source contribution from beginner to advanced. Build real-world experience!
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        <span className="px-3 py-1 bg-cyan-600/30 text-cyan-300 rounded-full text-sm font-semibold">
+                          3 Levels
+                        </span>
+                        <span className="px-3 py-1 bg-blue-600/30 text-blue-300 rounded-full text-sm font-semibold">
+                          Project Ideas
+                        </span>
+                        <span className="px-3 py-1 bg-indigo-600/30 text-indigo-300 rounded-full text-sm font-semibold">
+                          Earn Badges
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate('/opensource')}
+                      className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 px-8 py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-xl flex items-center space-x-2"
+                    >
+                      <span>Start Learning</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
