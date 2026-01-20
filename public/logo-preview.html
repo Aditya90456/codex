@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codex Logo Preview</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 3rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .card h2 {
+      color: #667eea;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      margin-bottom: 20px;
+    }
+    
+    .logo-container img {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    .size-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    
+    .size-btn {
+      padding: 8px 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s ease;
+    }
+    
+    .size-btn:hover {
+      background: #764ba2;
+    }
+    
+    .size-btn.active {
+      background: #764ba2;
+    }
+    
+    .background-options {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .bg-btn {
+      width: 40px;
+      height: 40px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.3s ease;
+    }
+    
+    .bg-btn:hover {
+      border-color: #667eea;
+    }
+    
+    .bg-btn.active {
+      border-color: #667eea;
+      border-width: 3px;
+    }
+    
+    .bg-white { background: white; }
+    .bg-dark { background: #1a1a1a; }
+    .bg-gray { background: #f3f4f6; }
+    .bg-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    
+    .info {
+      background: #f0f9ff;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+    
+    .info p {
+      color: #334155;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .download-section {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      margin-top: 30px;
+    }
+    
+    .download-section h2 {
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+    
+    .download-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    
+    .download-btn {
+      display: block;
+      padding: 15px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 600;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Codex Logo Preview</h1>
+    
+    <div class="grid">
+      <!-- Full Logo -->
+      <div class="card">
+        <h2>Full Logo with Text</h2>
+        <div class="background-options">
+          <div class="bg-btn bg-white active" onclick="changeBg(this, 'logo1')" data-bg="white"></div>
+          <div class="bg-btn bg-dark" onclick="changeBg(this, 'logo1')" data-bg="#1a1a1a"></div>
+          <div class="bg-btn bg-gray" onclick="changeBg(this, 'logo1')" data-bg="#f3f4f6"></div>
+          <div class="bg-btn bg-gradient" onclick="changeBg(this, 'logo1')" data-bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"></div>
+        </div>
+        <div class="logo-container" id="logo1" style="background: white;">
+          <img src="codex-logo.svg" alt="Codex Logo" id="img1" style="width: 200px;">
+        </div>
+        <div class="size-options">
+          <button class="size-btn" onclick="changeSize('img1', '150px')">Small</button>
+          <button class="size-btn active" onclick="changeSize('img1', '200px')">Medium</button>
+          <button class="size-btn" onclick="changeSize('img1', '250px')">Large</button>
+        </div>
+        <div class="info">
+          <p><strong>Use for:</strong> Website headers, splash screens, marketing materials</p>
+        </div>
+      </div>
+      
+      <!-- Icon Only -->
+      <div class="card">
+        <h2>Icon Only (No Text)</h2>
+        <div class="background-options">
+          <div class="bg-btn bg-white active" onclick="changeBg(this, 'logo2')" data-bg="white"></div>
+          <div class="bg-btn bg-dark" onclick="changeBg(this, 'logo2')" data-bg="#1a1a1a"></div>
+          <div class="bg-btn bg-gray" onclick="changeBg(this, 'logo2')" data-bg="#f3f4f6"></div>
+          <div class="bg-btn bg-gradient" onclick="changeBg(this, 'logo2')" data-bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"></div>
+        </div>
+        <div class="logo-container" id="logo2" style="background: white;">
+          <img src="codex-icon-only.svg" alt="Codex Icon" id="img2" style="width: 200px;">
+        </div>
+        <div class="size-options">
+          <button class="size-btn" onclick="changeSize('img2', '150px')">Small</button>
+          <button class="size-btn active" onclick="changeSize('img2', '200px')">Medium</button>
+          <button class="size-btn" onclick="changeSize('img2', '250px')">Large</button>
+        </div>
+        <div class="info">
+          <p><strong>Use for:</strong> Favicons, app icons, social media avatars, small spaces</p>
+        </div>
+      </div>
+      
+      <!-- Existing Icon -->
+      <div class="card">
+        <h2>Existing Icon</h2>
+        <div class="background-options">
+          <div class="bg-btn bg-white active" onclick="changeBg(this, 'logo3')" data-bg="white"></div>
+          <div class="bg-btn bg-dark" onclick="changeBg(this, 'logo3')" data-bg="#1a1a1a"></div>
+          <div class="bg-btn bg-gray" onclick="changeBg(this, 'logo3')" data-bg="#f3f4f6"></div>
+          <div class="bg-btn bg-gradient" onclick="changeBg(this, 'logo3')" data-bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"></div>
+        </div>
+        <div class="logo-container" id="logo3" style="background: white;">
+          <img src="codex-icon.svg" alt="Codex Icon" id="img3" style="width: 200px;" onerror="this.parentElement.innerHTML='<p style=color:#999>Icon not found</p>'">
+        </div>
+        <div class="size-options">
+          <button class="size-btn" onclick="changeSize('img3', '150px')">Small</button>
+          <button class="size-btn active" onclick="changeSize('img3', '200px')">Medium</button>
+          <button class="size-btn" onclick="changeSize('img3', '250px')">Large</button>
+        </div>
+        <div class="info">
+          <p><strong>Note:</strong> This is your existing icon (if available)</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Download Section -->
+    <div class="download-section">
+      <h2>📥 Download Logo Files</h2>
+      <div class="download-grid">
+        <a href="codex-logo.svg" download class="download-btn">
+          Full Logo SVG
+        </a>
+        <a href="codex-icon-only.svg" download class="download-btn">
+          Icon Only SVG
+        </a>
+        <a href="LOGO_GUIDE.md" download class="download-btn">
+          Logo Guide (MD)
+        </a>
+      </div>
+      <div class="info" style="margin-top: 20px;">
+        <p><strong>💡 Tip:</strong> SVG files are vector graphics that scale perfectly at any size. To convert to PNG, see the LOGO_GUIDE.md file for detailed instructions.</p>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    function changeSize(imgId, size) {
+      document.getElementById(imgId).style.width = size;
+      
+      // Update active button
+      const card = document.getElementById(imgId).closest('.card');
+      card.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+    
+    function changeBg(btn, containerId) {
+      const container = document.getElementById(containerId);
+      const bg = btn.dataset.bg;
+      
+      if (bg.startsWith('linear-gradient')) {
+        container.style.background = bg;
+      } else {
+        container.style.background = bg;
+      }
+      
+      // Update active button
+      btn.parentElement.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+  </script>
+</body>
+</html>
