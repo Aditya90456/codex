@@ -441,3 +441,5 @@ const GSoCMentorPlan = () => {
     </div>
   );
 };
+
+export default GSoCMentorPlan;
