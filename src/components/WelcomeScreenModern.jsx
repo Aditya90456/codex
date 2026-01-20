@@ -943,6 +943,41 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                   </button>
                 </div>
               </div>
+
+              {/* Tutorial Card 4 - A2Z DSA Sheet */}
+              <div className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-2xl p-8 hover:border-indigo-500/50 transition-all duration-300 h-full">
+                  <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mb-6">
+                    <GraduationCap className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4 text-white">A2Z DSA Sheet</h3>
+                  <p className="text-slate-400 mb-6 leading-relaxed">
+                    Striver's comprehensive A2Z DSA learning path. Master every concept step by step.
+                  </p>
+                  <div className="space-y-2 mb-6">
+                    <div className="flex items-center space-x-2 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-indigo-400" />
+                      <span>7 Complete Steps</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-indigo-400" />
+                      <span>Structured Learning</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-indigo-400" />
+                      <span>Track Progress</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => navigate('/dsa/a2z')}
+                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
+                  >
+                    <BookOpen className="w-5 h-5" />
+                    <span>Start Learning</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* DSA Topics Grid */}
@@ -971,6 +1006,44 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     <span className="relative text-sm">{topic.name}</span>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* GSoC Preparation Banner */}
+            <div className="mt-16">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 rounded-3xl blur-xl opacity-30 group-hover:opacity-50 transition duration-500"></div>
+                <div className="relative bg-gradient-to-r from-green-900/50 to-blue-900/50 backdrop-blur border border-green-500/30 rounded-3xl p-8 hover:border-green-500/50 transition-all">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <Trophy className="w-8 h-8 text-yellow-400" />
+                        <h3 className="text-3xl font-bold text-white">Google Summer of Code</h3>
+                      </div>
+                      <p className="text-slate-300 text-lg mb-4">
+                        Complete 12-week preparation plan with mentorship guidance. Get ready for GSoC 2026!
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        <span className="px-3 py-1 bg-green-600/30 text-green-300 rounded-full text-sm font-semibold">
+                          4 Phases
+                        </span>
+                        <span className="px-3 py-1 bg-blue-600/30 text-blue-300 rounded-full text-sm font-semibold">
+                          12 Weeks
+                        </span>
+                        <span className="px-3 py-1 bg-purple-600/30 text-purple-300 rounded-full text-sm font-semibold">
+                          Expert Tips
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate('/gsoc')}
+                      className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-8 py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-xl flex items-center space-x-2"
+                    >
+                      <span>Start Preparation</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

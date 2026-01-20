@@ -11,9 +11,11 @@ import AndroidEditor from './components/AndroidEditorModern';
 import DSA250Awesome from './components/DSA/DSA250Awesome';
 import VisualTutorials from './components/DSA/VisualTutorials';
 import InterviewReady from './components/DSA/InterviewReady';
+import A2ZDSASheet from './components/DSA/A2ZDSASheet';
+import GSoCMentorPlan from './components/GSoC/GSoCMentorPlan';
 import MobileNav from './components/MobileNav';
 import { useState, useEffect } from 'react';
-import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Trophy, Menu, X } from 'lucide-react';
+import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Trophy } from 'lucide-react';
 import './App.css';
 import './styles/responsive.css';
 
@@ -291,6 +293,8 @@ function AuthenticatedApp() {
             <Route path="/dsa" element={<DSA250Awesome onBack={() => navigate('/')} />} />
             <Route path="/dsa/tutorials" element={<VisualTutorials onBack={() => navigate('/')} />} />
             <Route path="/dsa/interview" element={<InterviewReady onBack={() => navigate('/')} />} />
+            <Route path="/dsa/a2z" element={<A2ZDSASheet />} />
+            <Route path="/gsoc" element={<GSoCMentorPlan />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </>
