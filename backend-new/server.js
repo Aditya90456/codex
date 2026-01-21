@@ -11,11 +11,12 @@ const authRouter = require('./routes/auth');
 const problemsRouter = require('./routes/problems');
 const submissionsRouter = require('./routes/submissions');
 const executeRouter = require('./routes/execute');
-const usersRouter = require('./routes/users');
+// const usersRouter = require('./routes/users'); // Not created yet
 const dashboardRouter = require('./routes/dashboard');
 const projectsRouter = require('./routes/projects');
-const editorRouter = require('./routes/editor');
+// const editorRouter = require('./routes/editor'); // Not created yet
 const clerkRouter = require('./routes/clerk');
+const aiGeneratorRouter = require('./routes/ai-generator');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -106,10 +107,13 @@ app.use('/api/auth/clerk', clerkRouter);
 app.use('/api/problems', problemsRouter);
 app.use('/api/submissions', submissionsRouter);
 app.use('/api/execute', executeRouter);
-app.use('/api/users', usersRouter);
+// app.use('/api/users', usersRouter); // Not created yet
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/projects', projectsRouter);
-app.use('/api/editor', editorRouter);
+// app.use('/api/editor', editorRouter); // Not created yet
+app.use('/api/ai', aiGeneratorRouter);
+
+console.log('✅ AI Generator route registered');
 
 // API documentation endpoint
 app.get('/api', (req, res) => { 
@@ -147,6 +151,10 @@ app.get('/api', (req, res) => {
       dashboard: {
         'GET /api/dashboard/stats': 'Get dashboard statistics',
         'GET /api/dashboard/activity': 'Get recent activity'
+      },
+      ai: {
+        'POST /api/ai/generate': 'Generate content with AI (web, mobile, document, api, data)',
+        'GET /api/ai/health': 'AI service health check'
       }
     }
   });

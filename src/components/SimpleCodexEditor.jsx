@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import ModernWelcomeScreen from './ModernWelcomeScreen';
+import AIUniversalCreator from './AI/AIUniversalCreatorModern';
 import BusinessGrowthFeatures from './BusinessGrowthFeatures';
 import IDEOutput from './IDEOutput';
 import { 
@@ -18,6 +19,7 @@ import {
 
 const SimpleCodexEditor = () => {
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showAICreator, setShowAICreator] = useState(false);
   const [showBusinessGrowth, setShowBusinessGrowth] = useState(false);
   const [code, setCode] = useState(`// Welcome to Codex Playground - No Auth Version
 // Fast-loading Code Editor for Everyone
@@ -92,6 +94,10 @@ console.log("Happy coding! 🚀");
     return <BusinessGrowthFeatures />;
   }
 
+  if (showAICreator) {
+    return <AIUniversalCreator onBack={() => setShowAICreator(false)} />;
+  }
+
   if (showWelcome) {
     return (
       <ModernWelcomeScreen 
@@ -99,6 +105,7 @@ console.log("Happy coding! 🚀");
         onShowWebEditor={() => {}} // No auth needed
         onShowAdvancedWebEditor={() => {}}
         onShowAndroidEditor={() => {}}
+        onShowAICreator={() => setShowAICreator(true)}
       />
     );
   }

@@ -1,11 +1,11 @@
 services:
-  # Backend API Service
+  # Backend API Service (backend-new)
   - type: web
     name: codex-backend
     env: node
     plan: free
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && npm start
+    buildCommand: cd backend-new && npm install
+    startCommand: cd backend-new && npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -17,20 +17,16 @@ services:
           type: web
           name: codex-frontend
           property: url
+      - key: GEMINI_API_KEY
+        sync: false  # Set this manually in Render dashboard with your API key
+      - key: CLERK_SECRET_KEY
+        sync: false  # Set this manually in Render dashboard for backend Clerk auth
       - key: MONGODB_URI
-        sync: false  # You'll need to set this manually in Render dashboard
+        sync: false  # Optional - set this manually if you want database
       - key: JWT_SECRET
         generateValue: true
-      - key: BCRYPT_ROUNDS
-        value: 12
       - key: RATE_LIMIT_MAX
         value: 100
-      - key: RATE_LIMIT_DURATION
-        value: 60
-      - key: CODE_TIMEOUT
-        value: 5000
-      - key: MAX_CODE_LENGTH
-        value: 10000
 
   # Frontend Service
   - type: web
@@ -49,12 +45,14 @@ services:
         source: /*
         destination: /index.html
     envVars:
-      - key: VITE_API_URL
+      - key: VITE_API_BASE_URL
         fromService:
           type: web
           name: codex-backend
           property: url
+      - key: VITE_CLERK_PUBLISHABLE_KEY
+        sync: false  # Set this manually in Render dashboard
       - key: VITE_APP_NAME
-        value: Codex
+        value: Codex Playground
       - key: VITE_APP_VERSION
-        value: 1.0.0
+        value: 2.0.0

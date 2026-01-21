@@ -6,6 +6,7 @@ import Settings from './Settings';
 import VSCodeEditor from './VSCodeEditorClean';
 import AdvancedWebEditor from './AdvancedWebEditor';
 import AndroidEditor from './AndroidEditor';
+import AIUniversalCreator from './AI/AIUniversalCreatorModern';
 import DSA250Awesome from './DSA/DSA250Awesome';
 import VisualTutorials from './DSA/VisualTutorials';
 import InterviewReady from './DSA/InterviewReady';
@@ -64,6 +65,7 @@ import {
   Search,
   Command,
   Smartphone,
+  Brain,
   X
 } from 'lucide-react';
 
@@ -89,6 +91,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
   ]);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showAndroidEditor, setShowAndroidEditor] = useState(false);
+  const [showAICreator, setShowAICreator] = useState(false);
   const [showDSA250, setShowDSA250] = useState(false);
   const [showVisualTutorials, setShowVisualTutorials] = useState(false);
   const [showInterviewReady, setShowInterviewReady] = useState(false);
@@ -335,6 +338,10 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
 
   if (showAndroidEditor) {
     return <AndroidEditor onBack={() => setShowAndroidEditor(false)} />;
+  }
+
+  if (showAICreator) {
+    return <AIUniversalCreator onBack={() => setShowAICreator(false)} />;
   }
 
   if (showDSA250) {
@@ -1181,6 +1188,16 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               >
                 <Rocket className="w-6 h-6" />
                 <span>Launch Editor</span>
+              </button>
+              
+              <button
+                onClick={() => setShowAICreator(true)}
+                className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transform hover:scale-105 flex items-center justify-center space-x-3 relative overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <Brain className="w-6 h-6 relative z-10" />
+                <span className="relative z-10">AI Creator</span>
+                <span className="absolute top-2 right-2 px-2 py-0.5 bg-yellow-400 text-black text-xs font-bold rounded-full">NEW</span>
               </button>
               
               <button

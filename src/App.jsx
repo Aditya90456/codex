@@ -12,8 +12,6 @@ import DSA250Awesome from './components/DSA/DSA250Awesome';
 import VisualTutorials from './components/DSA/VisualTutorials';
 import InterviewReady from './components/DSA/InterviewReady';
 import StriverTributePage from './pages/StriverTributePage';
-import GSoCMentorPlan from './components/GSoC/GSoCMentorPlan';
-import OpenSourceLearning from './components/OpenSource/OpenSourceLearning';
 import MobileNav from './components/MobileNav';
 import { useState, useEffect } from 'react';
 import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Trophy } from 'lucide-react';
@@ -295,8 +293,6 @@ function AuthenticatedApp() {
             <Route path="/dsa/tutorials" element={<VisualTutorials onBack={() => navigate('/')} />} />
             <Route path="/dsa/interview" element={<InterviewReady onBack={() => navigate('/')} />} />
             <Route path="/dsa/tribute" element={<StriverTributePage onBack={() => navigate('/')} />} />
-            <Route path="/gsoc" element={<GSoCMentorPlan />} />
-            <Route path="/opensource" element={<OpenSourceLearning />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </>

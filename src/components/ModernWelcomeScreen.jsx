@@ -17,10 +17,12 @@ import {
   ChevronDown,
   Github,
   Twitter,
-  MessageCircle
+  MessageCircle,
+  Brain,
+  Wand2
 } from 'lucide-react';
 
-const ModernWelcomeScreen = ({ onCreateNew, onShowWebEditor, onShowAdvancedWebEditor, onShowAndroidEditor }) => {
+const ModernWelcomeScreen = ({ onCreateNew, onShowWebEditor, onShowAdvancedWebEditor, onShowAndroidEditor, onShowAICreator }) => {
   const [currentLanguage, setCurrentLanguage] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -60,6 +62,14 @@ const ModernWelcomeScreen = ({ onCreateNew, onShowWebEditor, onShowAdvancedWebEd
   ];
 
   const quickStart = [
+    {
+      title: "AI Creator",
+      description: "Generate apps with AI - web, mobile, APIs & more",
+      icon: <Brain className="w-8 h-8" />,
+      gradient: "from-purple-500 via-pink-500 to-orange-500",
+      action: () => onShowAICreator?.(),
+      badge: "NEW"
+    },
     {
       title: "Web Development",
       description: "Full-stack web development environment",
@@ -225,6 +235,164 @@ const ModernWelcomeScreen = ({ onCreateNew, onShowWebEditor, onShowAdvancedWebEd
         </div>
       </div>
 
+      {/* AI Universal Creator Section - NEW */}
+      <div className="relative z-10 py-20 px-6 bg-gradient-to-r from-purple-900/20 via-pink-900/20 to-orange-900/20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full border border-purple-500/30 mb-6">
+              <Sparkles className="w-4 h-4 text-yellow-400" />
+              <span className="text-sm font-semibold text-purple-300">NEW FEATURE</span>
+            </div>
+            <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+              AI Universal Creator
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Generate complete applications with AI - from web apps to mobile apps, APIs, and data analysis scripts. Just describe what you want to build.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            {/* Main AI Creator Card */}
+            <div className="lg:col-span-2">
+              <button
+                onClick={() => onShowAICreator?.()}
+                className="group relative w-full p-12 bg-gradient-to-br from-purple-900/40 via-pink-900/40 to-orange-900/40 backdrop-blur-sm rounded-3xl border-2 border-purple-500/30 hover:border-purple-400/50 transition-all duration-500 hover:transform hover:scale-[1.02] text-left overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full filter blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
+                
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between">
+                  <div className="flex-1 mb-6 md:mb-0">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Brain className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-3xl font-bold text-white mb-1">AI Universal Creator</h3>
+                        <div className="flex items-center space-x-2">
+                          <Wand2 className="w-4 h-4 text-purple-400" />
+                          <span className="text-purple-300 text-sm">Powered by Advanced AI</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 text-lg mb-6">
+                      Transform your ideas into reality. Describe what you want to build, and our AI will generate production-ready code instantly.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      <span className="px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-sm text-purple-300">
+                        🌐 Web Apps
+                      </span>
+                      <span className="px-4 py-2 bg-pink-500/20 border border-pink-500/30 rounded-full text-sm text-pink-300">
+                        📱 Mobile Apps
+                      </span>
+                      <span className="px-4 py-2 bg-orange-500/20 border border-orange-500/30 rounded-full text-sm text-orange-300">
+                        🔌 REST APIs
+                      </span>
+                      <span className="px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-sm text-blue-300">
+                        📊 Data Scripts
+                      </span>
+                      <span className="px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-full text-sm text-green-300">
+                        📄 Documentation
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-32 h-32 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-3xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
+                      <Sparkles className="w-16 h-16 text-white animate-pulse" />
+                    </div>
+                    <div className="flex items-center space-x-2 text-white font-semibold">
+                      <span>Try AI Creator</span>
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            {/* AI Features Grid */}
+            <div className="p-6 bg-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700/50">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-white" />
+                </div>
+                <h4 className="text-xl font-semibold">Instant Generation</h4>
+              </div>
+              <p className="text-gray-400">
+                Get production-ready code in seconds. No more boilerplate or setup time.
+              </p>
+            </div>
+
+            <div className="p-6 bg-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700/50">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
+                  <Code2 className="w-5 h-5 text-white" />
+                </div>
+                <h4 className="text-xl font-semibold">Multi-Platform</h4>
+              </div>
+              <p className="text-gray-400">
+                Generate code for web, mobile, backend APIs, and data analysis - all from one prompt.
+              </p>
+            </div>
+
+            <div className="p-6 bg-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700/50">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+                  <Play className="w-5 h-5 text-white" />
+                </div>
+                <h4 className="text-xl font-semibold">Live Preview</h4>
+              </div>
+              <p className="text-gray-400">
+                See your generated apps running live instantly. Toggle between code and preview.
+              </p>
+            </div>
+
+            <div className="p-6 bg-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700/50">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                  <Star className="w-5 h-5 text-white" />
+                </div>
+                <h4 className="text-xl font-semibold">Export & Download</h4>
+              </div>
+              <p className="text-gray-400">
+                Download your generated code as files and use them in your own projects.
+              </p>
+            </div>
+          </div>
+
+          {/* Example Prompts */}
+          <div className="text-center">
+            <p className="text-gray-400 mb-4">Try these example prompts:</p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <button 
+                onClick={() => onShowAICreator?.()}
+                className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-gray-600 rounded-lg text-sm text-gray-300 hover:text-white transition-all"
+              >
+                "A todo list app with dark mode"
+              </button>
+              <button 
+                onClick={() => onShowAICreator?.()}
+                className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-gray-600 rounded-lg text-sm text-gray-300 hover:text-white transition-all"
+              >
+                "Weather forecast mobile app"
+              </button>
+              <button 
+                onClick={() => onShowAICreator?.()}
+                className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-gray-600 rounded-lg text-sm text-gray-300 hover:text-white transition-all"
+              >
+                "REST API for blog posts"
+              </button>
+              <button 
+                onClick={() => onShowAICreator?.()}
+                className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-gray-600 rounded-lg text-sm text-gray-300 hover:text-white transition-all"
+              >
+                "Data analysis dashboard"
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Quick Start Section */}
       <div className="relative z-10 py-20 px-6">
         <div className="max-w-6xl mx-auto">
@@ -240,6 +408,11 @@ const ModernWelcomeScreen = ({ onCreateNew, onShowWebEditor, onShowAdvancedWebEd
                 onClick={item.action}
                 className="group relative p-8 bg-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 hover:transform hover:scale-105 text-left overflow-hidden"
               >
+                {item.badge && (
+                  <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-xs font-bold">
+                    {item.badge}
+                  </div>
+                )}
                 <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
                 <div className="relative z-10">
                   <div className="mb-4 text-gray-300 group-hover:text-white transition-colors">
