@@ -1,11 +1,11 @@
 services:
-  # Backend API Service (backend-new)
+  # Backend API Service (backend folder)
   - type: web
     name: codex-backend
     env: node
     plan: free
-    buildCommand: cd backend-new && npm install
-    startCommand: cd backend-new && npm start
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

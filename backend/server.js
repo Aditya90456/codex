@@ -16,6 +16,9 @@ app.use(cors({
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Import AI Generator routes
+const aiGeneratorRoutes = require('./routes/ai-generator');
+
 // In-memory storage (for simplicity)
 let users = [];
 let problems = [];
@@ -95,9 +98,13 @@ app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
+    geminiConfigured: !!process.env.GEMINI_API_KEY
   });
 });
+
+// Mount AI Generator routes
+app.use('/api/ai', aiGeneratorRoutes);
 
 // API Routes
 
