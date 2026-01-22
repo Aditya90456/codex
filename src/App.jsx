@@ -12,9 +12,11 @@ import DSA250Awesome from './components/DSA/DSA250Awesome';
 import VisualTutorials from './components/DSA/VisualTutorials';
 import InterviewReady from './components/DSA/InterviewReady';
 import StriverTributePage from './pages/StriverTributePage';
+import GSoCPage from './pages/GSoCPage';
+import OpenSourcePage from './pages/OpenSourcePage';
 import MobileNav from './components/MobileNav';
 import { useState, useEffect } from 'react';
-import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Trophy } from 'lucide-react';
+import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Trophy, Users, GitBranch } from 'lucide-react';
 import './App.css';
 import './styles/responsive.css';
 
@@ -242,6 +244,30 @@ function AuthenticatedApp() {
                 <Trophy className="w-5 h-5" />
                 DSA
               </button>
+
+              <button
+                onClick={() => navigate('/gsoc')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
+                  location.pathname === '/gsoc'
+                    ? 'bg-purple-600 text-white shadow-lg'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                <Users className="w-5 h-5" />
+                GSoC
+              </button>
+
+              <button
+                onClick={() => navigate('/opensource')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
+                  location.pathname === '/opensource'
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                <GitBranch className="w-5 h-5" />
+                Open Source
+              </button>
               
               {/* User Menu */}
               <div className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-lg">
@@ -293,6 +319,8 @@ function AuthenticatedApp() {
             <Route path="/dsa/tutorials" element={<VisualTutorials onBack={() => navigate('/')} />} />
             <Route path="/dsa/interview" element={<InterviewReady onBack={() => navigate('/')} />} />
             <Route path="/dsa/tribute" element={<StriverTributePage onBack={() => navigate('/')} />} />
+            <Route path="/gsoc" element={<GSoCPage />} />
+            <Route path="/opensource" element={<OpenSourcePage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </>
