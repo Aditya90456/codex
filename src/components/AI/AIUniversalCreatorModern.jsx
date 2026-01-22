@@ -1,27 +1,28 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Brain, ArrowLeft, Copy, Plus, MoreVertical, Download, Code, Terminal, Zap, Settings, Book } from 'lucide-react';
+import { Send, Brain, ArrowLeft, Copy, Plus, MoreVertical, Download, Code, Moon, Sun } from 'lucide-react';
 
 const AIUniversalCreatorModern = ({ onBack }) => {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: 'Hello! I\'m your AI assistant for Codex Playground. I can help you with:\n\n• **General coding questions** and explanations\n• **Debugging** and troubleshooting\n• **Programming concepts** and best practices\n• **Code generation** - Web apps, mobile apps, APIs, documents, and data analysis\n\nJust ask me anything! Whether you want to chat about programming or need me to generate specific code, I\'m here to help. 😊',
+            content: 'Hello! I\'m CP-AI, your intelligent code generator powered by Gemini. I can help you with:\n\n• **Code Generation** - Create complete web apps, mobile apps, and APIs instantly\n• **Programming Help** - Get answers to coding questions and explanations\n• **Debugging** - Fix errors and troubleshoot issues\n• **Best Practices** - Learn modern development patterns\n\nJust describe what you want to build, and I\'ll generate the code for you! 🚀',
             timestamp: Date.now()
         }
     ]);
     const [inputText, setInputText] = useState('');
     const [generating, setGenerating] = useState(false);
     const [showSidebar, setShowSidebar] = useState(false);
+    const [darkMode, setDarkMode] = useState(false);
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
 
     const examplePrompts = [
-        'How do I fix a JavaScript error?',
-        'Explain React hooks to me',
-        'Create a todo list app with dark mode',
-        'What are the best practices for API design?',
-        'Build a weather forecast mobile app',
-        'Help me understand async/await in JavaScript'
+        'Create a modern landing page with animations',
+        'Build a todo app with React and dark mode',
+        'Generate a REST API for a blog system',
+        'Make a weather app with real-time data',
+        'Create a calculator with beautiful UI',
+        'Build a chat interface component'
     ];
 
     useEffect(() => {
@@ -58,25 +59,70 @@ const AIUniversalCreatorModern = ({ onBack }) => {
         setGenerating(true);
 
         try {
+            // Get user info from localStorage or context (if using Clerk/Auth)
+            const getUserInfo = () => {
+                try {
+                    // Try to get from localStorage first
+                    const storedUser = localStorage.getItem('userProfile');
+                    if (storedUser) {
+                        return JSON.parse(storedUser);
+                    }
+                    
+                    // Try to get from Clerk if available
+                    if (window.Clerk?.user) {
+                        return {
+                            name: window.Clerk.user.fullName || window.Clerk.user.firstName || 'User',
+                            email: window.Clerk.user.primaryEmailAddress?.emailAddress,
+                            experienceLevel: localStorage.getItem('experienceLevel') || 'intermediate',
+                            preferredLanguage: localStorage.getItem('preferredLanguage') || 'JavaScript',
+                            currentProject: localStorage.getItem('currentProject') || 'General learning'
+                        };
+                    }
+                    
+                    // Default user info
+                    return {
+                        name: localStorage.getItem('userName') || 'Developer',
+                        experienceLevel: 'intermediate',
+                        preferredLanguage: 'JavaScript',
+                        currentProject: 'General learning'
+                    };
+                } catch (error) {
+                    return null;
+                }
+            };
+
+            const userInfo = getUserInfo();
+
             // Detect if this is a code generation request or general chat
             const isCodeRequest = detectCodeGenerationRequest(userMessage.content);
             
             let response;
             if (isCodeRequest) {
-                // Use code generation endpoint
+                // Use code generation endpoint - optimized for complete code
                 response = await fetch('http://localhost:3001/api/ai/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: userMessage.content, outputType: 'web' })
+                    body: JSON.stringify({ 
+                        prompt: userMessage.content, 
+                        outputType: 'web',
+                        temperature: 0.7,
+                        user: userInfo
+                    })
                 });
             } else {
-                // Use general chat endpoint
+                // Use general chat endpoint with recent history and user info
+                const recentMessages = messages.slice(-6).map(m => ({ 
+                    role: m.role, 
+                    content: m.content.substring(0, 1000)
+                }));
+                
                 response = await fetch('http://localhost:3001/api/ai/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         message: userMessage.content,
-                        conversationHistory: messages.slice(-10) // Last 10 messages for context
+                        conversationHistory: recentMessages,
+                        user: userInfo // Send user info for personalized responses
                     })
                 });
             }
@@ -176,7 +222,7 @@ const AIUniversalCreatorModern = ({ onBack }) => {
     };
 
     return (
-        <div className="flex h-screen bg-white text-gray-900">
+        <div className={`flex h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
             {/* Custom Scrollbar Styles */}
             <style>{`
                 ::-webkit-scrollbar {
@@ -189,22 +235,22 @@ const AIUniversalCreatorModern = ({ onBack }) => {
                 }
                 
                 ::-webkit-scrollbar-thumb {
-                    background: #d1d5db;
+                    background: ${darkMode ? '#4b5563' : '#d1d5db'};
                     border-radius: 4px;
                 }
                 
                 ::-webkit-scrollbar-thumb:hover {
-                    background: #9ca3af;
+                    background: ${darkMode ? '#6b7280' : '#9ca3af'};
                 }
                 
                 * {
                     scrollbar-width: thin;
-                    scrollbar-color: #d1d5db transparent;
+                    scrollbar-color: ${darkMode ? '#4b5563' : '#d1d5db'} transparent;
                 }
             `}</style>
 
             {/* Sidebar */}
-            <div className={`${showSidebar ? 'block' : 'hidden'} md:block w-64 bg-gray-900 text-white flex flex-col border-r border-gray-800`}>
+            <div className={`${showSidebar ? 'block' : 'hidden'} md:block w-64 ${darkMode ? 'bg-gray-800 text-white border-gray-700' : 'bg-gray-900 text-white border-gray-800'} flex flex-col border-r`}>
                 <div className="p-4 border-b border-gray-800">
                     <button
                         onClick={startNewChat}
@@ -245,11 +291,11 @@ const AIUniversalCreatorModern = ({ onBack }) => {
             {/* Main Chat Area */}
             <div className="flex-1 flex flex-col">
                 {/* Header */}
-                <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-4 py-3 flex items-center justify-between`}>
                     <div className="flex items-center space-x-3">
                         <button
                             onClick={() => setShowSidebar(!showSidebar)}
-                            className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+                            className={`md:hidden p-2 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-lg`}
                         >
                             <MoreVertical className="w-5 h-5" />
                         </button>
@@ -257,12 +303,19 @@ const AIUniversalCreatorModern = ({ onBack }) => {
                             <Brain className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-semibold">AI Code Generator</h1>
-                            <p className="text-xs text-gray-500">Powered by Gemini AI</p>
+                            <h1 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>CP-AI</h1>
+                            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>AI Code Generator</p>
                         </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full text-xs text-green-700">
+                        <button
+                            onClick={() => setDarkMode(!darkMode)}
+                            className={`p-2 ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'} rounded-lg transition-colors`}
+                            title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                        >
+                            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                        </button>
+                        <div className={`hidden sm:flex items-center space-x-2 px-3 py-1.5 ${darkMode ? 'bg-green-900/30 border-green-700' : 'bg-green-50 border-green-200'} border rounded-full text-xs ${darkMode ? 'text-green-400' : 'text-green-700'}`}>
                             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                             <span>Online</span>
                         </div>
@@ -281,8 +334,8 @@ const AIUniversalCreatorModern = ({ onBack }) => {
                                         </div>
                                         <div className="flex-1">
                                             {message.isCode ? (
-                                                <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
-                                                    <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+                                                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'} border rounded-lg overflow-hidden`}>
+                                                    <div className={`${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-200'} px-4 py-2 border-b flex items-center justify-between`}>
                                                         <div className="flex items-center space-x-2">
                                                             <Code className="w-4 h-4 text-gray-600" />
                                                             <span className="text-sm font-medium text-gray-700">
@@ -377,7 +430,7 @@ const AIUniversalCreatorModern = ({ onBack }) => {
                                     <button
                                         key={index}
                                         onClick={() => setInputText(prompt)}
-                                        className="text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-700 transition-colors"
+                                        className={`text-left px-4 py-3 ${darkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600 text-gray-200' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'} border rounded-lg text-sm transition-colors`}
                                     >
                                         {prompt}
                                     </button>
@@ -388,16 +441,16 @@ const AIUniversalCreatorModern = ({ onBack }) => {
                 )}
 
                 {/* Input Area */}
-                <div className="border-t border-gray-200 bg-white px-4 py-4">
+                <div className={`border-t ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} px-4 py-4`}>
                     <div className="max-w-3xl mx-auto">
-                        <div className="flex items-end space-x-3 bg-gray-50 border border-gray-300 rounded-2xl p-2 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                        <div className={`flex items-end space-x-3 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-300'} border rounded-2xl p-2 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all`}>
                             <textarea
                                 ref={textareaRef}
                                 value={inputText}
                                 onChange={(e) => setInputText(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder="Message AI Code Generator..."
-                                className="flex-1 bg-transparent px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none resize-none max-h-48 overflow-y-auto"
+                                className={`flex-1 bg-transparent px-3 py-2 ${darkMode ? 'text-white placeholder-gray-400' : 'text-gray-900 placeholder-gray-400'} focus:outline-none resize-none max-h-48 overflow-y-auto`}
                                 rows="1"
                                 disabled={generating}
                             />

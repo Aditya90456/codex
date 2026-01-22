@@ -3,7 +3,8 @@ const router = express.Router();
 
 // Gemini AI Configuration
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+// Using gemini-1.5-flash for higher free tier quota (1500 requests/day vs 20)
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 // AI Code Generation endpoint
 router.post('/generate', async (req, res) => {
@@ -78,7 +79,7 @@ router.post('/generate', async (req, res) => {
 // General AI Chat endpoint
 router.post('/chat', async (req, res) => {
   try {
-    const { message, conversationHistory = [] } = req.body;
+    const { message, conversationHistory = [], user = null } = req.body;
 
     if (!message) {
       return res.status(400).json({ 
@@ -90,7 +91,7 @@ router.post('/chat', async (req, res) => {
     // Check if Gemini API key is configured
     if (!GEMINI_API_KEY) {
       console.warn('⚠️  Gemini API key not configured, using fallback chat');
-      const response = await generateChatResponseFallback(message);
+      const response = await generateChatResponseFallback(message, user);
       return res.json({
         success: true,
         message,
@@ -101,8 +102,8 @@ router.post('/chat', async (req, res) => {
     }
 
     // Generate response using Gemini AI
-    console.log('🤖 Generating chat response with Gemini AI...');
-    const response = await generateChatResponseWithGemini(message, conversationHistory);
+    console.log(`🤖 Generating chat response with Gemini AI for ${user?.name || 'user'}...`);
+    const response = await generateChatResponseWithGemini(message, conversationHistory, user);
 
     res.json({
       success: true,
@@ -121,7 +122,7 @@ router.post('/chat', async (req, res) => {
     
     // Fallback to simple response if AI fails
     try {
-      const fallbackResponse = await generateChatResponseFallback(req.body.message);
+      const fallbackResponse = await generateChatResponseFallback(req.body.message, req.body.user);
       return res.json({
         success: true,
         message: req.body.message,
@@ -222,10 +223,10 @@ Return ONLY the complete Python code without any markdown formatting or explanat
           }]
         }],
         generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 8192,
+          temperature: 0.7, // Balanced for quality and speed
+          topK: 40, // Increased for better completion
+          topP: 0.95, // Increased for complete responses
+          maxOutputTokens: 8192, // Full output for complete code
         },
         safetySettings: [
           {
@@ -304,8 +305,18 @@ Return ONLY the complete Python code without any markdown formatting or explanat
 }
 
 // Generate chat response using Gemini AI
-async function generateChatResponseWithGemini(message, conversationHistory = []) {
+async function generateChatResponseWithGemini(message, conversationHistory = [], user = null) {
   try {
+    // Build user context
+    const userContext = user ? `\n\nUser Information:
+- Name: ${user.name || 'User'}
+- Email: ${user.email || 'Not provided'}
+- Experience Level: ${user.experienceLevel || 'Beginner'}
+- Preferred Language: ${user.preferredLanguage || 'JavaScript'}
+- Current Project: ${user.currentProject || 'General learning'}
+
+Personalize your response based on the user's experience level and preferences. Address them by name when appropriate.` : '';
+
     // Build conversation context
     let contextPrompt = `You are a helpful, friendly AI assistant for Codex Playground, a coding platform. Your role is to:
 
@@ -315,6 +326,7 @@ async function generateChatResponseWithGemini(message, conversationHistory = [])
 - Explain programming concepts in simple terms
 - Suggest learning resources
 - Be encouraging and supportive
+- Personalize responses based on user's skill level and preferences${userContext}
 
 Keep responses conversational, helpful, and under 300 words. Use emojis sparingly for friendliness.
 
@@ -327,7 +339,7 @@ Assistant:`;
       const historyText = recentHistory.map(msg => 
         `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
       ).join('\n');
-      contextPrompt = `Previous conversation:\n${historyText}\n\nUser: ${message}\nAssistant:`;
+      contextPrompt = `Previous conversation:\n${historyText}\n\n${userContext}\n\nUser: ${message}\nAssistant:`;
     }
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -342,10 +354,10 @@ Assistant:`;
           }]
         }],
         generationConfig: {
-          temperature: 0.9,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
+          temperature: 0.9, // Higher for creative chat
+          topK: 40, // Standard sampling
+          topP: 0.95, // Standard for complete responses
+          maxOutputTokens: 2048, // Adequate for chat
         },
         safetySettings: [
           {
@@ -407,26 +419,40 @@ async function generateContentFallback(prompt, outputType) {
 }
 
 // Fallback chat response
-async function generateChatResponseFallback(message) {
+async function generateChatResponseFallback(message, user = null) {
   const lowerMessage = message.toLowerCase();
+  const userName = user?.name ? `, ${user.name}` : '';
+  const userGreeting = user?.name ? `${user.name}` : 'there';
   
   if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-    return `Hello! 👋 Welcome to Codex Playground!\n\nI'm your AI coding assistant. I can help you with programming questions, debugging, code explanations, and more. What would you like to work on today?`;
+    return `Hello${userName}! 👋 Welcome to Codex Playground!\n\nI'm your AI coding assistant. I can help you with programming questions, debugging, code explanations, and more. What would you like to work on today?`;
   }
   
   if (lowerMessage.includes('thank')) {
-    return `You're welcome! 😊 Happy to help. Feel free to ask me anything about coding!`;
+    return `You're welcome${userName}! 😊 Happy to help. Feel free to ask me anything about coding!`;
   }
   
   if (lowerMessage.includes('error') || lowerMessage.includes('bug')) {
-    return `I'd be happy to help debug! 🔍\n\nTo assist you better, please share:\n• The error message\n• The code that's causing the issue\n• What you expected to happen\n\nI'll help you figure it out!`;
+    return `I'd be happy to help debug${userName}! 🔍\n\nTo assist you better, please share:\n• The error message\n• The code that's causing the issue\n• What you expected to happen\n\nI'll help you figure it out!`;
   }
   
   if (lowerMessage.includes('learn') || lowerMessage.includes('tutorial')) {
-    return `Great question about learning! 📚\n\nHere's my advice:\n• Start with small projects\n• Practice daily\n• Read documentation\n• Build real applications\n• Join coding communities\n\nWhat technology are you interested in learning?`;
+    const skillLevel = user?.experienceLevel || 'beginner';
+    const advice = skillLevel === 'beginner' 
+      ? `Great question about learning! 📚\n\nAs a beginner, here's my advice:\n• Start with small projects\n• Practice daily with simple exercises\n• Read documentation and tutorials\n• Don't be afraid to make mistakes\n• Join coding communities for support`
+      : `Great question about learning! 📚\n\nHere's my advice:\n• Build real-world projects\n• Contribute to open source\n• Learn advanced patterns and architectures\n• Stay updated with latest technologies\n• Mentor others to solidify your knowledge`;
+    
+    return `${advice}\n\nWhat technology are you interested in learning?`;
   }
   
-  return `I'm here to help with your coding journey! 💻\n\nI can assist with:\n• Programming concepts and questions\n• Debugging and troubleshooting\n• Code reviews and best practices\n• Learning resources\n\nWhat specific question can I help you with?`;
+  if (lowerMessage.includes('who am i') || lowerMessage.includes('my name')) {
+    if (user?.name) {
+      return `You're ${user.name}! 😊\n\nHere's what I know about you:\n• Experience Level: ${user.experienceLevel || 'Not set'}\n• Preferred Language: ${user.preferredLanguage || 'Not set'}\n• Current Project: ${user.currentProject || 'Not set'}\n\nHow can I help you today?`;
+    }
+    return `I don't have your profile information yet. You can set up your profile to get personalized responses! 😊`;
+  }
+  
+  return `Hey ${userGreeting}! I'm here to help with your coding journey! 💻\n\nI can assist with:\n• Programming concepts and questions\n• Debugging and troubleshooting\n• Code reviews and best practices\n• Learning resources\n\nWhat specific question can I help you with?`;
 }
 
 // Template generators

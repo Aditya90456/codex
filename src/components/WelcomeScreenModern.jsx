@@ -202,6 +202,15 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
 
   const features = [
     {
+      icon: <Brain className="w-6 h-6" />,
+      title: "CP-AI Code Generator",
+      description: "Generate complete apps instantly with Gemini AI",
+      color: "from-purple-500 to-pink-500",
+      badge: "🔥 Hot",
+      action: () => setShowAICreator(true),
+      highlight: true
+    },
+    {
       icon: <Terminal className="w-6 h-6" />,
       title: "Multi-Language IDE",
       description: "Code in 12+ languages with intelligent autocomplete",
@@ -767,11 +776,15 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {features.map((feature, index) => (
-                <div key={index} className="group relative">
-                  <div className={`absolute -inset-0.5 bg-gradient-to-r ${feature.color} rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500`}></div>
-                  <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-2xl p-8 hover:border-slate-600 transition-all duration-300 h-full">
+                <div 
+                  key={index} 
+                  className={`group relative ${feature.action ? 'cursor-pointer' : ''}`}
+                  onClick={feature.action}
+                >
+                  <div className={`absolute -inset-0.5 bg-gradient-to-r ${feature.color} rounded-2xl blur ${feature.highlight ? 'opacity-50 group-hover:opacity-75' : 'opacity-0 group-hover:opacity-30'} transition duration-500`}></div>
+                  <div className={`relative bg-slate-800/50 backdrop-blur border ${feature.highlight ? 'border-purple-500/50 ring-2 ring-purple-500/20' : 'border-slate-700/50'} rounded-2xl p-8 hover:border-slate-600 transition-all duration-300 h-full ${feature.highlight ? 'transform scale-105' : ''}`}>
                     <div className="flex items-start justify-between mb-4">
-                      <div className={`p-3 bg-gradient-to-r ${feature.color} rounded-xl text-white`}>
+                      <div className={`p-3 bg-gradient-to-r ${feature.color} rounded-xl text-white ${feature.highlight ? 'animate-pulse' : ''}`}>
                         {feature.icon}
                       </div>
                       <span className={`text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r ${feature.color} text-white`}>
@@ -780,6 +793,11 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     </div>
                     <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
                     <p className="text-slate-400 leading-relaxed">{feature.description}</p>
+                    {feature.highlight && (
+                      <div className="mt-4 flex items-center space-x-2 text-purple-400 text-sm font-semibold">
+                        <span>Click to try →</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1196,8 +1214,8 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <Brain className="w-6 h-6 relative z-10" />
-                <span className="relative z-10">AI Creator</span>
-                <span className="absolute top-2 right-2 px-2 py-0.5 bg-yellow-400 text-black text-xs font-bold rounded-full">NEW</span>
+                <span className="relative z-10">CP-AI</span>
+                <span className="absolute top-2 right-2 px-2 py-0.5 bg-yellow-400 text-black text-xs font-bold rounded-full">🔥</span>
               </button>
               
               <button
@@ -1275,7 +1293,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
             </div>
             
             <div className="mt-8 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-              <p>© 2024 Codex Playground. Built with ❤️ for developers worldwide.</p>
+              <p>© 2026 Codex Playground. Built with ❤️ for developers worldwide.</p>
             </div>
           </div>
         </footer>
