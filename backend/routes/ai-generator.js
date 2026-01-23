@@ -3,8 +3,8 @@ const router = express.Router();
 
 // Gemini AI Configuration
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-// Using gemini-1.5-flash for higher free tier quota (1500 requests/day vs 20)
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+// Using gemini-pro for stable API access
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
 
 // AI Code Generation endpoint
 router.post('/generate', async (req, res) => {
