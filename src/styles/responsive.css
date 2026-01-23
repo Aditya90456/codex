@@ -1,18 +1,1206 @@
-/* Mobile-First Responsive Design */
+/* ============================================
+   MOBILE-FIRST RESPONSIVE DESIGN SYSTEM
+   Optimized for screens from 250px to 2560px+
+   ============================================ */
 
-/* Base mobile styles (320px+) */
+/* CSS Variables for Responsive Spacing */
 :root {
-  --mobile-padding: 1rem;
+  /* Spacing */
+  --mobile-padding: 0.75rem;
   --tablet-padding: 1.5rem;
   --desktop-padding: 2rem;
+  
+  /* Typography */
+  --font-xs: 0.625rem;    /* 10px */
+  --font-sm: 0.75rem;     /* 12px */
+  --font-base: 0.875rem;  /* 14px */
+  --font-lg: 1rem;        /* 16px */
+  --font-xl: 1.25rem;     /* 20px */
+  --font-2xl: 1.5rem;     /* 24px */
+  
+  /* Layout */
+  --nav-height: 60px;
+  --sidebar-width: 280px;
+  --content-max-width: 1280px;
+  
+  /* Z-index layers */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
 }
 
-/* Touch-friendly interactions */
+/* ============================================
+   ULTRA SMALL SCREENS (250px - 320px)
+   ============================================ */
+@media (max-width: 320px) {
+  :root {
+    --mobile-padding: 0.5rem;
+    --font-base: 0.8125rem; /* 13px */
+  }
+  
+  body {
+    font-size: 13px;
+  }
+  
+  /* Minimum tap targets for accessibility */
+  button, a, [role="button"], input[type="button"], input[type="submit"] {
+    min-height: 36px !important;
+    min-width: 36px !important;
+    font-size: 0.75rem !important;
+  }
+  
+  /* Ultra compact spacing */
+  .ultra-compact {
+    padding: 0.25rem !important;
+    gap: 0.25rem !important;
+  }
+  
+  /* Hide non-essential elements */
+  .hide-ultra-small {
+    display: none !important;
+  }
+  
+  /* Stack everything vertically */
+  .ultra-small-stack {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  
+  /* Full width on ultra small */
+  .ultra-small-full {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Reduce margins */
+  h1 { font-size: 1.5rem !important; margin-bottom: 0.5rem !important; }
+  h2 { font-size: 1.25rem !important; margin-bottom: 0.5rem !important; }
+  h3 { font-size: 1rem !important; margin-bottom: 0.5rem !important; }
+  h4 { font-size: 0.875rem !important; margin-bottom: 0.25rem !important; }
+  
+  p { font-size: 0.75rem !important; line-height: 1.4 !important; }
+}
+
+/* ============================================
+   TOUCH-FRIENDLY INTERACTIONS
+   ============================================ */
 @media (hover: none) and (pointer: coarse) {
-  button, a, [role="button"] {
+  /* Larger tap targets for touch devices */
+  button, a, [role="button"], input[type="button"], input[type="submit"] {
     min-height: 44px;
     min-width: 44px;
+    padding: 0.75rem 1rem;
   }
+  
+  /* Increase spacing between interactive elements */
+  .touch-spacing > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .hover-effect:hover {
+    transform: none !important;
+  }
+}
+
+/* ============================================
+   MOBILE DEVICES (320px - 768px)
+   ============================================ */
+@media (max-width: 768px) {
+  /* Hide desktop navigation */
+  .desktop-nav {
+    display: none !important;
+  }
+  
+  /* Show mobile navigation */
+  .mobile-nav {
+    display: flex !important;
+  }
+  
+  /* Full-width mobile buttons */
+  .mobile-full-width {
+    width: 100% !important;
+  }
+  
+  /* Stack elements vertically */
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  /* Reduce padding on mobile */
+  .mobile-compact {
+    padding: 0.75rem !important;
+  }
+  
+  /* Hide on mobile */
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  /* Show only on mobile */
+  .show-mobile {
+    display: block !important;
+  }
+  
+  /* Mobile Typography */
+  h1 { font-size: 2rem !important; line-height: 1.2 !important; }
+  h2 { font-size: 1.5rem !important; line-height: 1.3 !important; }
+  h3 { font-size: 1.25rem !important; line-height: 1.4 !important; }
+  h4 { font-size: 1.125rem !important; }
+  
+  /* Mobile Cards */
+  .card {
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .card-title {
+    font-size: 1.25rem !important;
+  }
+  
+  /* Mobile Modals */
+  .modal-content {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 1rem !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Mobile Editor Layout */
+  .editor-container {
+    flex-direction: column !important;
+  }
+  
+  .editor-sidebar {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 40vh;
+    border-right: none !important;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .editor-main {
+    width: 100% !important;
+    height: 60vh !important;
+  }
+  
+  /* Mobile Toolbar */
+  .editor-toolbar {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem !important;
+  }
+  
+  .editor-toolbar button {
+    flex: 1 1 auto;
+    min-width: 80px;
+    font-size: 0.75rem;
+  }
+  
+  /* Mobile Tables */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  table {
+    font-size: 0.875rem !important;
+  }
+  
+  /* Mobile Forms */
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    padding: 0.75rem !important;
+  }
+  
+  label {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  /* Mobile Navigation Drawer */
+  .nav-drawer {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 80%;
+    max-width: 300px;
+    height: 100vh;
+    background: white;
+    transition: left 0.3s ease;
+    z-index: var(--z-modal);
+  }
+  
+  .nav-drawer.open {
+    left: 0;
+  }
+  
+  /* Mobile Bottom Navigation */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1e293b;
+    border-top: 1px solid #334155;
+    padding: 0.5rem;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: var(--z-fixed);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .mobile-bottom-nav button {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    color: #94a3b8;
+    background: none;
+    border: none;
+    font-size: 0.625rem;
+    min-width: auto;
+    min-height: auto;
+  }
+  
+  .mobile-bottom-nav button.active {
+    color: #3b82f6;
+  }
+  
+  /* Mobile Hamburger Menu */
+  .mobile-menu-button {
+    display: block;
+    padding: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  /* Mobile Grid */
+  .grid-responsive {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  /* Mobile Spacing */
+  .section-padding {
+    padding: 2rem 1rem !important;
+  }
+  
+  /* Mobile Code Blocks */
+  pre {
+    font-size: 0.75rem !important;
+    padding: 0.75rem !important;
+    overflow-x: auto;
+  }
+  
+  code {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* ============================================
+   LANDSCAPE MOBILE (568px - 768px landscape)
+   ============================================ */
+@media (max-width: 768px) and (orientation: landscape) {
+  .mobile-landscape-hide {
+    display: none !important;
+  }
+  
+  .editor-main {
+    height: 80vh !important;
+  }
+  
+  .editor-sidebar {
+    max-height: 30vh;
+  }
+  
+  /* Reduce header size in landscape */
+  .mobile-header {
+    padding: 0.5rem !important;
+  }
+  
+  h1 { font-size: 1.5rem !important; }
+  h2 { font-size: 1.25rem !important; }
+}
+
+/* ============================================
+   TABLET DEVICES (768px - 1024px)
+   ============================================ */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-grid-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .tablet-grid-3 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  
+  /* Tablet Navigation */
+  .desktop-nav {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    justify-content: center;
+    z-index: var(--z-fixed);
+  }
+  
+  .desktop-nav > div {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .desktop-nav > div::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Tablet Editor */
+  .editor-sidebar {
+    width: 35% !important;
+  }
+  
+  .editor-main {
+    width: 65% !important;
+  }
+  
+  /* Tablet Cards */
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ============================================
+   DESKTOP DEVICES (1024px+)
+   ============================================ */
+@media (min-width: 1024px) {
+  .mobile-nav {
+    display: none !important;
+  }
+  
+  .desktop-nav {
+    display: flex !important;
+  }
+  
+  .hide-desktop {
+    display: none !important;
+  }
+  
+  .show-desktop {
+    display: block !important;
+  }
+  
+  /* Desktop Grid */
+  .grid-responsive {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  
+  /* Desktop Editor */
+  .editor-sidebar {
+    width: 300px !important;
+  }
+  
+  .editor-main {
+    flex: 1 !important;
+  }
+}
+
+/* ============================================
+   LARGE DESKTOP (1200px+)
+   ============================================ */
+@media (min-width: 1200px) {
+  .desktop-nav {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: var(--z-fixed);
+  }
+  
+  .grid-responsive {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+  
+  .container-responsive {
+    max-width: 1200px;
+  }
+}
+
+/* ============================================
+   EXTRA LARGE DESKTOP (1536px+)
+   ============================================ */
+@media (min-width: 1536px) {
+  .container-responsive {
+    max-width: 1400px;
+  }
+  
+  .grid-responsive {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+}
+
+/* ============================================
+   RESPONSIVE GRID SYSTEM
+   ============================================ */
+.responsive-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ============================================
+   RESPONSIVE CONTAINER
+   ============================================ */
+.container-responsive {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    max-width: 768px;
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    max-width: 1024px;
+    padding: 0 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive {
+    max-width: 1280px;
+  }
+}
+
+/* ============================================
+   IPHONE SPECIFIC OPTIMIZATIONS
+   ============================================ */
+
+/* iPhone SE (375px) */
+@media only screen 
+  and (min-device-width: 375px) 
+  and (max-device-width: 667px) 
+  and (-webkit-min-device-pixel-ratio: 2) {
+  
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  .iphone-se-compact {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+  }
+}
+
+/* iPhone 12/13/14 Mini (375px) */
+@media only screen 
+  and (device-width: 375px) 
+  and (device-height: 812px) 
+  and (-webkit-device-pixel-ratio: 3) {
+  
+  /* Account for notch */
+  .header-fixed {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+}
+
+/* iPhone 12/13/14/15 Pro (393px) */
+@media only screen 
+  and (device-width: 393px) 
+  and (device-height: 852px) 
+  and (-webkit-device-pixel-ratio: 3) {
+  
+  .iphone-pro-optimized {
+    max-width: 393px;
+  }
+}
+
+/* iPhone 12/13/14/15 Pro Max (428px) */
+@media only screen 
+  and (device-width: 428px) 
+  and (device-height: 926px) 
+  and (-webkit-device-pixel-ratio: 3) {
+  
+  .iphone-pro-max-optimized {
+    max-width: 428px;
+  }
+}
+
+/* iPhone X/XS/11 Pro (375px with notch) */
+@media only screen 
+  and (device-width: 375px) 
+  and (device-height: 812px) 
+  and (-webkit-device-pixel-ratio: 3) {
+  
+  /* Notch-aware layouts */
+  .notch-aware-header {
+    padding-top: calc(env(safe-area-inset-top) + 0.5rem);
+  }
+  
+  .notch-aware-footer {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+  }
+}
+
+/* Prevent iOS zoom on input focus */
+@supports (-webkit-touch-callout: none) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* Fix for iOS Safari bottom bar */
+  .ios-full-height {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Prevent rubber band scrolling */
+  body {
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+  
+  #root {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100vh;
+    height: -webkit-fill-available;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix iOS momentum scrolling */
+  .ios-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: scroll;
+  }
+  
+  /* Disable iOS text selection on buttons */
+  button, .button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* iOS input styling */
+  input, textarea, select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0;
+  }
+  
+  /* Remove iOS button styling */
+  button, input[type="submit"], input[type="button"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0.5rem;
+  }
+}
+
+/* ============================================
+   ANDROID SPECIFIC OPTIMIZATIONS
+   ============================================ */
+
+/* Android Chrome specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  /* Detect Android Chrome */
+  @supports not (-webkit-touch-callout: none) {
+    
+    /* Fix Android Chrome address bar height issues */
+    .android-full-height {
+      height: 100vh;
+      height: calc(var(--vh, 1vh) * 100);
+    }
+    
+    /* Android smooth scrolling */
+    .android-scroll {
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      scroll-behavior: smooth;
+    }
+    
+    /* Remove Android tap highlight */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      tap-highlight-color: transparent;
+    }
+    
+    /* Android input fixes */
+    input, textarea, select {
+      font-size: 16px !important; /* Prevent zoom */
+    }
+    
+    /* Android button styling */
+    button {
+      -webkit-appearance: none;
+      appearance: none;
+      outline: none;
+    }
+    
+    button:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+  }
+}
+
+/* Samsung Internet Browser */
+@supports (-webkit-appearance: none) {
+  .samsung-browser-fix {
+    -webkit-appearance: none;
+  }
+}
+
+/* Android Small Phones (360px - common Android width) */
+@media only screen 
+  and (min-device-width: 360px) 
+  and (max-device-width: 400px) {
+  
+  .android-small-compact {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  /* Optimize for small Android screens */
+  h1 { font-size: 1.75rem !important; }
+  h2 { font-size: 1.5rem !important; }
+  h3 { font-size: 1.25rem !important; }
+}
+
+/* Android Medium Phones (400px - 450px) */
+@media only screen 
+  and (min-device-width: 400px) 
+  and (max-device-width: 450px) {
+  
+  .android-medium-optimized {
+    max-width: 450px;
+  }
+}
+
+/* Android Large Phones & Tablets (450px+) */
+@media only screen 
+  and (min-device-width: 450px) {
+  
+  .android-large-optimized {
+    max-width: 100%;
+  }
+}
+
+/* Android Landscape Mode */
+@media screen 
+  and (orientation: landscape) 
+  and (max-height: 500px) {
+  
+  /* Optimize for Android landscape */
+  .android-landscape-compact {
+    padding: 0.5rem !important;
+  }
+  
+  .android-landscape-header {
+    height: 48px !important;
+    padding: 0.5rem !important;
+  }
+  
+  /* Hide less important elements in landscape */
+  .android-landscape-hide {
+    display: none !important;
+  }
+}
+
+/* Android Foldable Devices */
+@media screen 
+  and (min-device-width: 600px) 
+  and (max-device-width: 900px) {
+  
+  .android-foldable-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  
+  .android-foldable-single {
+    grid-column: span 1;
+  }
+}
+
+/* Android Material Design Touch Ripple Effect */
+.android-ripple {
+  position: relative;
+  overflow: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.android-ripple::after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, #000 10%, transparent 10.01%);
+  background-repeat: no-repeat;
+  background-position: 50%;
+  transform: scale(10, 10);
+  opacity: 0;
+  transition: transform 0.5s, opacity 1s;
+}
+
+.android-ripple:active::after {
+  transform: scale(0, 0);
+  opacity: 0.2;
+  transition: 0s;
+}
+
+/* Android Navigation Bar Spacing */
+.android-nav-spacing {
+  padding-bottom: 48px; /* Standard Android nav bar height */
+}
+
+@media (display-mode: standalone) {
+  /* PWA mode on Android */
+  .android-nav-spacing {
+    padding-bottom: 0;
+  }
+}
+
+/* Android Status Bar */
+.android-status-bar {
+  height: 24px; /* Standard Android status bar */
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Android Keyboard Adjustments */
+@media screen and (max-height: 500px) {
+  /* Likely keyboard is open */
+  .android-keyboard-open {
+    height: auto !important;
+    min-height: auto !important;
+  }
+  
+  .android-keyboard-hide {
+    display: none !important;
+  }
+}
+
+/* Android Chrome Pull-to-Refresh Override */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* Android WebView Specific */
+.android-webview-fix {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Android Hardware Acceleration */
+.android-accelerated {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+}
+
+/* ============================================
+   SAFE AREA FOR NOTCHED DEVICES
+   ============================================ */
+@supports (padding: env(safe-area-inset-top)) {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .safe-area-right {
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  .safe-area-all {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* iPhone specific safe area combinations */
+  .iphone-header {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  
+  .iphone-footer {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  
+  /* Fixed elements on iPhone */
+  .fixed-top-iphone {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding-top: env(safe-area-inset-top);
+    z-index: var(--z-fixed);
+  }
+  
+  .fixed-bottom-iphone {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: var(--z-fixed);
+  }
+  
+  /* Modal on iPhone */
+  .modal-iphone {
+    padding-top: max(2rem, env(safe-area-inset-top));
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* ============================================
+   CROSS-PLATFORM MOBILE UTILITIES
+   ============================================ */
+
+/* Universal mobile full height fix */
+.mobile-full-height {
+  height: 100vh;
+  height: -webkit-fill-available;
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+/* Universal mobile scroll container */
+.mobile-scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+}
+
+/* Universal mobile tap target */
+.mobile-tap-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Universal mobile card */
+.mobile-card {
+  padding: 1rem;
+  margin: 0.5rem;
+  border-radius: 0.75rem;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Universal mobile input */
+.mobile-input {
+  font-size: 16px !important;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  width: 100%;
+}
+
+/* Universal mobile button */
+.mobile-button {
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  min-height: 44px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+/* Universal mobile header */
+.mobile-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+/* Universal mobile footer */
+.mobile-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-sticky);
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+/* ============================================
+   MOBILE-OPTIMIZED SCROLLING
+   ============================================ */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.scroll-snap-container {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+}
+
+.scroll-snap-item {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* ============================================
+   NAVIGATION DROPDOWN POSITIONING
+   ============================================ */
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown > div {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Prevent navigation from wrapping */
+.desktop-nav .flex {
+  flex-wrap: nowrap;
+}
+
+/* ============================================
+   RESPONSIVE IMAGES & MEDIA
+   ============================================ */
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+.responsive-embed {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  overflow: hidden;
+}
+
+.responsive-embed iframe,
+.responsive-embed video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   RESPONSIVE TEXT UTILITIES
+   ============================================ */
+.text-responsive {
+  font-size: clamp(0.875rem, 2vw, 1rem);
+}
+
+.heading-responsive {
+  font-size: clamp(1.5rem, 4vw, 3rem);
+}
+
+.truncate-mobile {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .truncate-mobile {
+    white-space: normal;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    font-size: 12pt;
+    color: black;
+    background: white;
+  }
+  
+  a {
+    text-decoration: underline;
+  }
+  
+  .page-break {
+    page-break-after: always;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  button, a {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .auto-dark {
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+  
+  .auto-dark .card {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+/* Aspect Ratios */
+.aspect-square { aspect-ratio: 1 / 1; }
+.aspect-video { aspect-ratio: 16 / 9; }
+.aspect-portrait { aspect-ratio: 3 / 4; }
+
+/* Flex Utilities */
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Overflow Utilities */
+.overflow-x-auto {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Visibility Utilities */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* Mobile Navigation */
@@ -223,6 +1411,65 @@
 @media (max-width: 768px) {
   .mobile-menu-button {
     display: block;
+  }
+}
+
+/* Desktop Navigation Responsive Fixes */
+@media (min-width: 768px) and (max-width: 1200px) {
+  .desktop-nav {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    justify-content: center;
+    z-index: 50;
+  }
+  
+  .desktop-nav > div {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .desktop-nav > div::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Large desktop navigation */
+@media (min-width: 1200px) {
+  .desktop-nav {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 50;
+  }
+}
+
+/* Navigation dropdown positioning */
+.nav-dropdown {
+  position: relative;
+}
+
+/* Prevent navigation from wrapping */
+.desktop-nav .flex {
+  flex-wrap: nowrap;
+}
+
+/* Smooth transitions for dropdowns */
+.nav-dropdown > div {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

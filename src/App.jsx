@@ -14,13 +14,169 @@ import InterviewReady from './components/DSA/InterviewReady';
 import StriverTributePage from './pages/StriverTributePage';
 import GSoCPage from './pages/GSoCPage';
 import OpenSourcePage from './pages/OpenSourcePage';
+import AIUniversalCreatorModern from './components/AI/AIUniversalCreatorModern';
+import ReactCodeAI from './components/AI/ReactCodeAI';
 import MobileNav from './components/MobileNav';
+import ModeSwitcher from './components/ModeSwitcher';
 import { useState, useEffect } from 'react';
-import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Trophy, Users, GitBranch } from 'lucide-react';
+import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Trophy, Users, GitBranch, Brain, ChevronDown, MoreHorizontal } from 'lucide-react';
 import './App.css';
 import './styles/responsive.css';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+// Desktop Navigation Component with responsive overflow handling
+function DesktopNavigation({ user, currentPath, navigate, onLogout, isLoggingOut }) {
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  // Primary navigation items (always visible)
+  const primaryNavItems = [
+    { path: '/', label: 'Home', icon: Home, color: 'bg-slate-600' },
+    { path: '/editor-modern', label: 'Editor', icon: Code, color: 'bg-blue-600', match: '/editor' },
+    { path: '/web-editor', label: 'Web IDE', icon: Rocket, color: 'bg-green-600' },
+    { path: '/ai', label: 'AI Creator', icon: Brain, color: 'bg-orange-600' },
+    { path: '/dsa', label: 'DSA', icon: Trophy, color: 'bg-indigo-600', match: '/dsa' },
+  ];
+
+  // Secondary navigation items (overflow menu)
+  const secondaryNavItems = [
+    { path: '/vscode', label: 'VS Code', icon: FolderOpen, color: 'bg-cyan-600' },
+    { path: '/android', label: 'Android', icon: Smartphone, color: 'bg-pink-600' },
+    { path: '/react-ai', label: 'React AI', icon: Code, color: 'bg-blue-600' },
+    { path: '/gsoc', label: 'GSoC', icon: Users, color: 'bg-purple-600' },
+    { path: '/opensource', label: 'Open Source', icon: GitBranch, color: 'bg-blue-600' },
+  ];
+
+  const isActive = (item) => {
+    if (item.match) {
+      return currentPath.startsWith(item.match);
+    }
+    return currentPath === item.path;
+  };
+
+  const getButtonClass = (item) => {
+    return `flex items-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all ${
+      isActive(item)
+        ? `${item.color} text-white shadow-lg`
+        : 'bg-white/10 text-white hover:bg-white/20'
+    }`;
+  };
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.nav-dropdown')) {
+        setShowMoreMenu(false);
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="hidden md:flex fixed top-4 right-4 z-50 desktop-nav">
+      <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-lg border border-slate-700/50 rounded-xl p-2 shadow-2xl">
+        {/* Primary Navigation Items */}
+        {primaryNavItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className={getButtonClass(item)}
+              title={item.label}
+            >
+              <Icon className="w-4 h-4" />
+              <span className="hidden lg:inline text-sm">{item.label}</span>
+            </button>
+          );
+        })}
+
+        {/* More Menu */}
+        <div className="relative nav-dropdown">
+          <button
+            onClick={() => setShowMoreMenu(!showMoreMenu)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all bg-white/10 text-white hover:bg-white/20"
+            title="More options"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+            <ChevronDown className={`w-3 h-3 transition-transform ${showMoreMenu ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showMoreMenu && (
+            <div className="absolute top-full right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
+              {secondaryNavItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => {
+                      navigate(item.path);
+                      setShowMoreMenu(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all ${
+                      isActive(item)
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-700'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* User Menu */}
+        <div className="relative nav-dropdown">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="flex items-center gap-2 bg-white/10 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-all"
+            title="User menu"
+          >
+            <User className="w-4 h-4" />
+            <span className="hidden lg:inline text-sm font-semibold max-w-20 truncate">
+              {user?.name || user?.firstName || 'User'}
+            </span>
+            <ChevronDown className={`w-3 h-3 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showUserMenu && (
+            <div className="absolute top-full right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-slate-700">
+                <div className="text-sm font-semibold text-white">
+                  {user?.name || user?.firstName || 'User'}
+                </div>
+                <div className="text-xs text-slate-400">
+                  {user?.email || 'user@example.com'}
+                </div>
+              </div>
+              
+              <button
+                onClick={() => {
+                  onLogout();
+                  setShowUserMenu(false);
+                }}
+                disabled={isLoggingOut}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-red-400 hover:text-red-300 hover:bg-slate-700 transition-all disabled:opacity-50"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="text-sm font-medium">
+                  {isLoggingOut ? 'Logging out...' : 'Sign Out'}
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function AuthenticatedApp() {
   const { user, isAuthenticated, loading, logout } = useAuth();
@@ -78,6 +234,7 @@ function AuthenticatedApp() {
 
   return (
     <div className="App">
+      <ModeSwitcher />
       {/* Public Landing Page - Shows first for non-authenticated users */}
       {!isAuthenticated && showPublicLanding && location.pathname === '/' && (
         <WelcomeScreenModern 
@@ -176,125 +333,25 @@ function AuthenticatedApp() {
 
           {/* Desktop Navigation Bar - Only show on non-home routes */}
           {location.pathname !== '/' && (
-            <div className="hidden md:flex fixed top-4 right-4 z-50 gap-2 desktop-nav">
-              <button
-                onClick={() => navigate('/')}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all bg-white/10 text-white hover:bg-white/20"
-              >
-                <Home className="w-5 h-5" />
-                Home
-              </button>
-              
-              <button
-                onClick={() => navigate('/editor-modern')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  location.pathname.startsWith('/editor')
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                <Code className="w-5 h-5" />
-                Editor
-              </button>
-              
-              <button
-                onClick={() => navigate('/web-editor')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  location.pathname === '/web-editor'
-                    ? 'bg-green-600 text-white shadow-lg'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                <Rocket className="w-5 h-5" />
-                Web IDE
-              </button>
-              
-              <button
-                onClick={() => navigate('/vscode')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  location.pathname === '/vscode'
-                    ? 'bg-cyan-600 text-white shadow-lg'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                <FolderOpen className="w-5 h-5" />
-                VS Code
-              </button>
-              
-              <button
-                onClick={() => navigate('/android')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  location.pathname === '/android'
-                    ? 'bg-pink-600 text-white shadow-lg'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                <Smartphone className="w-5 h-5" />
-                Android
-              </button>
-
-              <button
-                onClick={() => navigate('/dsa')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  location.pathname.startsWith('/dsa')
-                    ? 'bg-indigo-600 text-white shadow-lg'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                <Trophy className="w-5 h-5" />
-                DSA
-              </button>
-
-              <button
-                onClick={() => navigate('/gsoc')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  location.pathname === '/gsoc'
-                    ? 'bg-purple-600 text-white shadow-lg'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                <Users className="w-5 h-5" />
-                GSoC
-              </button>
-
-              <button
-                onClick={() => navigate('/opensource')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  location.pathname === '/opensource'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
-              >
-                <GitBranch className="w-5 h-5" />
-                Open Source
-              </button>
-              
-              {/* User Menu */}
-              <div className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-lg">
-                <User className="w-5 h-5" />
-                <span className="font-semibold">{user?.name}</span>
-                <button
-                  onClick={async () => {
-                    setIsLoggingOut(true);
-                    try {
-                      await logout();
-                      navigate('/');
-                      setShowPublicLanding(true);
-                      setShowAuthModal(false);
-                    } catch (error) {
-                      console.error('Logout error:', error);
-                    } finally {
-                      setIsLoggingOut(false);
-                    }
-                  }}
-                  className="ml-2 p-1 hover:bg-white/20 rounded transition-all"
-                  title="Logout"
-                  disabled={isLoggingOut}
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+            <DesktopNavigation 
+              user={user}
+              currentPath={location.pathname}
+              navigate={navigate}
+              onLogout={async () => {
+                setIsLoggingOut(true);
+                try {
+                  await logout();
+                  navigate('/');
+                  setShowPublicLanding(true);
+                  setShowAuthModal(false);
+                } catch (error) {
+                  console.error('Logout error:', error);
+                } finally {
+                  setIsLoggingOut(false);
+                }
+              }}
+              isLoggingOut={isLoggingOut}
+            />
           )}
 
           {/* Routes */}
@@ -319,6 +376,8 @@ function AuthenticatedApp() {
             <Route path="/dsa/tutorials" element={<VisualTutorials onBack={() => navigate('/')} />} />
             <Route path="/dsa/interview" element={<InterviewReady onBack={() => navigate('/')} />} />
             <Route path="/dsa/tribute" element={<StriverTributePage onBack={() => navigate('/')} />} />
+            <Route path="/ai" element={<AIUniversalCreatorModern onBack={() => navigate('/')} />} />
+            <Route path="/react-ai" element={<ReactCodeAI onBack={() => navigate('/')} />} />
             <Route path="/gsoc" element={<GSoCPage />} />
             <Route path="/opensource" element={<OpenSourcePage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

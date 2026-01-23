@@ -157,6 +157,29 @@ Requirements:
 - Accessible (ARIA labels where needed)
 
 Return ONLY the complete HTML code without any markdown formatting, explanations, or code blocks. Start directly with <!DOCTYPE html>.`,
+
+    react: `You are an expert React developer. Generate a complete, production-ready React application for: "${prompt}".
+
+Requirements:
+- Use modern React 18+ with functional components and hooks (useState, useEffect, useContext, etc.)
+- Include proper TypeScript interfaces if complex data structures are used
+- Use modern CSS-in-JS with styled-components or inline styles with proper typing
+- Include comprehensive error handling with try-catch blocks and error boundaries
+- Add loading states and proper UX feedback
+- Implement proper component structure with clear separation of concerns
+- Include interactive features with proper event handling
+- Make it fully responsive with mobile-first design
+- Add accessibility features (ARIA labels, semantic HTML, keyboard navigation)
+- Use modern React patterns (custom hooks, context API, memo optimization)
+- Include proper prop validation and default props
+- Add comprehensive comments explaining architecture and complex logic
+- Follow React best practices and performance optimizations
+- Include proper state management (local state, context, or reducers as needed)
+- Add proper form handling with validation if forms are present
+- Include proper data fetching patterns with cleanup
+- Use modern JavaScript features (async/await, destructuring, optional chaining)
+
+Generate a complete, production-ready React application that could be deployed immediately. Include all necessary imports and exports. Make it a single comprehensive component or clearly structured multi-component application.`,
     
     mobile: `You are an expert React Native developer. Generate a complete, production-ready React Native component for: "${prompt}".
 
@@ -226,7 +249,7 @@ Return ONLY the complete Python code without any markdown formatting or explanat
           temperature: 0.7, // Balanced for quality and speed
           topK: 40, // Increased for better completion
           topP: 0.95, // Increased for complete responses
-          maxOutputTokens: 8192, // Full output for complete code
+          maxOutputTokens: 32768, // Increased for longer React projects
         },
         safetySettings: [
           {
@@ -280,6 +303,7 @@ Return ONLY the complete Python code without any markdown formatting or explanat
     // Determine the type and language
     const typeMap = {
       web: { type: 'html', language: 'html' },
+      react: { type: 'javascript', language: 'javascript' },
       mobile: { type: 'javascript', language: 'javascript' },
       document: { type: 'markdown', language: 'markdown' },
       api: { type: 'javascript', language: 'javascript' },
@@ -294,6 +318,8 @@ Return ONLY the complete Python code without any markdown formatting or explanat
       return { html: cleanedCode, ...result };
     } else if (outputType === 'document') {
       return { content: cleanedCode, ...result };
+    } else if (outputType === 'react') {
+      return { code: cleanedCode, ...result };
     } else {
       return { code: cleanedCode, ...result };
     }
@@ -408,6 +434,7 @@ Assistant:`;
 async function generateContentFallback(prompt, outputType) {
   const generators = {
     web: generateWebAppTemplate,
+    react: generateReactAppTemplate,
     mobile: generateMobileAppTemplate,
     document: generateDocumentTemplate,
     api: generateAPITemplate,
@@ -523,6 +550,577 @@ async function generateWebAppTemplate(prompt) {
 </html>`;
 
   return { html, type: 'html', language: 'html' };
+}
+
+async function generateReactAppTemplate(prompt) {
+  const templates = {
+    'todo': generateTodoAppTemplate,
+    'dashboard': generateDashboardTemplate,
+    'ecommerce': generateEcommerceTemplate,
+    'blog': generateBlogTemplate,
+    'weather': generateWeatherAppTemplate,
+    'social': generateSocialFeedTemplate
+  };
+
+  // Detect project type from prompt
+  const lowerPrompt = prompt.toLowerCase();
+  let selectedTemplate = 'default';
+  
+  for (const [key, template] of Object.entries(templates)) {
+    if (lowerPrompt.includes(key)) {
+      selectedTemplate = key;
+      break;
+    }
+  }
+
+  if (selectedTemplate !== 'default' && templates[selectedTemplate]) {
+    return await templates[selectedTemplate](prompt);
+  }
+
+  // Default React template
+  const code = `import React, { useState, useEffect } from 'react';
+
+const App = () => {
+  const [count, setCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    // Simulate data loading
+    setIsLoading(true);
+    setTimeout(() => {
+      setData({ message: 'Welcome to your React app!' });
+      setIsLoading(false);
+    }, 1000);
+  }, []);
+
+  const handleIncrement = () => {
+    setCount(prev => prev + 1);
+  };
+
+  const handleReset = () => {
+    setCount(0);
+  };
+
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      padding: '20px'
+    },
+    card: {
+      background: 'white',
+      padding: '40px',
+      borderRadius: '20px',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+      maxWidth: '600px',
+      width: '100%',
+      textAlign: 'center',
+      animation: 'slideIn 0.5s ease-out'
+    },
+    title: {
+      color: '#667eea',
+      marginBottom: '20px',
+      fontSize: '2.5em',
+      fontWeight: 'bold'
+    },
+    count: {
+      fontSize: '4em',
+      fontWeight: 'bold',
+      color: '#764ba2',
+      margin: '20px 0'
+    },
+    buttonGroup: {
+      display: 'flex',
+      gap: '10px',
+      justifyContent: 'center',
+      marginTop: '20px'
+    },
+    button: {
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      color: 'white',
+      border: 'none',
+      padding: '15px 30px',
+      borderRadius: '10px',
+      fontSize: '1.1em',
+      cursor: 'pointer',
+      transition: 'transform 0.2s',
+      opacity: isLoading ? 0.7 : 1
+    },
+    resetButton: {
+      background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      color: 'white',
+      border: 'none',
+      padding: '15px 30px',
+      borderRadius: '10px',
+      fontSize: '1.1em',
+      cursor: 'pointer',
+      transition: 'transform 0.2s'
+    },
+    description: {
+      color: '#555',
+      lineHeight: '1.8',
+      marginBottom: '20px'
+    },
+    loading: {
+      color: '#667eea',
+      fontSize: '1.2em'
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <div style={styles.loading}>Loading your app...</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h1 style={styles.title}>✨ ${escapeHtml(prompt)}</h1>
+        <p style={styles.description}>
+          {data?.message || 'This is your AI-generated React application. Click the buttons to interact!'}
+        </p>
+        <div style={styles.count}>{count}</div>
+        <div style={styles.buttonGroup}>
+          <button 
+            style={styles.button}
+            onClick={handleIncrement}
+            onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+            onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+          >
+            Increment
+          </button>
+          <button 
+            style={styles.resetButton}
+            onClick={handleReset}
+            onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+            onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;`;
+
+  return { code, type: 'javascript', language: 'javascript' };
+}
+
+// Specialized React templates
+async function generateTodoAppTemplate(prompt) {
+  const code = `import React, { useState, useEffect } from 'react';
+
+const TodoApp = () => {
+  const [todos, setTodos] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [filter, setFilter] = useState('all');
+
+  useEffect(() => {
+    const savedTodos = localStorage.getItem('todos');
+    if (savedTodos) {
+      setTodos(JSON.parse(savedTodos));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos));
+  }, [todos]);
+
+  const addTodo = () => {
+    if (inputValue.trim()) {
+      setTodos([...todos, {
+        id: Date.now(),
+        text: inputValue.trim(),
+        completed: false,
+        createdAt: new Date().toISOString()
+      }]);
+      setInputValue('');
+    }
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(todos.map(todo =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
+  };
+
+  const filteredTodos = todos.filter(todo => {
+    if (filter === 'active') return !todo.completed;
+    if (filter === 'completed') return todo.completed;
+    return true;
+  });
+
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '20px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    },
+    app: {
+      maxWidth: '600px',
+      margin: '0 auto',
+      background: 'white',
+      borderRadius: '20px',
+      padding: '30px',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+    },
+    title: {
+      textAlign: 'center',
+      color: '#667eea',
+      fontSize: '2.5em',
+      marginBottom: '30px',
+      fontWeight: 'bold'
+    },
+    inputContainer: {
+      display: 'flex',
+      marginBottom: '20px',
+      gap: '10px'
+    },
+    input: {
+      flex: 1,
+      padding: '15px',
+      border: '2px solid #e0e0e0',
+      borderRadius: '10px',
+      fontSize: '16px',
+      outline: 'none',
+      transition: 'border-color 0.3s'
+    },
+    addButton: {
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      color: 'white',
+      border: 'none',
+      padding: '15px 25px',
+      borderRadius: '10px',
+      cursor: 'pointer',
+      fontSize: '16px',
+      fontWeight: 'bold'
+    },
+    filters: {
+      display: 'flex',
+      justifyContent: 'center',
+      gap: '10px',
+      marginBottom: '20px'
+    },
+    filterButton: {
+      padding: '8px 16px',
+      border: 'none',
+      borderRadius: '20px',
+      cursor: 'pointer',
+      fontSize: '14px',
+      transition: 'all 0.3s'
+    },
+    todoItem: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '15px',
+      border: '1px solid #e0e0e0',
+      borderRadius: '10px',
+      marginBottom: '10px',
+      transition: 'all 0.3s'
+    },
+    checkbox: {
+      marginRight: '15px',
+      transform: 'scale(1.2)'
+    },
+    todoText: {
+      flex: 1,
+      fontSize: '16px'
+    },
+    deleteButton: {
+      background: '#ff4757',
+      color: 'white',
+      border: 'none',
+      padding: '8px 12px',
+      borderRadius: '5px',
+      cursor: 'pointer',
+      fontSize: '12px'
+    },
+    stats: {
+      textAlign: 'center',
+      marginTop: '20px',
+      color: '#666',
+      fontSize: '14px'
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.app}>
+        <h1 style={styles.title}>📝 Todo App</h1>
+        
+        <div style={styles.inputContainer}>
+          <input
+            style={styles.input}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && addTodo()}
+            placeholder="Add a new todo..."
+          />
+          <button style={styles.addButton} onClick={addTodo}>
+            Add
+          </button>
+        </div>
+
+        <div style={styles.filters}>
+          {['all', 'active', 'completed'].map(filterType => (
+            <button
+              key={filterType}
+              style={{
+                ...styles.filterButton,
+                background: filter === filterType ? '#667eea' : '#f0f0f0',
+                color: filter === filterType ? 'white' : '#333'
+              }}
+              onClick={() => setFilter(filterType)}
+            >
+              {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        <div>
+          {filteredTodos.map(todo => (
+            <div
+              key={todo.id}
+              style={{
+                ...styles.todoItem,
+                opacity: todo.completed ? 0.6 : 1,
+                background: todo.completed ? '#f8f9fa' : 'white'
+              }}
+            >
+              <input
+                style={styles.checkbox}
+                type="checkbox"
+                checked={todo.completed}
+                onChange={() => toggleTodo(todo.id)}
+              />
+              <span
+                style={{
+                  ...styles.todoText,
+                  textDecoration: todo.completed ? 'line-through' : 'none'
+                }}
+              >
+                {todo.text}
+              </span>
+              <button
+                style={styles.deleteButton}
+                onClick={() => deleteTodo(todo.id)}
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div style={styles.stats}>
+          Total: {todos.length} | Active: {todos.filter(t => !t.completed).length} | Completed: {todos.filter(t => t.completed).length}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TodoApp;`;
+
+  return { code, type: 'javascript', language: 'javascript' };
+}
+
+async function generateDashboardTemplate(prompt) {
+  const code = `import React, { useState, useEffect } from 'react';
+
+const Dashboard = () => {
+  const [stats, setStats] = useState({
+    users: 0,
+    revenue: 0,
+    orders: 0,
+    growth: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate API call
+    setTimeout(() => {
+      setStats({
+        users: 12543,
+        revenue: 89432,
+        orders: 1234,
+        growth: 12.5
+      });
+      setIsLoading(false);
+    }, 1500);
+  }, []);
+
+  const StatCard = ({ title, value, icon, color, prefix = '', suffix = '' }) => (
+    <div style={{
+      background: 'white',
+      padding: '25px',
+      borderRadius: '15px',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+      border: \`3px solid \${color}\`,
+      transition: 'transform 0.3s'
+    }}
+    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+        <div style={{
+          width: '50px',
+          height: '50px',
+          background: color,
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginRight: '15px'
+        }}>
+          <span style={{ fontSize: '24px' }}>{icon}</span>
+        </div>
+        <div>
+          <h3 style={{ margin: 0, color: '#333', fontSize: '14px', fontWeight: '500' }}>{title}</h3>
+          <p style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: color }}>
+            {isLoading ? '...' : \`\${prefix}\${value.toLocaleString()}\${suffix}\`}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '20px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    },
+    dashboard: {
+      maxWidth: '1200px',
+      margin: '0 auto'
+    },
+    header: {
+      textAlign: 'center',
+      marginBottom: '40px'
+    },
+    title: {
+      color: 'white',
+      fontSize: '3em',
+      fontWeight: 'bold',
+      marginBottom: '10px',
+      textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+    },
+    subtitle: {
+      color: 'rgba(255,255,255,0.8)',
+      fontSize: '1.2em'
+    },
+    grid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+      gap: '25px',
+      marginBottom: '40px'
+    },
+    chartContainer: {
+      background: 'white',
+      padding: '30px',
+      borderRadius: '15px',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+      marginBottom: '30px'
+    },
+    chartTitle: {
+      fontSize: '1.5em',
+      fontWeight: 'bold',
+      color: '#333',
+      marginBottom: '20px',
+      textAlign: 'center'
+    },
+    chart: {
+      height: '200px',
+      background: 'linear-gradient(45deg, #f0f2f5, #e1e8ed)',
+      borderRadius: '10px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: '#666',
+      fontSize: '18px'
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.dashboard}>
+        <div style={styles.header}>
+          <h1 style={styles.title}>📊 Admin Dashboard</h1>
+          <p style={styles.subtitle}>Real-time analytics and insights</p>
+        </div>
+
+        <div style={styles.grid}>
+          <StatCard
+            title="Total Users"
+            value={stats.users}
+            icon="👥"
+            color="#667eea"
+          />
+          <StatCard
+            title="Revenue"
+            value={stats.revenue}
+            icon="💰"
+            color="#2ecc71"
+            prefix="$"
+          />
+          <StatCard
+            title="Orders"
+            value={stats.orders}
+            icon="📦"
+            color="#e74c3c"
+          />
+          <StatCard
+            title="Growth"
+            value={stats.growth}
+            icon="📈"
+            color="#f39c12"
+            suffix="%"
+          />
+        </div>
+
+        <div style={styles.chartContainer}>
+          <h2 style={styles.chartTitle}>Analytics Overview</h2>
+          <div style={styles.chart}>
+            {isLoading ? 'Loading chart data...' : 'Chart visualization would go here'}
+          </div>
+        </div>
+
+        <div style={styles.chartContainer}>
+          <h2 style={styles.chartTitle}>Recent Activity</h2>
+          <div style={{ color: '#666' }}>
+            <p>• New user registration: john@example.com</p>
+            <p>• Order #1234 completed successfully</p>
+            <p>• Payment received: $299.99</p>
+            <p>• System backup completed</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;`;
+
+  return { code, type: 'javascript', language: 'javascript' };
 }
 
 async function generateMobileAppTemplate(prompt) {

@@ -18,11 +18,11 @@ const AIUniversalCreatorModern = ({ onBack }) => {
 
     const examplePrompts = [
         'Create a modern landing page with animations',
-        'Build a todo app with React and dark mode',
-        'Generate a REST API for a blog system',
-        'Make a weather app with real-time data',
-        'Create a calculator with beautiful UI',
-        'Build a chat interface component'
+        'Build a React todo app with dark mode',
+        'Generate a React weather app component',
+        'Make a React calculator with beautiful UI',
+        'Create a React chat interface component',
+        'Build a React dashboard with charts'
     ];
 
     useEffect(() => {
@@ -98,13 +98,16 @@ const AIUniversalCreatorModern = ({ onBack }) => {
             
             let response;
             if (isCodeRequest) {
+                // Detect the appropriate output type
+                const outputType = detectOutputType(userMessage.content);
+                
                 // Use code generation endpoint - optimized for complete code
                 response = await fetch('http://localhost:3001/api/ai/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         prompt: userMessage.content, 
-                        outputType: 'web',
+                        outputType: outputType,
                         temperature: 0.7,
                         user: userInfo
                     })
@@ -185,6 +188,29 @@ const AIUniversalCreatorModern = ({ onBack }) => {
         return codeKeywords.some(keyword => lowerMessage.includes(keyword)) && 
                (lowerMessage.includes('create') || lowerMessage.includes('build') || 
                 lowerMessage.includes('generate') || lowerMessage.includes('make'));
+    };
+
+    // Function to detect output type based on message content
+    const detectOutputType = (message) => {
+        const lowerMessage = message.toLowerCase();
+        
+        if (lowerMessage.includes('react') || lowerMessage.includes('jsx') || lowerMessage.includes('component')) {
+            return 'react';
+        }
+        if (lowerMessage.includes('mobile') || lowerMessage.includes('react native') || lowerMessage.includes('app')) {
+            return 'mobile';
+        }
+        if (lowerMessage.includes('api') || lowerMessage.includes('backend') || lowerMessage.includes('server')) {
+            return 'api';
+        }
+        if (lowerMessage.includes('documentation') || lowerMessage.includes('readme') || lowerMessage.includes('docs')) {
+            return 'document';
+        }
+        if (lowerMessage.includes('data') || lowerMessage.includes('analysis') || lowerMessage.includes('python')) {
+            return 'data';
+        }
+        
+        return 'web'; // Default to web
     };
 
     const handleKeyDown = (e) => {

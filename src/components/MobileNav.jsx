@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Code, Trophy, User, Menu, X } from 'lucide-react';
+import { Home, Code, Trophy, User, Menu, X, Brain } from 'lucide-react';
 
 const MobileNav = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -10,6 +10,8 @@ const MobileNav = ({ user, onLogout }) => {
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
     { path: '/editor-modern', icon: Code, label: 'Editor' },
+    { path: '/ai', icon: Brain, label: 'AI Creator' },
+    { path: '/react-ai', icon: Code, label: 'React AI' },
     { path: '/dsa', icon: Trophy, label: 'DSA' },
     { path: '/profile', icon: User, label: 'Profile' },
   ];

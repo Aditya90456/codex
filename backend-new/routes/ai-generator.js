@@ -157,6 +157,22 @@ Requirements:
 - Accessible (ARIA labels where needed)
 
 Return ONLY the complete HTML code without any markdown formatting, explanations, or code blocks. Start directly with <!DOCTYPE html>.`,
+
+    react: `You are an expert React developer. Generate a complete, production-ready React application for: "${prompt}".
+
+Requirements:
+- Modern React with hooks (useState, useEffect, etc.)
+- Complete functional component with proper JSX
+- Inline styles or styled-components approach
+- Interactive functionality and state management
+- Responsive design with mobile support
+- Clean, readable code with comments
+- All necessary imports included
+- Professional UI with modern design patterns
+- Error handling where appropriate
+- Accessibility considerations
+
+Return ONLY the complete React component code without any markdown formatting, explanations, or code blocks. Start directly with the imports.`,
     
     mobile: `You are an expert React Native developer. Generate a complete, production-ready React Native component for: "${prompt}".
 
@@ -226,7 +242,7 @@ Return ONLY the complete Python code without any markdown formatting or explanat
           temperature: 0.7,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 8192,
+          maxOutputTokens: 32768, // Increased for longer React projects
         },
         safetySettings: [
           {
@@ -280,6 +296,7 @@ Return ONLY the complete Python code without any markdown formatting or explanat
     // Determine the type and language
     const typeMap = {
       web: { type: 'html', language: 'html' },
+      react: { type: 'javascript', language: 'javascript' },
       mobile: { type: 'javascript', language: 'javascript' },
       document: { type: 'markdown', language: 'markdown' },
       api: { type: 'javascript', language: 'javascript' },
@@ -294,6 +311,8 @@ Return ONLY the complete Python code without any markdown formatting or explanat
       return { html: cleanedCode, ...result };
     } else if (outputType === 'document') {
       return { content: cleanedCode, ...result };
+    } else if (outputType === 'react') {
+      return { code: cleanedCode, ...result };
     } else {
       return { code: cleanedCode, ...result };
     }
@@ -408,6 +427,7 @@ Assistant:`;
 async function generateContentFallback(prompt, outputType) {
   const generators = {
     web: generateWebAppTemplate,
+    react: generateReactAppTemplate,
     mobile: generateMobileAppTemplate,
     document: generateDocumentTemplate,
     api: generateAPITemplate,
@@ -523,6 +543,98 @@ async function generateWebAppTemplate(prompt) {
 </html>`;
 
   return { html, type: 'html', language: 'html' };
+}
+
+async function generateReactAppTemplate(prompt) {
+  const code = `import React, { useState, useEffect } from 'react';
+
+const App = () => {
+  const [count, setCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleClick = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setCount(prev => prev + 1);
+      setIsLoading(false);
+    }, 500);
+  };
+
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      padding: '20px'
+    },
+    card: {
+      background: 'white',
+      padding: '40px',
+      borderRadius: '20px',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+      maxWidth: '600px',
+      width: '100%',
+      textAlign: 'center',
+      animation: 'slideIn 0.5s ease-out'
+    },
+    title: {
+      color: '#667eea',
+      marginBottom: '20px',
+      fontSize: '2.5em',
+      fontWeight: 'bold'
+    },
+    count: {
+      fontSize: '4em',
+      fontWeight: 'bold',
+      color: '#764ba2',
+      margin: '20px 0'
+    },
+    button: {
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      color: 'white',
+      border: 'none',
+      padding: '15px 30px',
+      borderRadius: '10px',
+      fontSize: '1.1em',
+      cursor: 'pointer',
+      transition: 'transform 0.2s',
+      opacity: isLoading ? 0.7 : 1
+    },
+    description: {
+      color: '#555',
+      lineHeight: '1.8',
+      marginBottom: '20px'
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h1 style={styles.title}>✨ ${escapeHtml(prompt)}</h1>
+        <p style={styles.description}>
+          This is your AI-generated React application. Click the button to interact!
+        </p>
+        <div style={styles.count}>{count}</div>
+        <button 
+          style={styles.button}
+          onClick={handleClick}
+          disabled={isLoading}
+          onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+          onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+        >
+          {isLoading ? 'Loading...' : 'Click Me!'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default App;`;
+
+  return { code, type: 'javascript', language: 'javascript' };
 }
 
 async function generateMobileAppTemplate(prompt) {

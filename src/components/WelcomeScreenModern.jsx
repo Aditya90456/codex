@@ -1036,17 +1036,210 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
           </div>
         </div>
 
-        {/* GSoC Section */}
+        {/* AI Section */}
         <div className="relative py-24 bg-gradient-to-b from-slate-900/0 via-purple-900/5 to-slate-900/0">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-16">
               <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-400 border border-purple-500/20 mb-6">
+                <Brain className="w-4 h-4 mr-2" />
+                AI-Powered Development
+              </div>
+              <h2 className="text-5xl font-black mb-6">
+                Build with
+                <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+                  Artificial Intelligence
+                </span>
+              </h2>
+              <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+                Generate complete applications instantly with our advanced AI code generators
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+              {/* AI Universal Creator Card */}
+              <div className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 rounded-2xl blur opacity-50 group-hover:opacity-75 transition duration-500 animate-pulse"></div>
+                <div className="relative bg-slate-800/50 backdrop-blur border border-purple-500/50 rounded-2xl p-8 hover:border-purple-400/70 transition-all duration-300 h-full ring-2 ring-purple-500/20">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded-2xl flex items-center justify-center animate-pulse">
+                      <Brain className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-black animate-bounce">
+                        🔥 HOT
+                      </span>
+                      <span className="text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                        NEW
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold mb-4 text-white">AI Universal Creator</h3>
+                  <p className="text-slate-400 mb-6 leading-relaxed">
+                    Generate complete web applications, mobile apps, and more with natural language prompts. 
+                    Powered by Google's Gemini AI for lightning-fast results.
+                  </p>
+                  
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center space-x-3 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-purple-400" />
+                      <span>Complete Web Applications</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-pink-400" />
+                      <span>Mobile App Components</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-orange-400" />
+                      <span>API & Backend Code</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-purple-400" />
+                      <span>Documentation & Guides</span>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={() => navigate('/ai')}
+                    className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 text-white px-6 py-4 rounded-xl font-bold transition-all transform hover:scale-105 flex items-center justify-center space-x-3 shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 relative overflow-hidden group"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <Brain className="w-6 h-6 relative z-10" />
+                    <span className="relative z-10">Try AI Creator</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
+                  </button>
+                </div>
+              </div>
+
+              {/* React AI Generator Card */}
+              <div className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-2xl p-8 hover:border-blue-500/50 transition-all duration-300 h-full">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
+                      <Code className="w-8 h-8 text-white" />
+                    </div>
+                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
+                      REACT
+                    </span>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold mb-4 text-white">React AI Generator</h3>
+                  <p className="text-slate-400 mb-6 leading-relaxed">
+                    Specialized React.js code generator for modern applications. Create components, hooks, 
+                    and complete React projects with advanced patterns.
+                  </p>
+                  
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center space-x-3 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-blue-400" />
+                      <span>Modern React Hooks</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-cyan-400" />
+                      <span>TypeScript Support</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-blue-400" />
+                      <span>Styled Components</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-cyan-400" />
+                      <span>Complete Projects</span>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={() => navigate('/react-ai')}
+                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-4 rounded-xl font-bold transition-all transform hover:scale-105 flex items-center justify-center space-x-3 shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40"
+                  >
+                    <Code className="w-6 h-6" />
+                    <span>Generate React Code</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Features Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+              {[
+                { name: 'Web Apps', icon: '🌐', color: 'from-blue-500 to-purple-500' },
+                { name: 'Mobile Apps', icon: '📱', color: 'from-purple-500 to-pink-500' },
+                { name: 'APIs', icon: '🔗', color: 'from-pink-500 to-orange-500' },
+                { name: 'Databases', icon: '🗄️', color: 'from-orange-500 to-red-500' },
+                { name: 'React Components', icon: '⚛️', color: 'from-cyan-500 to-blue-500' },
+                { name: 'Vue.js', icon: '💚', color: 'from-green-500 to-emerald-500' },
+                { name: 'Python Scripts', icon: '🐍', color: 'from-yellow-500 to-orange-500' },
+                { name: 'Documentation', icon: '📚', color: 'from-indigo-500 to-purple-500' }
+              ].map((feature, index) => (
+                <div
+                  key={index}
+                  className={`group relative overflow-hidden bg-gradient-to-r ${feature.color} p-4 rounded-xl text-white font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer`}
+                >
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors"></div>
+                  <div className="relative flex items-center space-x-3">
+                    <span className="text-2xl">{feature.icon}</span>
+                    <span className="text-sm font-bold">{feature.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* AI Stats */}
+            <div className="grid md:grid-cols-3 gap-6 mb-12">
+              <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur border border-purple-500/20 rounded-2xl p-6 text-center">
+                <div className="text-4xl font-black text-purple-400 mb-2">10K+</div>
+                <div className="text-slate-400 font-medium">Apps Generated</div>
+              </div>
+              <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur border border-blue-500/20 rounded-2xl p-6 text-center">
+                <div className="text-4xl font-black text-blue-400 mb-2">50M+</div>
+                <div className="text-slate-400 font-medium">Lines of Code</div>
+              </div>
+              <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 backdrop-blur border border-orange-500/20 rounded-2xl p-6 text-center">
+                <div className="text-4xl font-black text-orange-400 mb-2">99.9%</div>
+                <div className="text-slate-400 font-medium">Success Rate</div>
+              </div>
+            </div>
+
+            {/* AI CTA */}
+            <div className="text-center">
+              <div className="inline-flex items-center space-x-4">
+                <button
+                  onClick={() => navigate('/ai')}
+                  className="inline-flex items-center space-x-3 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transform hover:scale-105 relative overflow-hidden group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <Brain className="w-6 h-6 relative z-10" />
+                  <span className="relative z-10">Start Building with AI</span>
+                  <ArrowRight className="w-6 h-6 relative z-10" />
+                  <span className="absolute top-2 right-2 px-2 py-0.5 bg-yellow-400 text-black text-xs font-bold rounded-full animate-bounce">🔥</span>
+                </button>
+                
+                <button
+                  onClick={() => navigate('/react-ai')}
+                  className="inline-flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40 transform hover:scale-105"
+                >
+                  <Code className="w-6 h-6" />
+                  <span>React AI Generator</span>
+                  <ArrowRight className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* GSoC Section */}
+        <div className="relative py-24 bg-gradient-to-b from-slate-900/0 via-green-900/5 to-slate-900/0">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-green-500/10 to-emerald-500/10 text-green-400 border border-green-500/20 mb-6">
                 <Trophy className="w-4 h-4 mr-2" />
                 Google Summer of Code 2026
               </div>
               <h2 className="text-5xl font-black mb-6">
                 Join GSoC
-                <span className="block bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                   Contribute & Get Paid
                 </span>
               </h2>
@@ -1145,7 +1338,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
             <div className="text-center">
               <button
                 onClick={() => navigate('/gsoc')}
-                className="inline-flex items-center space-x-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transform hover:scale-105"
+                className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-green-500/25 hover:shadow-2xl hover:shadow-green-500/40 transform hover:scale-105"
               >
                 <Trophy className="w-6 h-6" />
                 <span>Explore GSoC 2026</span>
