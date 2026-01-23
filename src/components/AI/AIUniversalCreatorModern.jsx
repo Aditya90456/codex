@@ -101,8 +101,11 @@ const AIUniversalCreatorModern = ({ onBack }) => {
                 // Detect the appropriate output type
                 const outputType = detectOutputType(userMessage.content);
                 
+                // Get API URL from environment or use default
+                const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+                
                 // Use code generation endpoint - optimized for complete code
-                response = await fetch('http://localhost:3001/api/ai/generate', {
+                response = await fetch(`${API_URL}/api/ai/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -113,13 +116,16 @@ const AIUniversalCreatorModern = ({ onBack }) => {
                     })
                 });
             } else {
+                // Get API URL from environment or use default
+                const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+                
                 // Use general chat endpoint with recent history and user info
                 const recentMessages = messages.slice(-6).map(m => ({ 
                     role: m.role, 
                     content: m.content.substring(0, 1000)
                 }));
                 
-                response = await fetch('http://localhost:3001/api/ai/chat', {
+                response = await fetch(`${API_URL}/api/ai/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 

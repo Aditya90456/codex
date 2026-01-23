@@ -74,7 +74,8 @@ Requirements:
 
 Generate a complete, production-ready React application.`;
 
-      const response = await fetch('http://localhost:3001/api/ai/generate', {
+      const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/ai/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -151,7 +152,8 @@ Generate a complete, production-ready React application.`;
     };
 
     try {
-      const response = await fetch('http://localhost:3001/api/ai/generate', {
+      const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/ai/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
