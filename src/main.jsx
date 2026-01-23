@@ -12,10 +12,12 @@ import { initAllMobileFixes } from './utils/mobile-viewport-fix.js'
 initAllMobileFixes();
 
 // Auto-detect mode based on:
-// 1. User preference (localStorage) - highest priority
-// 2. Internet connectivity (navigator.onLine)
-// 3. Clerk API key availability
+// 1. Deployment mode (VITE_DEPLOYMENT_MODE env var) - highest priority for Vercel
+// 2. User preference (localStorage)
+// 3. Internet connectivity (navigator.onLine)
+// 4. Clerk API key availability
 
+const DEPLOYMENT_MODE = import.meta.env.VITE_DEPLOYMENT_MODE; // 'online' or 'offline'
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const userPreference = localStorage.getItem('app_mode');
 const isOnline = navigator.onLine;
@@ -25,7 +27,11 @@ const hasValidClerkKey = PUBLISHABLE_KEY && PUBLISHABLE_KEY.length > 20 && !PUBL
 let appMode;
 let reason;
 
-if (userPreference && userPreference !== 'auto') {
+if (DEPLOYMENT_MODE) {
+  // Deployment mode is explicitly set (for Vercel/production)
+  appMode = DEPLOYMENT_MODE;
+  reason = `Deployment mode: ${DEPLOYMENT_MODE}`;
+} else if (userPreference && userPreference !== 'auto') {
   // User has manually selected a specific mode (not auto)
   appMode = userPreference;
   reason = 'User preference';
@@ -55,6 +61,7 @@ console.log(`📱 Mode: ${appMode.toUpperCase()}`);
 console.log(`📊 Reason: ${reason}`);
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 console.log('Status:');
+console.log(`  • Deployment Mode: ${DEPLOYMENT_MODE || 'not set'}`);
 console.log(`  • User Preference: ${userPreference || 'auto'}`);
 console.log(`  • Internet: ${isOnline ? '🟢 Online' : '🔴 Offline'}`);
 console.log(`  • Clerk Key: ${hasValidClerkKey ? '✅ Valid' : '❌ Invalid/Missing'}`);
