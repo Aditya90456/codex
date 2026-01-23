@@ -7,6 +7,7 @@ export default {
   theme: {
     extend: {},
     screens: {
+      'xxxs': '240px', // Extra ultra small screens (240px)
       'xxs': '250px',  // Ultra small screens
       'xs': '320px',   // Small phones
       'sm': '640px',   // Tablets

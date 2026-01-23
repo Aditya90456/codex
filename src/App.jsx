@@ -17,7 +17,6 @@ import OpenSourcePage from './pages/OpenSourcePage';
 import AIUniversalCreatorModern from './components/AI/AIUniversalCreatorModern';
 import ReactCodeAI from './components/AI/ReactCodeAI';
 import MobileNav from './components/MobileNav';
-import ModeSwitcher from './components/ModeSwitcher';
 import { useState, useEffect } from 'react';
 import { Code, LogOut, User, Home, Rocket, FolderOpen, Smartphone, Trophy, Users, GitBranch, Brain, ChevronDown, MoreHorizontal } from 'lucide-react';
 import './App.css';
@@ -234,7 +233,6 @@ function AuthenticatedApp() {
 
   return (
     <div className="App">
-      <ModeSwitcher />
       {/* Public Landing Page - Shows first for non-authenticated users */}
       {!isAuthenticated && showPublicLanding && location.pathname === '/' && (
         <WelcomeScreenModern 

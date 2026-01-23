@@ -34,7 +34,7 @@
 }
 
 /* ============================================
-   ULTRA SMALL SCREENS (250px - 320px)
+   ULTRA SMALL SCREENS (240px - 320px)
    ============================================ */
 @media (max-width: 320px) {
   :root {
@@ -44,6 +44,7 @@
   
   body {
     font-size: 13px;
+    overflow-x: hidden !important;
   }
   
   /* Minimum tap targets for accessibility */
@@ -51,6 +52,7 @@
     min-height: 36px !important;
     min-width: 36px !important;
     font-size: 0.75rem !important;
+    padding: 0.25rem 0.5rem !important;
   }
   
   /* Ultra compact spacing */
@@ -83,6 +85,190 @@
   h4 { font-size: 0.875rem !important; margin-bottom: 0.25rem !important; }
   
   p { font-size: 0.75rem !important; line-height: 1.4 !important; }
+  
+  /* Container adjustments */
+  .container, .container-responsive {
+    padding: 0.25rem !important;
+    max-width: 100% !important;
+  }
+  
+  /* Card adjustments */
+  .card, .mobile-card {
+    padding: 0.5rem !important;
+    margin: 0.25rem !important;
+  }
+  
+  /* Modal adjustments */
+  .modal-content {
+    width: 98vw !important;
+    max-width: 98vw !important;
+    margin: 0.25rem !important;
+    padding: 0.5rem !important;
+  }
+  
+  /* Editor adjustments */
+  .editor-toolbar {
+    padding: 0.25rem !important;
+    gap: 0.25rem !important;
+  }
+  
+  .editor-toolbar button {
+    min-width: 60px !important;
+    font-size: 0.625rem !important;
+    padding: 0.25rem !important;
+  }
+}
+
+/* ============================================
+   EXTRA ULTRA SMALL SCREENS (240px and below)
+   ============================================ */
+@media (max-width: 240px) {
+  :root {
+    --mobile-padding: 0.25rem;
+    --font-base: 0.75rem; /* 12px */
+  }
+  
+  body {
+    font-size: 12px !important;
+    overflow-x: hidden !important;
+  }
+  
+  * {
+    max-width: 100% !important;
+  }
+  
+  /* Extremely compact tap targets */
+  button, a, [role="button"], input[type="button"], input[type="submit"] {
+    min-height: 32px !important;
+    min-width: 32px !important;
+    font-size: 0.625rem !important;
+    padding: 0.25rem !important;
+  }
+  
+  /* Ultra compact spacing */
+  .ultra-compact, .mobile-compact {
+    padding: 0.25rem !important;
+    gap: 0.125rem !important;
+  }
+  
+  /* Hide all non-essential elements */
+  .hide-ultra-small, .hide-mobile-extra {
+    display: none !important;
+  }
+  
+  /* Force vertical stacking */
+  .ultra-small-stack, .mobile-stack, .flex, .grid {
+    flex-direction: column !important;
+    width: 100% !important;
+    display: flex !important;
+  }
+  
+  /* Full width everything */
+  .ultra-small-full, .mobile-full-width {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+  }
+  
+  /* Extreme typography reduction */
+  h1 { font-size: 1.25rem !important; margin-bottom: 0.25rem !important; }
+  h2 { font-size: 1rem !important; margin-bottom: 0.25rem !important; }
+  h3 { font-size: 0.875rem !important; margin-bottom: 0.25rem !important; }
+  h4 { font-size: 0.75rem !important; margin-bottom: 0.125rem !important; }
+  h5, h6 { font-size: 0.625rem !important; margin-bottom: 0.125rem !important; }
+  
+  p, span, div { font-size: 0.625rem !important; line-height: 1.3 !important; }
+  
+  /* Container adjustments */
+  .container, .container-responsive {
+    padding: 0.125rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  
+  /* Card adjustments */
+  .card, .mobile-card {
+    padding: 0.25rem !important;
+    margin: 0.125rem !important;
+    border-radius: 0.25rem !important;
+  }
+  
+  /* Modal adjustments */
+  .modal-content {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0.25rem !important;
+    border-radius: 0 !important;
+  }
+  
+  /* Editor adjustments */
+  .editor-container {
+    flex-direction: column !important;
+  }
+  
+  .editor-toolbar {
+    padding: 0.125rem !important;
+    gap: 0.125rem !important;
+    flex-wrap: wrap !important;
+  }
+  
+  .editor-toolbar button {
+    min-width: 50px !important;
+    font-size: 0.5rem !important;
+    padding: 0.125rem !important;
+  }
+  
+  .editor-sidebar {
+    width: 100% !important;
+    max-height: 30vh !important;
+  }
+  
+  .editor-main {
+    width: 100% !important;
+    height: 50vh !important;
+  }
+  
+  /* Navigation adjustments */
+  .mobile-nav, .desktop-nav {
+    padding: 0.125rem !important;
+  }
+  
+  .mobile-bottom-nav {
+    padding: 0.125rem !important;
+  }
+  
+  .mobile-bottom-nav button {
+    font-size: 0.5rem !important;
+    padding: 0.125rem !important;
+  }
+  
+  /* Form adjustments */
+  input, select, textarea {
+    font-size: 14px !important; /* Prevent zoom on iOS */
+    padding: 0.25rem !important;
+    min-height: 32px !important;
+  }
+  
+  label {
+    font-size: 0.625rem !important;
+    margin-bottom: 0.125rem !important;
+  }
+  
+  /* Table adjustments */
+  table {
+    font-size: 0.625rem !important;
+  }
+  
+  th, td {
+    padding: 0.125rem !important;
+  }
+  
+  /* Grid adjustments */
+  .grid-responsive, .responsive-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.125rem !important;
+  }
 }
 
 /* ============================================

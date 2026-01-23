@@ -2,6 +2,7 @@
  * Mobile Viewport Height Fix
  * Handles viewport height issues on iOS and Android
  * Especially useful for address bar hiding/showing
+ * Now supports ultra-small screens (240px+)
  */
 
 export function initMobileViewportFix() {
@@ -14,6 +15,24 @@ export function initMobileViewportFix() {
   function setViewportHeight() {
     const vh = window.innerHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
+    
+    // Add class for ultra-small screens (240px and below)
+    if (window.innerWidth <= 240) {
+      document.documentElement.classList.add('ultra-small-screen');
+      document.body.classList.add('ultra-small-screen');
+    } else {
+      document.documentElement.classList.remove('ultra-small-screen');
+      document.body.classList.remove('ultra-small-screen');
+    }
+    
+    // Add class for very small screens (320px and below)
+    if (window.innerWidth <= 320) {
+      document.documentElement.classList.add('very-small-screen');
+      document.body.classList.add('very-small-screen');
+    } else {
+      document.documentElement.classList.remove('very-small-screen');
+      document.body.classList.remove('very-small-screen');
+    }
   }
 
   // Initial set

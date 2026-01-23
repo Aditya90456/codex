@@ -55,6 +55,19 @@
   .scroll-snap-start {
     scroll-snap-align: start;
   }
+  
+  /* Ultra small screen utilities (240px) */
+  @media (max-width: 240px) {
+    .xxxs\:text-xs { font-size: 0.625rem !important; }
+    .xxxs\:text-sm { font-size: 0.75rem !important; }
+    .xxxs\:p-1 { padding: 0.25rem !important; }
+    .xxxs\:p-2 { padding: 0.5rem !important; }
+    .xxxs\:m-1 { margin: 0.25rem !important; }
+    .xxxs\:gap-1 { gap: 0.25rem !important; }
+    .xxxs\:w-full { width: 100% !important; }
+    .xxxs\:hidden { display: none !important; }
+    .xxxs\:flex-col { flex-direction: column !important; }
+  }
 }
 
 * {
