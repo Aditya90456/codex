@@ -1,27 +1,52 @@
 const express = require('express');
+const https = require('https');
 const router = express.Router();
+
+// Simple fetch replacement for Node.js
+function simpleFetch(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    const urlObj = new URL(url);
+    const requestOptions = {
+      hostname: urlObj.hostname,
+      port: urlObj.port || 443,
+      path: urlObj.pathname + urlObj.search,
+      method: options.method || 'GET',
+      headers: options.headers || {}
+    };
+
+    const req = https.request(requestOptions, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        const response = {
+          ok: res.statusCode >= 200 && res.statusCode < 300,
+          status: res.statusCode,
+          statusText: res.statusMessage,
+          json: () => Promise.resolve(JSON.parse(data)),
+          text: () => Promise.resolve(data)
+        };
+        resolve(response);
+      });
+    });
+
+    req.on('error', reject);
+    
+    if (options.body) {
+      req.write(options.body);
+    }
+    
+    req.end();
+  });
+}
+
+// Use native fetch if available (Node 18+), otherwise use our simple implementation
+const fetch = globalThis.fetch || simpleFetch;
 
 // Gemini AI Configuration
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
-// Multiple API configurations to try (in order of preference)
-const GEMINI_CONFIGS = [
-  {
-    name: 'gemini-1.5-flash-v1',
-    url: 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent'
-  },
-  {
-    name: 'gemini-1.5-pro-v1', 
-    url: 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent'
-  },
-  {
-    name: 'gemini-1.5-flash-v1beta',
-    url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
-  }
-];
-
-// Current working configuration (will be set after testing)
-let CURRENT_GEMINI_CONFIG = GEMINI_CONFIGS[0];
+// Simple, reliable API configuration
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
 
 // AI Code Generation endpoint
 router.post('/generate', async (req, res) => {
@@ -251,117 +276,97 @@ Return ONLY the complete Python code without any markdown formatting or explanat
   };
 
   try {
-    // Try different API configurations until one works
-    let lastError = null;
+    console.log(`🤖 Generating ${outputType} content with Gemini AI...`);
     
-    for (const config of GEMINI_CONFIGS) {
-      try {
-        console.log(`🔄 Trying Gemini API: ${config.name}`);
-        
-        const response = await fetch(`${config.url}?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: systemPrompts[outputType] || systemPrompts.web
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 32768,
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
           },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: systemPrompts[outputType] || systemPrompts.web
-              }]
-            }],
-            generationConfig: {
-              temperature: 0.7,
-              topK: 40,
-              topP: 0.95,
-              maxOutputTokens: 32768,
-            },
-            safetySettings: [
-              {
-                category: "HARM_CATEGORY_HARASSMENT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
-              },
-              {
-                category: "HARM_CATEGORY_HATE_SPEECH",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
-              },
-              {
-                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
-              },
-              {
-                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
-              }
-            ]
-          })
-        });
-
-        if (response.ok) {
-          // Success! Update current config and process response
-          CURRENT_GEMINI_CONFIG = config;
-          console.log(`✅ Success with: ${config.name}`);
-          
-          const data = await response.json();
-          
-          if (!data.candidates || data.candidates.length === 0) {
-            throw new Error('No response generated from Gemini AI');
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
           }
+        ]
+      })
+    });
 
-          const generatedText = data.candidates[0]?.content?.parts[0]?.text || '';
-
-          if (!generatedText) {
-            throw new Error('Empty response from Gemini AI');
-          }
-
-          // Clean up the generated code (remove markdown code blocks if present)
-          let cleanedCode = generatedText
-            .replace(/```html\n?/gi, '')
-            .replace(/```javascript\n?/gi, '')
-            .replace(/```jsx\n?/gi, '')
-            .replace(/```python\n?/gi, '')
-            .replace(/```markdown\n?/gi, '')
-            .replace(/```js\n?/gi, '')
-            .replace(/```\n?/g, '')
-            .trim();
-
-          // Determine the type and language
-          const typeMap = {
-            web: { type: 'html', language: 'html' },
-            react: { type: 'javascript', language: 'javascript' },
-            mobile: { type: 'javascript', language: 'javascript' },
-            document: { type: 'markdown', language: 'markdown' },
-            api: { type: 'javascript', language: 'javascript' },
-            data: { type: 'python', language: 'python' }
-          };
-
-          const result = typeMap[outputType] || typeMap.web;
-
-          console.log(`✅ Generated ${cleanedCode.length} characters of ${outputType} content`);
-
-          if (outputType === 'web') {
-            return { html: cleanedCode, ...result };
-          } else if (outputType === 'document') {
-            return { content: cleanedCode, ...result };
-          } else if (outputType === 'react') {
-            return { code: cleanedCode, ...result };
-          } else {
-            return { code: cleanedCode, ...result };
-          }
-        } else {
-          const errorData = await response.json().catch(() => ({}));
-          lastError = new Error(`${config.name} failed: ${response.status} - ${JSON.stringify(errorData)}`);
-          console.log(`❌ ${config.name} failed: ${response.status}`);
-          continue; // Try next configuration
-        }
-      } catch (configError) {
-        lastError = configError;
-        console.log(`❌ ${config.name} error:`, configError.message);
-        continue; // Try next configuration
-      }
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Gemini API error: ${response.status} - ${JSON.stringify(errorData)}`);
     }
+
+    const data = await response.json();
     
-    // If we get here, all configurations failed
-    throw lastError || new Error('All Gemini API configurations failed');
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error('No response generated from Gemini AI');
+    }
+
+    const generatedText = data.candidates[0]?.content?.parts[0]?.text || '';
+
+    if (!generatedText) {
+      throw new Error('Empty response from Gemini AI');
+    }
+
+    // Clean up the generated code (remove markdown code blocks if present)
+    let cleanedCode = generatedText
+      .replace(/```html\n?/gi, '')
+      .replace(/```javascript\n?/gi, '')
+      .replace(/```jsx\n?/gi, '')
+      .replace(/```python\n?/gi, '')
+      .replace(/```markdown\n?/gi, '')
+      .replace(/```js\n?/gi, '')
+      .replace(/```\n?/g, '')
+      .trim();
+
+    // Determine the type and language
+    const typeMap = {
+      web: { type: 'html', language: 'html' },
+      react: { type: 'javascript', language: 'javascript' },
+      mobile: { type: 'javascript', language: 'javascript' },
+      document: { type: 'markdown', language: 'markdown' },
+      api: { type: 'javascript', language: 'javascript' },
+      data: { type: 'python', language: 'python' }
+    };
+
+    const result = typeMap[outputType] || typeMap.web;
+
+    console.log(`✅ Generated ${cleanedCode.length} characters of ${outputType} content`);
+
+    if (outputType === 'web') {
+      return { html: cleanedCode, ...result };
+    } else if (outputType === 'document') {
+      return { content: cleanedCode, ...result };
+    } else if (outputType === 'react') {
+      return { code: cleanedCode, ...result };
+    } else {
+      return { code: cleanedCode, ...result };
+    }
 
   } catch (error) {
     console.error('❌ Gemini AI Error:', error.message);
@@ -407,83 +412,63 @@ Assistant:`;
       contextPrompt = `Previous conversation:\n${historyText}\n\n${userContext}\n\nUser: ${message}\nAssistant:`;
     }
 
-    // Try different API configurations until one works
-    let lastError = null;
+    console.log(`🤖 Generating chat response with Gemini AI...`);
     
-    for (const config of GEMINI_CONFIGS) {
-      try {
-        console.log(`🔄 Trying Gemini Chat API: ${config.name}`);
-        
-        const response = await fetch(`${config.url}?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: contextPrompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.9,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
           },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: contextPrompt
-              }]
-            }],
-            generationConfig: {
-              temperature: 0.9,
-              topK: 40,
-              topP: 0.95,
-              maxOutputTokens: 2048,
-            },
-            safetySettings: [
-              {
-                category: "HARM_CATEGORY_HARASSMENT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
-              },
-              {
-                category: "HARM_CATEGORY_HATE_SPEECH",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
-              },
-              {
-                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
-              },
-              {
-                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
-              }
-            ]
-          })
-        });
-
-        if (response.ok) {
-          // Success! Update current config and process response
-          CURRENT_GEMINI_CONFIG = config;
-          console.log(`✅ Chat success with: ${config.name}`);
-          
-          const data = await response.json();
-          
-          if (!data.candidates || data.candidates.length === 0) {
-            throw new Error('No response generated from Gemini AI');
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
           }
+        ]
+      })
+    });
 
-          const generatedText = data.candidates[0]?.content?.parts[0]?.text || 
-            'I apologize, but I couldn\'t generate a response. Please try again.';
-
-          console.log(`✅ Generated chat response: ${generatedText.length} characters`);
-
-          return generatedText.trim();
-        } else {
-          const errorData = await response.json().catch(() => ({}));
-          lastError = new Error(`${config.name} failed: ${response.status} - ${JSON.stringify(errorData)}`);
-          console.log(`❌ Chat ${config.name} failed: ${response.status}`);
-          continue; // Try next configuration
-        }
-      } catch (configError) {
-        lastError = configError;
-        console.log(`❌ Chat ${config.name} error:`, configError.message);
-        continue; // Try next configuration
-      }
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Gemini API error: ${response.status} - ${JSON.stringify(errorData)}`);
     }
+
+    const data = await response.json();
     
-    // If we get here, all configurations failed
-    throw lastError || new Error('All Gemini Chat API configurations failed');
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error('No response generated from Gemini AI');
+    }
+
+    const generatedText = data.candidates[0]?.content?.parts[0]?.text || 
+      'I apologize, but I couldn\'t generate a response. Please try again.';
+
+    console.log(`✅ Generated chat response: ${generatedText.length} characters`);
+
+    return generatedText.trim();
 
   } catch (error) {
     console.error('❌ Gemini Chat Error:', error.message);
