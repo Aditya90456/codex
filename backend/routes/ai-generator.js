@@ -45,8 +45,8 @@ const fetch = globalThis.fetch || simpleFetch;
 // Gemini AI Configuration
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
-// Simple, reliable API configuration
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
+// Simple, reliable API configuration - Updated to use available model
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent';
 
 // AI Code Generation endpoint
 router.post('/generate', async (req, res) => {
