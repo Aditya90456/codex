@@ -75,6 +75,13 @@ Requirements:
 Generate a complete, production-ready React application.`;
 
       const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      console.log('🔍 React AI Debug - API URL:', API_URL);
+      console.log('🔍 React AI Debug - Request payload:', { 
+        prompt: enhancedPrompt,
+        outputType: 'react',
+        temperature: 0.7
+      });
+      
       const response = await fetch(`${API_URL}/api/ai/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -85,13 +92,27 @@ Generate a complete, production-ready React application.`;
         })
       });
 
-      if (!response.ok) throw new Error('Failed to get response');
+      console.log('🔍 React AI Debug - Response status:', response.status);
+      console.log('🔍 React AI Debug - Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔍 React AI Debug - Error response:', errorText);
+        throw new Error('Failed to get response');
+      }
 
       const data = await response.json();
+      console.log('🔍 React AI Debug - Response data:', data);
+      console.log('🔍 React AI Debug - Content type:', typeof data.content);
+      console.log('🔍 React AI Debug - Content keys:', data.content ? Object.keys(data.content) : 'No content');
+      
       if (data.success) {
+        const content = data.content.code || data.content.html || data.content.content || data.content;
+        console.log('🔍 React AI Debug - Final content length:', content ? content.length : 0);
+        
         const assistantMessage = {
           role: 'assistant',
-          content: data.content.code || data.content.html || data.content.content || data.content,
+          content: content,
           type: 'react',
           isCode: true,
           source: data.source,
@@ -106,7 +127,7 @@ Generate a complete, production-ready React application.`;
       console.error('React AI Error:', error);
       const errorMessage = {
         role: 'assistant',
-        content: '❌ Sorry, I encountered an error generating React code. Please make sure the backend server is running on port 3001 and try again.',
+        content: `❌ Sorry, I encountered an error generating React code: ${error.message}. Please check the console for details and make sure the backend server is running on port 3001.`,
         isError: true,
         timestamp: Date.now()
       };
