@@ -91,7 +91,7 @@ Generate a complete, production-ready React application.`;
       if (data.success) {
         const assistantMessage = {
           role: 'assistant',
-          content: data.content.code || data.content.html || data.content.content,
+          content: data.content.code || data.content.html || data.content.content || data.content,
           type: 'react',
           isCode: true,
           source: data.source,
@@ -167,7 +167,7 @@ Generate a complete, production-ready React application.`;
       if (data.success) {
         const assistantMessage = {
           role: 'assistant',
-          content: data.content.code || data.content.content,
+          content: data.content.code || data.content.html || data.content.content || data.content,
           type: 'react',
           isCode: true,
           source: data.source,
