@@ -3,8 +3,8 @@ const router = express.Router();
 
 // Gemini AI Configuration
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-// Using gemini-pro for stable API access
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+// Using gemini-1.5-flash with v1 API (not v1beta)
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
 
 // AI Code Generation endpoint
 router.post('/generate', async (req, res) => {
