@@ -1,126 +1,132 @@
 import { useState } from 'react';
-import { AlertCircle, ExternalLink, Copy, CheckCircle } from 'lucide-react';
+import { Copy, Check, ExternalLink, AlertCircle } from 'lucide-react';
 
-const ClerkSetupGuide = ({ isOpen, onClose }) => {
-  const [copied, setCopied] = useState(false);
+const ClerkSetupGuide = () => {
+  const [copiedStep, setCopiedStep] = useState(null);
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text, step) => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedStep(step);
+    setTimeout(() => setCopiedStep(null), 2000);
   };
 
-  if (!isOpen) return null;
+  const steps = [
+    {
+      title: "Create Clerk Account",
+      description: "Sign up for a free Clerk account",
+      action: "Go to dashboard.clerk.com",
+      link: "https://dashboard.clerk.com"
+    },
+    {
+      title: "Create Application",
+      description: "Create a new application in your Clerk dashboard",
+      action: "Click 'Add application' and choose your settings"
+    },
+    {
+      title: "Get API Keys",
+      description: "Copy your publishable key from the API Keys section",
+      action: "Navigate to API Keys → Copy Publishable key"
+    },
+    {
+      title: "Update Environment",
+      description: "Add your Clerk key to your .env file",
+      code: "VITE_CLERK_PUBLISHABLE_KEY=pk_test_your_key_here",
+      copyText: "VITE_CLERK_PUBLISHABLE_KEY="
+    },
+    {
+      title: "Restart Server",
+      description: "Restart your development server to load the new environment variables",
+      code: "npm run dev",
+      copyText: "npm run dev"
+    }
+  ];
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 rounded-3xl max-w-2xl w-full relative border border-gray-700/50 shadow-2xl overflow-hidden">
-        
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-all duration-200 z-10 p-2 hover:bg-white/10 rounded-full backdrop-blur-sm"
-        >
-          ✕
-        </button>
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="max-w-2xl w-full bg-gray-800 rounded-xl border border-gray-700 p-8">
+        <div className="text-center mb-8">
+          <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Clerk Setup Required
+          </h1>
+          <p className="text-gray-400">
+            Follow these steps to configure Clerk authentication
+          </p>
+        </div>
 
-        <div className="p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-2">Clerk Setup Required</h2>
-            <p className="text-gray-400">
-              Your Clerk publishable key needs to be configured for authentication to work
-            </p>
-          </div>
-
-          {/* Steps */}
-          <div className="space-y-6">
-            {/* Step 1 */}
-            <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700/50">
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold">
-                  1
+        <div className="space-y-6">
+          {steps.map((step, index) => (
+            <div key={index} className="bg-gray-900 rounded-lg p-6 border border-gray-600">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                  {index + 1}
                 </div>
+                
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-white mb-2">Get Your Clerk Key</h3>
-                  <p className="text-gray-400 mb-4">
-                    Go to your Clerk dashboard and copy your publishable key
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-400 mb-3">
+                    {step.description}
                   </p>
-                  <a
-                    href="https://dashboard.clerk.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white transition-colors"
-                  >
-                    <span>Open Clerk Dashboard</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700/50">
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold">
-                  2
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-white mb-2">Update .env File</h3>
-                  <p className="text-gray-400 mb-4">
-                    Replace the placeholder with your real Clerk key
-                  </p>
-                  <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-gray-400">/.env</span>
-                      <button
-                        onClick={() => copyToClipboard('VITE_CLERK_PUBLISHABLE_KEY=pk_test_your-actual-key-here')}
-                        className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
-                      >
-                        {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        <span>{copied ? 'Copied!' : 'Copy'}</span>
-                      </button>
+                  
+                  {step.link && (
+                    <a
+                      href={step.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+                    >
+                      <ExternalLink size={16} />
+                      {step.action}
+                    </a>
+                  )}
+                  
+                  {step.code && (
+                    <div className="mt-3">
+                      <div className="bg-gray-800 rounded-lg p-3 border border-gray-600">
+                        <div className="flex items-center justify-between">
+                          <code className="text-green-400 text-sm font-mono">
+                            {step.code}
+                          </code>
+                          <button
+                            onClick={() => copyToClipboard(step.copyText, index)}
+                            className="flex items-center gap-1 px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs text-gray-300 transition-colors"
+                          >
+                            {copiedStep === index ? (
+                              <>
+                                <Check size={12} />
+                                Copied
+                              </>
+                            ) : (
+                              <>
+                                <Copy size={12} />
+                                Copy
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <code className="text-green-400">
-                      VITE_CLERK_PUBLISHABLE_KEY=pk_test_your-actual-key-here
-                    </code>
-                  </div>
+                  )}
+                  
+                  {step.action && !step.link && (
+                    <p className="text-blue-400 text-sm font-medium">
+                      → {step.action}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
+          ))}
+        </div>
 
-            {/* Step 3 */}
-            <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700/50">
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold">
-                  3
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-white mb-2">Restart Server</h3>
-                  <p className="text-gray-400 mb-4">
-                    Stop and restart your development server to load the new key
-                  </p>
-                  <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm">
-                    <code className="text-yellow-400">npm run dev</code>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-8 p-4 bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-500/30 rounded-xl">
-            <div className="flex items-center space-x-2 mb-2">
-              <AlertCircle className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-medium text-blue-300">Need Help?</span>
-            </div>
-            <p className="text-xs text-gray-300">
-              Check the CLERK_COMPLETE_SETUP.md file in your project root for detailed instructions
-            </p>
-          </div>
+        <div className="mt-8 p-4 bg-blue-900/20 border border-blue-500 rounded-lg">
+          <h4 className="text-blue-400 font-semibold mb-2">💡 Pro Tip</h4>
+          <p className="text-gray-300 text-sm">
+            Make sure your publishable key starts with <code className="bg-gray-800 px-1 rounded">pk_test_</code> for development 
+            or <code className="bg-gray-800 px-1 rounded">pk_live_</code> for production.
+          </p>
         </div>
       </div>
     </div>

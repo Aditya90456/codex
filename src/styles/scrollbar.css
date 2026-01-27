@@ -1,0 +1,288 @@
+/* Custom Scrollbar Styles */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.3); /* slate-800 with opacity */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6); /* blue to purple gradient */
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #2563eb, #7c3aed); /* darker gradient on hover */
+  transform: scale(1.1);
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(30, 41, 59, 0.3);
+}
+
+/* Thin scrollbar variant */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa); /* lighter gradient */
+  border-radius: 3px;
+}
+
+/* Hidden scrollbar but still scrollable */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom scrollbar for dark theme */
+.dark-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5); /* slate-900 with opacity */
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #1e40af, #6d28d9); /* darker blue to purple */
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #1d4ed8, #7c2d12); /* even darker on hover */
+}
+
+/* Animated scrollbar */
+.scrollbar-animated::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899); /* blue to purple to pink */
+  background-size: 200% 200%;
+  animation: scrollbarGradient 3s ease infinite;
+}
+
+@keyframes scrollbarGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3b82f6 rgba(30, 41, 59, 0.3);
+}
+
+/* Authentication Modal Scrollbar - Special styling for auth components */
+.auth-modal-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.auth-modal-scrollbar::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.3); /* gray-900 with opacity */
+  border-radius: 4px;
+}
+
+.auth-modal-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899); /* blue to purple to pink */
+  border-radius: 4px;
+  background-size: 200% 200%;
+  animation: authScrollbarGradient 4s ease infinite;
+}
+
+.auth-modal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #2563eb, #7c3aed, #db2777);
+  animation-duration: 2s;
+}
+
+@keyframes authScrollbarGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Clerk Form Scrollbar */
+.clerk-form-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.clerk-form-scrollbar::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.2);
+  border-radius: 3px;
+}
+
+.clerk-form-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 3px;
+}
+
+.clerk-form-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+}
+
+/* Code editor scrollbar */
+.code-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.code-scrollbar::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.8); /* gray-900 with opacity */
+  border-radius: 5px;
+}
+
+.code-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #059669, #0d9488); /* emerald to teal */
+  border-radius: 5px;
+  border: 1px solid rgba(17, 24, 39, 0.5);
+}
+
+.code-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #047857, #0f766e);
+}
+
+/* Notification scrollbar */
+.notification-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notification-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notification-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5); /* blue with opacity */
+  border-radius: 2px;
+}
+
+.notification-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.8);
+}
+
+/* Responsive scrollbar */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .modal-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .code-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* Smooth scrolling behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scroll indicators */
+.scroll-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+  background-size: 200% 100%;
+  animation: scrollIndicator 3s ease infinite;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.scroll-indicator.visible {
+  opacity: 1;
+}
+
+@keyframes scrollIndicator {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Scroll to top button */
+.scroll-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+}
+
+.scroll-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.scroll-to-top:hover {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4);
+}
+
+/* Scrollbar for specific components */
+.feature-highlight-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.feature-highlight-scrollbar::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.2);
+  border-radius: 4px;
+}
+
+.feature-highlight-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #10b981, #06b6d4); /* emerald to cyan */
+  border-radius: 4px;
+}
+
+.feature-highlight-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #059669, #0891b2);
+}

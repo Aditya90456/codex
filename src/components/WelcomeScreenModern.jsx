@@ -1,16 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUniversalAuth } from '../hooks/useUniversalAuth';
-import UserProfile from './UserProfile';
-import Settings from './Settings';
-import VSCodeEditor from './VSCodeEditorClean';
-import AdvancedWebEditor from './AdvancedWebEditor';
-import AndroidEditor from './AndroidEditor';
-import AIUniversalCreator from './AI/AIUniversalCreatorModern';
-import DSA250Awesome from './DSA/DSA250Awesome';
-import VisualTutorials from './DSA/VisualTutorials';
-import InterviewReady from './DSA/InterviewReady';
-import StriverTributePage from '../pages/StriverTributePage';
+import { useAuthContext } from '../contexts/AuthContext';
+import AuthButton from './Auth/AuthButton';
+import FeatureHighlight from './Auth/FeatureHighlight';
 import { 
   Code, 
   Zap, 
@@ -25,22 +17,7 @@ import {
   Globe,
   Shield,
   Cpu,
-  Settings as SettingsIcon,
-  User,
-  LogOut,
-  HelpCircle,
-  ChevronDown,
-  UserCircle,
-  Star,
-  Bell,
-  Moon,
-  Sun,
-  Monitor,
-  BarChart3,
-  FolderOpen,
-  Lightbulb,
-  Layers,
-  Sparkles,
+  Brain,
   Terminal,
   Box,
   Flame,
@@ -49,99 +26,37 @@ import {
   Video,
   FileText,
   Award,
+  Heart,
+  GitBranch,
+  Lightbulb,
+  Layers,
+  Sparkles,
+  Smartphone,
+  Command,
   Save,
   Download,
-  Upload,
-  Copy,
   Share2,
+  Copy,
   Maximize2,
   Minimize2,
   RotateCcw,
-  Trash2,
-  Edit3,
-  Heart,
-  FileCode,
-  GitBranch,
   Search,
-  Command,
-  Smartphone,
-  Brain,
-  X
+  FolderOpen,
+  FileCode,
+  Settings as SettingsIcon,
+  ChevronUp,
+  ChevronDown,
+  UserPlus
 } from 'lucide-react';
 
-const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
-  const { user, logout } = useUniversalAuth();
+const WelcomeScreenModern = () => {
+  const { user, isSignedIn, isLoaded } = useAuthContext();
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [activeLanguage, setActiveLanguage] = useState(0);
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showVSCodeEditor, setShowVSCodeEditor] = useState(false);
-  const [showAdvancedWebEditor, setShowAdvancedWebEditor] = useState(false);
-  const [theme, setTheme] = useState('dark');
   const [showEditorToolbar, setShowEditorToolbar] = useState(false);
-  const [editorMode, setEditorMode] = useState('standard'); // standard, fullscreen, split
   const [showCommandPalette, setShowCommandPalette] = useState(false);
-  const [recentProjects, setRecentProjects] = useState([
-    { name: 'Calculator App', language: 'JavaScript', lastModified: '2 hours ago', icon: '🧮' },
-    { name: 'Todo List', language: 'Python', lastModified: '1 day ago', icon: '✅' },
-    { name: 'Weather API', language: 'Java', lastModified: '3 days ago', icon: '🌤️' }
-  ]);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [showAndroidEditor, setShowAndroidEditor] = useState(false);
-  const [showAICreator, setShowAICreator] = useState(false);
-  const [showDSA250, setShowDSA250] = useState(false);
-  const [showVisualTutorials, setShowVisualTutorials] = useState(false);
-  const [showInterviewReady, setShowInterviewReady] = useState(false);
-  const [showStriverTribute, setShowStriverTribute] = useState(false);
-  const [showFileManager, setShowFileManager] = useState(false);
-  const [showSnippetsLibrary, setShowSnippetsLibrary] = useState(false);
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
-  const [aiMessages, setAiMessages] = useState([
-    { role: 'assistant', content: 'Hi! I\'m your AI coding assistant. How can I help you today?' }
-  ]);
-  const [aiInput, setAiInput] = useState('');
-  const [files, setFiles] = useState([
-    { name: 'index.js', type: 'javascript', size: '2.4 KB', modified: '2 min ago' },
-    { name: 'styles.css', type: 'css', size: '1.8 KB', modified: '5 min ago' },
-    { name: 'App.jsx', type: 'react', size: '3.2 KB', modified: '10 min ago' }
-  ]);
-  const [codeSnippets, setCodeSnippets] = useState([
-    { 
-      id: 1, 
-      title: 'React useState Hook', 
-      language: 'javascript',
-      code: 'const [state, setState] = useState(initialValue);',
-      category: 'React',
-      tags: ['hooks', 'state']
-    },
-    { 
-      id: 2, 
-      title: 'Async/Await Function', 
-      language: 'javascript',
-      code: 'async function fetchData() {\n  try {\n    const response = await fetch(url);\n    const data = await response.json();\n    return data;\n  } catch (error) {\n    console.error(error);\n  }\n}',
-      category: 'JavaScript',
-      tags: ['async', 'fetch']
-    },
-    { 
-      id: 3, 
-      title: 'Python List Comprehension', 
-      language: 'python',
-      code: 'squares = [x**2 for x in range(10)]',
-      category: 'Python',
-      tags: ['list', 'comprehension']
-    },
-    { 
-      id: 4, 
-      title: 'Express Route Handler', 
-      language: 'javascript',
-      code: 'app.get(\'/api/users\', async (req, res) => {\n  try {\n    const users = await User.find();\n    res.json(users);\n  } catch (error) {\n    res.status(500).json({ error: error.message });\n  }\n});',
-      category: 'Node.js',
-      tags: ['express', 'api']
-    }
-  ]);
+  const [editorMode, setEditorMode] = useState('standard');
 
   useEffect(() => {
     setIsVisible(true);
@@ -151,47 +66,34 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest('.user-dropdown')) {
-        setShowUserDropdown(false);
+  // Safe navigation with authentication check
+  const safeNavigate = (path) => {
+    if (!isSignedIn) {
+      // User will see Clerk sign in modal from navigation
+      return;
+    }
+    
+    try {
+      navigate(path);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback to window.location for external links
+      if (path.startsWith('http')) {
+        window.open(path, '_blank');
+      } else {
+        window.location.href = path;
       }
-      if (!event.target.closest('.notifications-dropdown')) {
-        setShowNotifications(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleLogout = async () => {
-    await logout();
-    setShowUserDropdown(false);
-  };
-
-  const toggleTheme = () => {
-    const themes = ['light', 'dark', 'system'];
-    const currentIndex = themes.indexOf(theme);
-    const nextTheme = themes[(currentIndex + 1) % themes.length];
-    setTheme(nextTheme);
-  };
-
-  const getThemeIcon = () => {
-    switch (theme) {
-      case 'light': return <Sun size={16} />;
-      case 'dark': return <Moon size={16} />;
-      default: return <Monitor size={16} />;
     }
   };
 
-  const notifications = [
-    { id: 1, type: 'achievement', message: 'Welcome to Codex Playground!', time: '1 hour ago', unread: true },
-    { id: 2, type: 'system', message: 'New features available', time: '2 hours ago', unread: true },
-    { id: 3, type: 'social', message: 'Join our community', time: '1 day ago', unread: false },
-  ];
-
-  const unreadCount = notifications.filter(n => n.unread).length;
+  // Protected action wrapper - requires authentication
+  const protectedAction = (action) => {
+    if (!isSignedIn) {
+      // User will see Clerk sign in modal
+      return;
+    }
+    action();
+  };
 
   const languages = [
     { name: 'JavaScript', code: 'console.log("Hello, World!");', color: 'from-yellow-400 to-orange-500', icon: '🟨' },
@@ -207,7 +109,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
       description: "Generate complete apps instantly with Gemini AI",
       color: "from-purple-500 to-pink-500",
       badge: "🔥 Hot",
-      action: () => setShowAICreator(true),
+      action: () => protectedAction(() => navigate('/ai')),
       highlight: true
     },
     {
@@ -215,36 +117,40 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
       title: "Multi-Language IDE",
       description: "Code in 12+ languages with intelligent autocomplete",
       color: "from-blue-500 to-cyan-500",
-      badge: "Popular"
+      badge: "Popular",
+      action: () => protectedAction(() => navigate('/editor'))
     },
     {
       icon: <Zap className="w-6 h-6" />,
       title: "Lightning Fast",
       description: "Instant code execution with real-time output",
       color: "from-yellow-500 to-orange-500",
-      badge: "Fast"
+      badge: "Fast",
+      action: () => protectedAction(() => navigate('/editor'))
     },
     {
       icon: <Box className="w-6 h-6" />,
       title: "Web Projects",
       description: "Build full-stack apps with live preview",
       color: "from-green-500 to-emerald-500",
-      badge: "New"
+      badge: "New",
+      action: () => protectedAction(() => navigate('/web-editor'))
     },
     {
       icon: <Trophy className="w-6 h-6" />,
       title: "Practice DSA",
       description: "Solve 250+ coding problems with solutions",
       color: "from-purple-500 to-pink-500",
-      badge: "Pro"
+      badge: "Pro",
+      action: () => protectedAction(() => navigate('/dsa'))
     }
   ];
 
   const quickStart = [
-    { name: 'JavaScript', ext: 'js', color: 'bg-yellow-500', gradient: 'from-yellow-500 to-orange-500', action: () => onCreateNew('javascript') },
-    { name: 'Python', ext: 'py', color: 'bg-green-500', gradient: 'from-green-500 to-blue-500', action: () => onCreateNew('python') },
-    { name: 'Java', ext: 'java', color: 'bg-red-500', gradient: 'from-red-500 to-pink-500', action: () => onCreateNew('java') },
-    { name: 'C++', ext: 'cpp', color: 'bg-blue-500', gradient: 'from-blue-500 to-purple-500', action: () => onCreateNew('cpp') }
+    { name: 'JavaScript', ext: 'js', color: 'bg-yellow-500', gradient: 'from-yellow-500 to-orange-500', action: () => protectedAction(() => navigate('/editor')) },
+    { name: 'Python', ext: 'py', color: 'bg-green-500', gradient: 'from-green-500 to-blue-500', action: () => protectedAction(() => navigate('/editor')) },
+    { name: 'Java', ext: 'java', color: 'bg-red-500', gradient: 'from-red-500 to-pink-500', action: () => protectedAction(() => navigate('/editor')) },
+    { name: 'C++', ext: 'cpp', color: 'bg-blue-500', gradient: 'from-blue-500 to-purple-500', action: () => protectedAction(() => navigate('/editor')) }
   ];
 
   // Editor Actions
@@ -259,7 +165,9 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
   };
 
   const handleShareProject = () => {
-    setShowShareModal(true);
+    const currentUrl = window.location.href;
+    navigator.clipboard.writeText(currentUrl);
+    alert('Project URL copied to clipboard!');
   };
 
   const handleCopyCode = () => {
@@ -282,35 +190,12 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
     setShowCommandPalette(true);
   };
 
-  const handleSendAIMessage = () => {
-    if (!aiInput.trim()) return;
-    
-    setAiMessages(prev => [...prev, { role: 'user', content: aiInput }]);
-    
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = [
-        'Here\'s a solution to your problem...',
-        'I can help you with that! Try this approach...',
-        'Great question! Let me explain...',
-        'Here\'s an optimized version of your code...'
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      setAiMessages(prev => [...prev, { role: 'assistant', content: randomResponse }]);
-    }, 1000);
-    
-    setAiInput('');
-  };
-
-  const handleCopySnippet = (code) => {
-    navigator.clipboard.writeText(code);
-    alert('Snippet copied to clipboard!');
-  };
-
-  const handleInsertSnippet = (code) => {
-    console.log('Inserting snippet:', code);
-    // Implement insert logic
-  };
+  // Recent projects mock data
+  const recentProjects = [
+    { name: 'React Todo App', language: 'JavaScript', lastModified: '2 hours ago', icon: '⚛️' },
+    { name: 'Python Calculator', language: 'Python', lastModified: '1 day ago', icon: '🐍' },
+    { name: 'Java Sorting', language: 'Java', lastModified: '3 days ago', icon: '☕' }
+  ];
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -330,44 +215,15 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
         e.preventDefault();
         handleShareProject();
       }
+      // ESC to close command palette
+      if (e.key === 'Escape') {
+        setShowCommandPalette(false);
+      }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [editorMode]);
-
-  // Conditional returns AFTER all hooks
-  if (showVSCodeEditor) {
-    return <VSCodeEditor onBack={() => setShowVSCodeEditor(false)} />;
-  }
-
-  if (showAdvancedWebEditor) {
-    return <AdvancedWebEditor onBack={() => setShowAdvancedWebEditor(false)} />;
-  }
-
-  if (showAndroidEditor) {
-    return <AndroidEditor onBack={() => setShowAndroidEditor(false)} />;
-  }
-
-  if (showAICreator) {
-    return <AIUniversalCreator onBack={() => setShowAICreator(false)} />;
-  }
-
-  if (showDSA250) {
-    return <DSA250Awesome onBack={() => setShowDSA250(false)} />;
-  }
-
-  if (showVisualTutorials) {
-    return <VisualTutorials onBack={() => setShowVisualTutorials(false)} />;
-  }
-
-  if (showInterviewReady) {
-    return <InterviewReady onBack={() => setShowInterviewReady(false)} />;
-  }
-
-  if (showStriverTribute) {
-    return <StriverTributePage onBack={() => setShowStriverTribute(false)} />;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
@@ -401,163 +257,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               
               {/* Right Actions */}
               <div className="flex items-center space-x-4">
-                <button 
-                  onClick={toggleTheme}
-                  className="text-slate-400 hover:text-white transition-colors p-2.5 rounded-xl hover:bg-slate-800"
-                >
-                  {getThemeIcon()}
-                </button>
-
-                <button className="text-slate-400 hover:text-white transition-colors p-2.5 rounded-xl hover:bg-slate-800">
-                  <HelpCircle size={20} />
-                </button>
-
-                {user ? (
-                  <>
-                    <div className="relative notifications-dropdown">
-                      <button
-                        onClick={() => setShowNotifications(!showNotifications)}
-                        className="relative text-slate-400 hover:text-white transition-colors p-2.5 rounded-xl hover:bg-slate-800"
-                      >
-                        <Bell size={20} />
-                        {unreadCount > 0 && (
-                          <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                            {unreadCount}
-                          </span>
-                        )}
-                      </button>
-
-                      {showNotifications && (
-                        <div className="absolute right-0 mt-3 w-80 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl">
-                          <div className="p-4 border-b border-slate-700">
-                            <h3 className="text-white font-semibold">Notifications</h3>
-                            {unreadCount > 0 && (
-                              <p className="text-sm text-slate-400">{unreadCount} unread</p>
-                            )}
-                          </div>
-                          <div className="max-h-64 overflow-y-auto">
-                            {notifications.map((notification) => (
-                              <div
-                                key={notification.id}
-                                className={`p-4 border-b border-slate-700 hover:bg-slate-700/50 transition-colors ${
-                                  notification.unread ? 'bg-blue-900/20' : ''
-                                }`}
-                              >
-                                <div className="flex items-start space-x-3">
-                                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                                    notification.unread ? 'bg-blue-500' : 'bg-slate-600'
-                                  }`} />
-                                  <div className="flex-1">
-                                    <p className="text-sm text-white">{notification.message}</p>
-                                    <p className="text-xs text-slate-400 mt-1">{notification.time}</p>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="relative user-dropdown">
-                      <button
-                        onClick={() => setShowUserDropdown(!showUserDropdown)}
-                        className="flex items-center space-x-3 text-white hover:bg-slate-800 px-4 py-2.5 rounded-xl transition-all"
-                      >
-                        <div className="w-9 h-9 bg-gradient-to-r from-green-400 to-blue-500 rounded-xl flex items-center justify-center">
-                          <User size={18} className="text-white" />
-                        </div>
-                        <div className="hidden md:block text-left">
-                          <div className="text-sm font-semibold">{user.username}</div>
-                          <div className="text-xs text-slate-400">{user.email || 'user@example.com'}</div>
-                        </div>
-                        <ChevronDown size={16} className={`text-slate-400 transition-transform ${
-                          showUserDropdown ? 'rotate-180' : ''
-                        }`} />
-                      </button>
-
-                      {showUserDropdown && (
-                        <div className="absolute right-0 mt-3 w-64 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl">
-                          <div className="p-4 border-b border-slate-700">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-500 rounded-xl flex items-center justify-center">
-                                <User size={20} className="text-white" />
-                              </div>
-                              <div>
-                                <div className="text-white font-semibold">{user.username}</div>
-                                <div className="text-sm text-slate-400">{user.email || 'user@example.com'}</div>
-                                <div className="flex items-center space-x-2 mt-1">
-                                  <Star size={12} className="text-yellow-400" />
-                                  <span className="text-xs text-slate-400">{user.rating || '1200'} rating</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="py-2">
-                            <button 
-                              onClick={() => {
-                                setShowProfile(true);
-                                setShowUserDropdown(false);
-                              }}
-                              className="w-full flex items-center space-x-3 px-4 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
-                            >
-                              <UserCircle size={18} />
-                              <span className="text-sm">Profile</span>
-                            </button>
-                            
-                            <button 
-                              onClick={() => {
-                                if (onShowDashboard) onShowDashboard();
-                                setShowUserDropdown(false);
-                              }}
-                              className="w-full flex items-center space-x-3 px-4 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
-                            >
-                              <BarChart3 size={18} />
-                              <span className="text-sm">Dashboard</span>
-                            </button>
-                            
-                            <button 
-                              onClick={() => {
-                                setShowSettings(true);
-                                setShowUserDropdown(false);
-                              }}
-                              className="w-full flex items-center space-x-3 px-4 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
-                            >
-                              <SettingsIcon size={18} />
-                              <span className="text-sm">Settings</span>
-                            </button>
-                          </div>
-
-                          <div className="border-t border-slate-700 py-2">
-                            <button
-                              onClick={handleLogout}
-                              className="w-full flex items-center space-x-3 px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-slate-700 transition-colors"
-                            >
-                              <LogOut size={18} />
-                              <span className="text-sm">Sign Out</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => onShowAuth('login')}
-                      className="text-slate-300 hover:text-white transition-colors px-5 py-2.5 rounded-xl hover:bg-slate-800 font-medium"
-                    >
-                      Sign In
-                    </button>
-                    <button
-                      onClick={() => onShowAuth('signup')}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-blue-500/25"
-                    >
-                      Get Started
-                    </button>
-                  </div>
-                )}
+                <AuthButton />
               </div>
             </div>
           </div>
@@ -573,7 +273,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                   <div>
                     <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-green-500/10 to-blue-500/10 text-green-400 border border-green-500/20 mb-6">
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      Welcome back, {user.name || user.username}!
+                      Welcome back, {user?.firstName || user?.username || 'User'}!
                     </div>
                     
                     <h1 className="text-6xl lg:text-7xl font-black mb-6 leading-tight">
@@ -591,19 +291,19 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     <div className="grid grid-cols-3 gap-4 mb-10 p-6 bg-gradient-to-r from-slate-800/50 to-slate-800/30 rounded-2xl border border-slate-700/50 backdrop-blur">
                       <div className="text-center">
                         <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                          {user.solvedProblems || 0}
+                          {user?.publicMetadata?.solvedProblems || 0}
                         </div>
                         <div className="text-sm text-slate-400 mt-1">Solved</div>
                       </div>
                       <div className="text-center border-x border-slate-700">
                         <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                          {user.rating || 1200}
+                          {user?.publicMetadata?.rating || 1200}
                         </div>
                         <div className="text-sm text-slate-400 mt-1">Rating</div>
                       </div>
                       <div className="text-center">
                         <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                          {user.streak || 5}
+                          {user?.publicMetadata?.streak || 5}
                         </div>
                         <div className="text-sm text-slate-400 mt-1">Day Streak</div>
                       </div>
@@ -612,7 +312,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     {/* Action Buttons */}
                     <div className="grid grid-cols-2 gap-4">
                       <button
-                        onClick={() => onCreateNew()}
+                        onClick={() => protectedAction(() => navigate('/editor'))}
                         className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40 transform hover:scale-105"
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
@@ -624,7 +324,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                       </button>
                       
                       <button
-                        onClick={() => navigate('/dsa')}
+                        onClick={() => safeNavigate('/dsa')}
                         className="group relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-green-500/25 hover:shadow-2xl hover:shadow-green-500/40 transform hover:scale-105"
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
@@ -657,7 +357,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
 
                     <div className="flex flex-col sm:flex-row gap-4 mb-12">
                       <button
-                        onClick={() => onCreateNew()}
+                        onClick={() => protectedAction(() => navigate('/editor'))}
                         className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-10 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40 transform hover:scale-105"
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
@@ -754,6 +454,15 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
             </div>
           </div>
         </div>
+
+        {/* Feature Highlight Section - Only for non-authenticated users */}
+        {!user && (
+          <div className="relative py-24">
+            <div className="max-w-7xl mx-auto px-6 lg:px-8">
+              <FeatureHighlight />
+            </div>
+          </div>
+        )}
 
         {/* Features Section */}
         <div className="relative py-24 bg-slate-900/30">
@@ -889,7 +598,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     </div>
                   </div>
                   <button 
-                    onClick={() => navigate('/dsa/tutorials')}
+                    onClick={() => safeNavigate('/dsa/tutorials')}
                     className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
                   >
                     <Play className="w-5 h-5" />
@@ -924,7 +633,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     </div>
                   </div>
                   <button 
-                    onClick={() => navigate('/dsa')}
+                    onClick={() => safeNavigate('/dsa')}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
                   >
                     <Code className="w-5 h-5" />
@@ -959,7 +668,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     </div>
                   </div>
                   <button 
-                    onClick={() => navigate('/dsa/interview')}
+                    onClick={() => safeNavigate('/dsa/interview')}
                     className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
                   >
                     <Trophy className="w-5 h-5" />
@@ -994,7 +703,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                     </div>
                   </div>
                   <button 
-                    onClick={() => setShowStriverTribute(true)}
+                    onClick={() => safeNavigate('/striver-tribute')}
                     className="w-full bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
                   >
                     <Heart className="w-5 h-5" />
@@ -1100,7 +809,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                   </div>
                   
                   <button 
-                    onClick={() => navigate('/ai')}
+                    onClick={() => safeNavigate('/ai')}
                     className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 text-white px-6 py-4 rounded-xl font-bold transition-all transform hover:scale-105 flex items-center justify-center space-x-3 shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 relative overflow-hidden group"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -1150,7 +859,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                   </div>
                   
                   <button 
-                    onClick={() => navigate('/react-ai')}
+                    onClick={() => safeNavigate('/react-ai')}
                     className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-4 rounded-xl font-bold transition-all transform hover:scale-105 flex items-center justify-center space-x-3 shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40"
                   >
                     <Code className="w-6 h-6" />
@@ -1206,7 +915,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
             <div className="text-center">
               <div className="inline-flex items-center space-x-4">
                 <button
-                  onClick={() => navigate('/ai')}
+                  onClick={() => safeNavigate('/ai')}
                   className="inline-flex items-center space-x-3 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transform hover:scale-105 relative overflow-hidden group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -1217,7 +926,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
                 </button>
                 
                 <button
-                  onClick={() => navigate('/react-ai')}
+                  onClick={() => safeNavigate('/react-ai')}
                   className="inline-flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40 transform hover:scale-105"
                 >
                   <Code className="w-6 h-6" />
@@ -1337,7 +1046,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
             {/* GSoC CTA */}
             <div className="text-center">
               <button
-                onClick={() => navigate('/gsoc')}
+                onClick={() => safeNavigate('/gsoc')}
                 className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-green-500/25 hover:shadow-2xl hover:shadow-green-500/40 transform hover:scale-105"
               >
                 <Trophy className="w-6 h-6" />
@@ -1444,7 +1153,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
             {/* Open Source CTA */}
             <div className="text-center">
               <button
-                onClick={() => navigate('/opensource')}
+                onClick={() => safeNavigate('/opensource')}
                 className="inline-flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40 transform hover:scale-105"
               >
                 <GitBranch className="w-6 h-6" />
@@ -1545,7 +1254,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
               <button
-                onClick={() => onCreateNew()}
+                onClick={() => protectedAction(() => navigate('/editor'))}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/40 transform hover:scale-105 flex items-center justify-center space-x-3"
               >
                 <Rocket className="w-6 h-6" />
@@ -1553,7 +1262,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               </button>
               
               <button
-                onClick={() => setShowAICreator(true)}
+                onClick={() => protectedAction(() => navigate('/ai'))}
                 className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transform hover:scale-105 flex items-center justify-center space-x-3 relative overflow-hidden group"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -1563,7 +1272,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               </button>
               
               <button
-                onClick={() => navigate('/dsa')}
+                onClick={() => safeNavigate('/dsa')}
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-green-500/25 hover:shadow-2xl hover:shadow-green-500/40 transform hover:scale-105 flex items-center justify-center space-x-3"
               >
                 <Trophy className="w-6 h-6" />
@@ -1571,7 +1280,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               </button>
               
               <button
-                onClick={() => navigate('/web-editor')}
+                onClick={() => safeNavigate('/web-editor')}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transform hover:scale-105 flex items-center justify-center space-x-3"
               >
                 <Zap className="w-6 h-6" />
@@ -1579,7 +1288,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               </button>
               
               <button
-                onClick={() => navigate('/vscode')}
+                onClick={() => safeNavigate('/vscode')}
                 className="bg-slate-800/50 hover:bg-slate-700/50 border-2 border-slate-700 hover:border-slate-600 px-8 py-5 rounded-2xl font-bold transition-all transform hover:scale-105 flex items-center justify-center space-x-3"
               >
                 <FolderOpen className="w-6 h-6" />
@@ -1587,7 +1296,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
               </button>
 
               <button
-                onClick={() => navigate('/android')}
+                onClick={() => safeNavigate('/android')}
                 className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-orange-500/25 hover:shadow-2xl hover:shadow-orange-500/40 transform hover:scale-105 flex items-center justify-center space-x-3"
               >
                 <Smartphone className="w-6 h-6" />
@@ -1802,7 +1511,7 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
             <div className="p-4 max-h-96 overflow-y-auto">
               <div className="space-y-1">
                 {[
-                  { icon: <Code />, label: 'New File', shortcut: 'Ctrl+N', action: () => onCreateNew() },
+                  { icon: <Code />, label: 'New File', shortcut: 'Ctrl+N', action: () => navigate('/editor') },
                   { icon: <FolderOpen />, label: 'Open Project', shortcut: 'Ctrl+O' },
                   { icon: <Save />, label: 'Save', shortcut: 'Ctrl+S', action: handleSaveProject },
                   { icon: <Share2 />, label: 'Share Project', shortcut: 'Ctrl+Shift+S', action: handleShareProject },
@@ -1839,88 +1548,6 @@ const WelcomeScreenModern = ({ onCreateNew, onShowAuth, onShowDashboard }) => {
           </div>
         </div>
       )}
-
-      {/* Share Modal */}
-      {showShareModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-                <Share2 className="w-6 h-6 text-purple-400" />
-                <span>Share Project</span>
-              </h3>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm text-slate-400 mb-2 block">Share Link</label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value="https://codex.dev/share/abc123"
-                    readOnly
-                    className="flex-1 bg-slate-900 text-white px-4 py-3 rounded-xl border border-slate-700 focus:border-blue-500 outline-none"
-                  />
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText('https://codex.dev/share/abc123');
-                      alert('Link copied!');
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl transition-colors"
-                  >
-                    <Copy size={20} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <button className="flex flex-col items-center space-y-2 p-4 bg-slate-700/50 hover:bg-slate-700 rounded-xl transition-all">
-                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                    <Share2 size={20} className="text-white" />
-                  </div>
-                  <span className="text-xs text-slate-300">Twitter</span>
-                </button>
-                <button className="flex flex-col items-center space-y-2 p-4 bg-slate-700/50 hover:bg-slate-700 rounded-xl transition-all">
-                  <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
-                    <Share2 size={20} className="text-white" />
-                  </div>
-                  <span className="text-xs text-slate-300">Discord</span>
-                </button>
-                <button className="flex flex-col items-center space-y-2 p-4 bg-slate-700/50 hover:bg-slate-700 rounded-xl transition-all">
-                  <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
-                    <Share2 size={20} className="text-white" />
-                  </div>
-                  <span className="text-xs text-slate-300">WhatsApp</span>
-                </button>
-              </div>
-
-              <div className="pt-4 border-t border-slate-700">
-                <label className="flex items-center space-x-3 text-slate-300 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 rounded" />
-                  <span className="text-sm">Allow others to edit</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modals */}
-      <UserProfile 
-        isOpen={showProfile} 
-        onClose={() => setShowProfile(false)} 
-      />
-
-      <Settings 
-        isOpen={showSettings} 
-        onClose={() => setShowSettings(false)} 
-      />
     </div>
   );
 };

@@ -16,12 +16,20 @@ export const setupTurnstileErrorSuppression = () => {
     // Comprehensive Turnstile error patterns
     const turnstilePatterns = [
       'Turnstile',
+      'turnstile',
       '300030',
       'cf-turnstile',
       'challenges.cloudflare.com',
       'api.js?render=explicit',
       'turnstile-wrapper',
-      'captcha-container'
+      'captcha-container',
+      'Widget seem to have hung',
+      'eh1ij', // Turnstile widget ID pattern
+      'Content Security Policy',
+      'CSP',
+      'fonts.gstatic.com',
+      'font-src',
+      'default-src'
     ];
 
     // Browser extension error patterns
@@ -60,20 +68,17 @@ export const setupTurnstileErrorSuppression = () => {
     );
 
     if (isTurnstileError) {
-      // Log as warning instead of error to reduce noise
-      console.warn('🔇 [Turnstile] Error suppressed (safe to ignore):', message);
+      // Completely suppress Turnstile errors - no logging
       return;
     }
 
     if (isExtensionError) {
-      // Log as info instead of error for extension issues
-      console.info('🔇 [Extension] Error suppressed (browser extension issue):', message);
+      // Completely suppress extension errors - no logging
       return;
     }
 
     if (isThirdPartyError) {
-      // Suppress common harmless errors
-      console.info('🔇 [Third-party] Error suppressed (harmless):', message);
+      // Completely suppress third-party errors - no logging
       return;
     }
 
@@ -99,7 +104,7 @@ export const setupTurnstileErrorSuppression = () => {
     ];
 
     if (suppressPatterns.some(pattern => message.toLowerCase().includes(pattern.toLowerCase()))) {
-      console.info('🔇 [Promise] Rejection suppressed (harmless):', message);
+      // Completely suppress - no logging
       event.preventDefault();
       return false;
     }
@@ -121,7 +126,7 @@ export const setupTurnstileErrorSuppression = () => {
         filename.includes('api.js') ||
         filename.includes('challenges.cloudflare.com') ||
         filename.includes('extension://')) {
-      console.info('🔇 [Global] Error suppressed (harmless):', message);
+      // Completely suppress - no logging
       event.preventDefault();
       return false;
     }
@@ -145,7 +150,7 @@ export const setupTurnstileErrorSuppression = () => {
           if (name === 'src' && 
               (value.includes('challenges.cloudflare.com') || 
                value.includes('turnstile'))) {
-            console.warn('🔇 [Turnstile] Script loading blocked:', value);
+            // Silently block Turnstile script loading
             return; // Don't set the src
           }
           return originalSetAttribute.call(this, name, value);

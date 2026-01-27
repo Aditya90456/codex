@@ -15,15 +15,33 @@ export const AuthProvider = ({ children }) => {
   const { user: clerkUser, isLoaded } = useUser();
   const { isSignedIn, signOut } = useClerkAuth();
   const [user, setUser] = useState(null);
+  const [authStartTime, setAuthStartTime] = useState(null);
+  const [authDuration, setAuthDuration] = useState(null);
 
-  // Simple, single effect for auth state
+  // Track authentication timing
+  useEffect(() => {
+    if (!isLoaded && !authStartTime) {
+      setAuthStartTime(Date.now());
+    }
+    
+    if (isLoaded && authStartTime && !authDuration) {
+      const duration = Date.now() - authStartTime;
+      setAuthDuration(duration);
+      console.log(`Authentication completed in ${(duration / 1000).toFixed(1)}s`);
+    }
+  }, [isLoaded, authStartTime, authDuration]);
+
+  // Optimized auth state - single effect with faster processing
   useEffect(() => {
     if (isLoaded) {
       if (isSignedIn && clerkUser) {
+        // Minimal user object for faster processing
         const simpleUser = {
           id: clerkUser.id,
           email: clerkUser.emailAddresses[0]?.emailAddress,
-          name: clerkUser.firstName || 'User'
+          name: clerkUser.firstName || clerkUser.username || 'User',
+          firstName: clerkUser.firstName,
+          lastName: clerkUser.lastName
         };
         setUser(simpleUser);
       } else {
@@ -34,12 +52,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      setUser(null); // Immediate UI update
       await signOut();
-      setUser(null);
+      // Reset timing for next auth
+      setAuthStartTime(null);
+      setAuthDuration(null);
     } catch (error) {
       console.error('Logout error:', error);
-      // Force logout even if there's an error
-      setUser(null);
+      setUser(null); // Force logout even if there's an error
     }
   };
 
@@ -47,7 +67,9 @@ export const AuthProvider = ({ children }) => {
     user,
     isAuthenticated: !!user,
     loading: !isLoaded,
-    logout
+    logout,
+    authDuration,
+    authStartTime
   };
 
   return (

@@ -30,6 +30,18 @@ export default defineConfig({
   },
   // Optimize dependencies
   optimizeDeps: {
-    include: ['react', 'react-dom', '@monaco-editor/react', '@clerk/clerk-react', 'lucide-react']
+    include: ['react', 'react-dom', '@monaco-editor/react', '@clerk/clerk-react', 'lucide-react'],
+    force: true
+  },
+  // Performance optimizations
+  server: {
+    fs: {
+      // Allow serving files from one level up to the project root
+      allow: ['..']
+    }
+  },
+  // Enable faster HMR
+  esbuild: {
+    target: 'esnext'
   }
 })
