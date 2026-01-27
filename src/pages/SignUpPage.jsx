@@ -9,14 +9,26 @@ const SignUpPage = () => {
   const containerRef = useRef(null);
   const [userCount, setUserCount] = useState(1247892);
   const [isClerkReady, setIsClerkReady] = useState(false);
+  const [clerkError, setClerkError] = useState(null);
 
-  // Check if Clerk is ready
+  // Check if Clerk is ready and valid
   useEffect(() => {
-    // Give Clerk a moment to initialize
-    const timer = setTimeout(() => {
-      setIsClerkReady(true);
-    }, 100);
-    return () => clearTimeout(timer);
+    const checkClerk = () => {
+      const key = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+      
+      if (!key || key.includes('placeholder') || key.length < 20) {
+        setClerkError('Clerk is not properly configured. Please add a valid VITE_CLERK_PUBLISHABLE_KEY.');
+        setIsClerkReady(false);
+        return;
+      }
+      
+      // Give Clerk a moment to initialize
+      setTimeout(() => {
+        setIsClerkReady(true);
+      }, 100);
+    };
+    
+    checkClerk();
   }, []);
 
   // Handle scroll progress
@@ -150,9 +162,27 @@ const SignUpPage = () => {
             </div>
 
             <div className="max-h-[500px] overflow-y-auto scroll-smooth pr-2 custom-scrollbar">
-              {!isClerkReady ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+              {clerkError ? (
+                <div className="py-8 px-4 text-center">
+                  <div className="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">⚠️</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-2">Configuration Required</h3>
+                  <p className="text-gray-400 text-sm mb-4">{clerkError}</p>
+                  <div className="bg-gray-900/50 rounded-lg p-4 text-left text-xs text-gray-400">
+                    <p className="mb-2">To fix this:</p>
+                    <ol className="list-decimal list-inside space-y-1">
+                      <li>Go to dashboard.clerk.com</li>
+                      <li>Get your publishable key</li>
+                      <li>Add it to Vercel environment variables</li>
+                      <li>Redeploy your app</li>
+                    </ol>
+                  </div>
+                </div>
+              ) : !isClerkReady ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+                  <p className="text-gray-400 text-sm">Loading sign up form...</p>
                 </div>
               ) : (
                 <SignUp 
