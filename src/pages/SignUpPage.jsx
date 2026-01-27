@@ -213,7 +213,7 @@ const SignUpPage = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
@@ -241,7 +241,7 @@ const SignUpPage = () => {
         .animate-fade-in-up {
           animation: fade-in-up 0.6s ease-out forwards;
         }
-      `}</style>
+      `}} />
     </div>
   );
 };
