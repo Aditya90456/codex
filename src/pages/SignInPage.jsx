@@ -9,6 +9,16 @@ const SignInPage = () => {
   const containerRef = useRef(null);
   const [activeUsers, setActiveUsers] = useState(23847);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isClerkReady, setIsClerkReady] = useState(false);
+
+  // Check if Clerk is ready
+  useEffect(() => {
+    // Give Clerk a moment to initialize
+    const timer = setTimeout(() => {
+      setIsClerkReady(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Handle scroll progress
   useEffect(() => {
@@ -157,53 +167,59 @@ const SignInPage = () => {
             </div>
 
             <div className="max-h-[500px] overflow-y-auto scroll-smooth pr-2 custom-scrollbar">
-              <SignIn 
-                appearance={{
-                  baseTheme: 'dark',
-                  variables: {
-                    colorPrimary: '#3B82F6',
-                    colorBackground: 'transparent',
-                    colorInputBackground: '#1E293B',
-                    colorInputText: '#F1F5F9',
-                    borderRadius: '0.75rem',
-                  },
-                  elements: {
-                    formButtonPrimary: {
-                      backgroundColor: '#3B82F6',
-                      '&:hover': { backgroundColor: '#2563EB' },
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      padding: '12px 24px',
-                      borderRadius: '12px',
+              {!isClerkReady ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : (
+                <SignIn 
+                  appearance={{
+                    baseTheme: 'dark',
+                    variables: {
+                      colorPrimary: '#3B82F6',
+                      colorBackground: 'transparent',
+                      colorInputBackground: '#1E293B',
+                      colorInputText: '#F1F5F9',
+                      borderRadius: '0.75rem',
                     },
-                    card: {
-                      backgroundColor: 'transparent',
-                      boxShadow: 'none',
-                      border: 'none',
+                    elements: {
+                      formButtonPrimary: {
+                        backgroundColor: '#3B82F6',
+                        '&:hover': { backgroundColor: '#2563EB' },
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        padding: '12px 24px',
+                        borderRadius: '12px',
+                      },
+                      card: {
+                        backgroundColor: 'transparent',
+                        boxShadow: 'none',
+                        border: 'none',
+                      },
+                      headerTitle: { display: 'none' },
+                      headerSubtitle: { display: 'none' },
+                      socialButtonsBlockButton: {
+                        backgroundColor: '#374151',
+                        border: '1px solid #4B5563',
+                        color: '#FFFFFF',
+                        borderRadius: '12px',
+                        '&:hover': { backgroundColor: '#4B5563' },
+                      },
+                      formFieldInput: {
+                        backgroundColor: '#1E293B',
+                        border: '1px solid #4B5563',
+                        color: '#FFFFFF',
+                        borderRadius: '12px',
+                        '&:focus': { borderColor: '#3B82F6' },
+                      },
+                      formFieldLabel: { color: '#D1D5DB', fontSize: '14px' },
+                      footerActionLink: { color: '#60A5FA' },
                     },
-                    headerTitle: { display: 'none' },
-                    headerSubtitle: { display: 'none' },
-                    socialButtonsBlockButton: {
-                      backgroundColor: '#374151',
-                      border: '1px solid #4B5563',
-                      color: '#FFFFFF',
-                      borderRadius: '12px',
-                      '&:hover': { backgroundColor: '#4B5563' },
-                    },
-                    formFieldInput: {
-                      backgroundColor: '#1E293B',
-                      border: '1px solid #4B5563',
-                      color: '#FFFFFF',
-                      borderRadius: '12px',
-                      '&:focus': { borderColor: '#3B82F6' },
-                    },
-                    formFieldLabel: { color: '#D1D5DB', fontSize: '14px' },
-                    footerActionLink: { color: '#60A5FA' },
-                  },
-                }}
-                redirectUrl="/dashboard"
-                signUpUrl="/sign-up"
-              />
+                  }}
+                  afterSignInUrl="/dashboard"
+                  signUpUrl="/sign-up"
+                />
+              )}
             </div>
           </div>
 
