@@ -46,7 +46,8 @@ import {
   Settings as SettingsIcon,
   ChevronUp,
   ChevronDown,
-  UserPlus
+  UserPlus,
+  Loader2
 } from 'lucide-react';
 
 const WelcomeScreenModern = () => {
@@ -57,6 +58,12 @@ const WelcomeScreenModern = () => {
   const [showEditorToolbar, setShowEditorToolbar] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [editorMode, setEditorMode] = useState('standard');
+  const [userStats, setUserStats] = useState({
+    problemsSolved: 0,
+    streak: 0,
+    rank: 'Bronze',
+    loading: true
+  });
 
   useEffect(() => {
     setIsVisible(true);
@@ -65,6 +72,54 @@ const WelcomeScreenModern = () => {
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  // Fetch user stats from backend
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      if (!user || !isLoaded) {
+        setUserStats(prev => ({ ...prev, loading: false }));
+        return;
+      }
+
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const token = await user.getToken();
+        
+        const response = await fetch(`${API_URL}/progress/stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            const data = result.data;
+            const points = data.user.points || 0;
+            let rank = 'Bronze';
+            if (points >= 500) rank = 'Diamond';
+            else if (points >= 300) rank = 'Platinum';
+            else if (points >= 150) rank = 'Gold';
+            else if (points >= 50) rank = 'Silver';
+            
+            setUserStats({
+              problemsSolved: data.progress.solvedProblems || 0,
+              streak: data.user.streak || 0,
+              rank: rank,
+              loading: false
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user stats:', error);
+      } finally {
+        setUserStats(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchUserStats();
+  }, [user, isLoaded]);
 
   // Safe navigation with authentication check
   const safeNavigate = (path) => {

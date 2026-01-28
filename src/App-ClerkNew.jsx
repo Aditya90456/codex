@@ -10,6 +10,7 @@ import LoadingScreen from './components/Auth/LoadingScreen';
 import WelcomeScreenModern from './components/WelcomeScreenModern';
 import CodexEditorModern from './components/CodexEditorModern';
 import DSA250Awesome from './components/DSA/DSA250Awesome';
+import InterviewReady from './components/DSA/InterviewReady';
 import AIUniversalCreatorModern from './components/AI/AIUniversalCreatorModern';
 import AdvancedWebEditor from './components/AdvancedWebEditor';
 import Dashboard from './components/Dashboard';
@@ -125,6 +126,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <DSA250Awesome />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dsa/interview" 
+            element={
+              <ProtectedRoute>
+                <InterviewReady />
               </ProtectedRoute>
             } 
           />

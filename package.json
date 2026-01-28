@@ -12,6 +12,7 @@
   "dependencies": {
     "@clerk/clerk-react": "^4.32.5",
     "@monaco-editor/react": "^4.7.0",
+    "axios": "^1.13.4",
     "body-parser": "^2.2.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

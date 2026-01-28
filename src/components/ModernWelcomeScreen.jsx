@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { 
   Code2, 
   Zap, 
@@ -19,12 +20,23 @@ import {
   Twitter,
   MessageCircle,
   Brain,
-  Wand2
+  Wand2,
+  Target,
+  Flame,
+  Award,
+  Loader2
 } from 'lucide-react';
 
 const ModernWelcomeScreen = ({ onCreateNew, onShowWebEditor, onShowAdvancedWebEditor, onShowAndroidEditor, onShowAICreator }) => {
+  const { user, isLoaded } = useUser();
   const [currentLanguage, setCurrentLanguage] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [userStats, setUserStats] = useState({
+    problemsSolved: 0,
+    streak: 0,
+    rank: 'Bronze',
+    loading: true
+  });
 
   const languages = [
     { name: 'JavaScript', color: 'from-yellow-400 to-orange-500', icon: '🟨' },
@@ -100,6 +112,54 @@ const ModernWelcomeScreen = ({ onCreateNew, onShowWebEditor, onShowAdvancedWebEd
     }
   ];
 
+  // Fetch user stats from backend
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      if (!user || !isLoaded) {
+        setUserStats(prev => ({ ...prev, loading: false }));
+        return;
+      }
+
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const token = await user.getToken();
+        
+        const response = await fetch(`${API_URL}/progress/stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            const data = result.data;
+            const points = data.user.points || 0;
+            let rank = 'Bronze';
+            if (points >= 500) rank = 'Diamond';
+            else if (points >= 300) rank = 'Platinum';
+            else if (points >= 150) rank = 'Gold';
+            else if (points >= 50) rank = 'Silver';
+            
+            setUserStats({
+              problemsSolved: data.progress.solvedProblems || 0,
+              streak: data.user.streak || 0,
+              rank: rank,
+              loading: false
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user stats:', error);
+      } finally {
+        setUserStats(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchUserStats();
+  }, [user, isLoaded]);
+
   useEffect(() => {
     setIsVisible(true);
     const interval = setInterval(() => {
@@ -147,23 +207,47 @@ const ModernWelcomeScreen = ({ onCreateNew, onShowWebEditor, onShowAdvancedWebEd
         <div className="text-center max-w-4xl mx-auto">
           {/* Main Heading */}
           <div className="mb-8">
-            <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
-              Code
-              <span className="inline-block mx-4">
-                <Sparkles className="w-16 h-16 md:w-24 md:h-24 text-yellow-400 animate-spin" />
-              </span>
-              Create
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-4">
-              The most beautiful way to code online
-            </p>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              No setup, no downloads, no limits. Start coding in{' '}
-              <span className={`font-bold bg-gradient-to-r ${languages[currentLanguage].color} bg-clip-text text-transparent transition-all duration-500`}>
-                {languages[currentLanguage].name}
-              </span>
-              {' '}and 10+ other languages instantly.
-            </p>
+            {user && isLoaded ? (
+              <>
+                <div className="mb-4">
+                  <p className="text-2xl text-purple-300 mb-2">Welcome back,</p>
+                  <h1 className="text-6xl md:text-8xl font-bold mb-4 bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
+                    {user.firstName || user.username || 'Developer'}!
+                  </h1>
+                </div>
+                <p className="text-xl md:text-2xl text-gray-300 mb-4">
+                  Ready to continue your coding journey?
+                </p>
+                {userStats.streak > 0 && !userStats.loading && (
+                  <div className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 rounded-full mb-4">
+                    <Flame className="w-5 h-5 text-orange-400 animate-pulse" />
+                    <span className="text-white font-semibold">
+                      {userStats.streak} day streak - Keep it going! 🔥
+                    </span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
+                  Code
+                  <span className="inline-block mx-4">
+                    <Sparkles className="w-16 h-16 md:w-24 md:h-24 text-yellow-400 animate-spin" />
+                  </span>
+                  Create
+                </h1>
+                <p className="text-xl md:text-2xl text-gray-300 mb-4">
+                  The most beautiful way to code online
+                </p>
+                <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+                  No setup, no downloads, no limits. Start coding in{' '}
+                  <span className={`font-bold bg-gradient-to-r ${languages[currentLanguage].color} bg-clip-text text-transparent transition-all duration-500`}>
+                    {languages[currentLanguage].name}
+                  </span>
+                  {' '}and 10+ other languages instantly.
+                </p>
+              </>
+            )}
           </div>
 
           {/* CTA Buttons */}
@@ -189,18 +273,49 @@ const ModernWelcomeScreen = ({ onCreateNew, onShowWebEditor, onShowAdvancedWebEd
 
           {/* Stats */}
           <div className="flex items-center justify-center space-x-8 mb-16 text-sm text-gray-400">
-            <div className="flex items-center space-x-2">
-              <Users className="w-4 h-4" />
-              <span>50K+ Developers</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Code2 className="w-4 h-4" />
-              <span>1M+ Projects</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="w-4 h-4" />
-              <span>99.9% Uptime</span>
-            </div>
+            {user && isLoaded ? (
+              <>
+                <div className="flex items-center space-x-2">
+                  <Target className="w-4 h-4 text-blue-400" />
+                  {userStats.loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <span className="text-white font-semibold">{userStats.problemsSolved} Problems Solved</span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Flame className="w-4 h-4 text-orange-400" />
+                  {userStats.loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <span className="text-white font-semibold">{userStats.streak} Day Streak</span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Award className="w-4 h-4 text-yellow-400" />
+                  {userStats.loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <span className="text-white font-semibold">{userStats.rank} Rank</span>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center space-x-2">
+                  <Users className="w-4 h-4" />
+                  <span>50K+ Developers</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Code2 className="w-4 h-4" />
+                  <span>1M+ Projects</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>99.9% Uptime</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
