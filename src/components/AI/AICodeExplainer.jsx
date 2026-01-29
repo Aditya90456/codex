@@ -26,8 +26,14 @@ const AICodeExplainer = ({ code, problemTitle, language = 'javascript' }) => {
     setExplanation(null);
     
     try {
-      // Use original backend (default port 3001, can be changed via VITE_BACKEND_URL)
+      // Use backend URL from environment or default to localhost
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      
+      // Check if backend URL is configured in production
+      if (import.meta.env.PROD && !import.meta.env.VITE_BACKEND_URL) {
+        throw new Error('Backend not configured. Please set VITE_BACKEND_URL environment variable.');
+      }
+      
       const response = await fetch(`${backendUrl}/api/ai/explain-code`, {
         method: 'POST',
         headers: {
@@ -50,20 +56,26 @@ const AICodeExplainer = ({ code, problemTitle, language = 'javascript' }) => {
       setCurrentStep(0);
     } catch (error) {
       console.error('Error getting AI explanation:', error);
-      // Show error message to user
+      // Show helpful error message to user
       setExplanation({
-        algorithm: "Error",
+        algorithm: "Setup Required",
         timeComplexity: "N/A",
         spaceComplexity: "N/A",
         steps: [
           {
             id: 1,
-            title: "Unable to Generate Explanation",
+            title: "AI Explainer Not Available",
             description: error.message || "Failed to connect to AI service",
-            explanation: "Please make sure the backend server is running and Gemini API key is configured in backend/.env"
+            explanation: import.meta.env.PROD 
+              ? "The AI Code Explainer requires a backend server. Please deploy the backend to Render or another service and set the VITE_BACKEND_URL environment variable in Vercel."
+              : "Please make sure the backend server is running on port 3001. Run 'npm start' in the backend folder."
           }
         ],
-        keyInsights: [
+        keyInsights: import.meta.env.PROD ? [
+          "Deploy backend to Render.com (free tier available)",
+          "Set VITE_BACKEND_URL in Vercel environment variables",
+          "See AI_EXPLAINER_VERCEL_FIX.md for detailed instructions"
+        ] : [
           "Check that backend server is running on port 3001",
           "Verify GEMINI_API_KEY is set in backend/.env",
           "Ensure you have internet connection for Gemini API"
