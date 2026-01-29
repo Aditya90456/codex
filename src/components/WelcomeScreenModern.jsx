@@ -123,6 +123,17 @@ const WelcomeScreenModern = () => {
 
   // Safe navigation with authentication check
   const safeNavigate = (path) => {
+    // Allow /learn route without authentication
+    if (path === '/learn') {
+      try {
+        navigate(path);
+      } catch (error) {
+        console.error('Navigation error:', error);
+        window.location.href = path;
+      }
+      return;
+    }
+    
     if (!isSignedIn) {
       // User will see Clerk sign in modal from navigation
       return;
@@ -163,9 +174,9 @@ const WelcomeScreenModern = () => {
       title: "CP-AI Code Generator",
       description: "Generate complete apps instantly with Gemini AI",
       color: "from-purple-500 to-pink-500",
-      badge: "🔥 Hot",
-      action: () => protectedAction(() => navigate('/ai')),
-      highlight: true
+      badge: "🔥 NEW",
+      highlight: true,
+      action: () => protectedAction(() => navigate('/ai'))
     },
     {
       icon: <Terminal className="w-6 h-6" />,
@@ -190,14 +201,6 @@ const WelcomeScreenModern = () => {
       color: "from-green-500 to-emerald-500",
       badge: "New",
       action: () => protectedAction(() => navigate('/web-editor'))
-    },
-    {
-      icon: <Trophy className="w-6 h-6" />,
-      title: "Practice DSA",
-      description: "Solve 250+ coding problems with solutions",
-      color: "from-purple-500 to-pink-500",
-      badge: "Pro",
-      action: () => protectedAction(() => navigate('/dsa'))
     }
   ];
 
@@ -374,18 +377,6 @@ const WelcomeScreenModern = () => {
                         <div className="relative flex items-center justify-center space-x-3">
                           <Code className="w-6 h-6" />
                           <span>Start Coding</span>
-                          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      </button>
-                      
-                      <button
-                        onClick={() => safeNavigate('/dsa')}
-                        className="group relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-green-500/25 hover:shadow-2xl hover:shadow-green-500/40 transform hover:scale-105"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                        <div className="relative flex items-center justify-center space-x-3">
-                          <Trophy className="w-6 h-6" />
-                          <span>Practice Now</span>
                           <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </button>
@@ -607,196 +598,243 @@ const WelcomeScreenModern = () => {
           </div>
         </div>
 
-        {/* DSA Tutorials Section */}
-        <div className="relative py-24 bg-gradient-to-b from-slate-900/0 via-cyan-900/5 to-slate-900/0">
+        {/* Article AI Animation Section */}
+        <div className="relative py-24 bg-gradient-to-b from-slate-900/0 via-indigo-900/5 to-slate-900/0">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-16">
-              <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-cyan-500/10 to-blue-500/10 text-cyan-400 border border-cyan-500/20 mb-6">
-                <GraduationCap className="w-4 h-4 mr-2" />
-                Learn DSA
+              <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-indigo-500/10 to-purple-500/10 text-indigo-400 border border-indigo-500/20 mb-6">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Interactive Learning Hub
               </div>
               <h2 className="text-5xl font-black mb-6">
-                Master Data Structures
-                <span className="block bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                  & Algorithms
+                Learn • Practice • Master
+                <span className="block bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  All in One Place
                 </span>
               </h2>
               <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-                Interactive tutorials, visual explanations, and hands-on practice
+                Explore articles, track progress, and get AI assistance with beautiful animations
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Tutorial Card 1 - Visual Learning */}
-              <div className="group relative">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
-                <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-2xl p-8 hover:border-cyan-500/50 transition-all duration-300 h-full">
-                  <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center mb-6">
-                    <Video className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4 text-white">Visual Tutorials</h3>
-                  <p className="text-slate-400 mb-6 leading-relaxed">
-                    Watch animated explanations of complex algorithms. See how data structures work in real-time.
-                  </p>
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-cyan-400" />
-                      <span>3D Visualizations</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-cyan-400" />
-                      <span>Step-by-step Animations</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-cyan-400" />
-                      <span>Interactive Examples</span>
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl blur-2xl opacity-20"></div>
+              <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-3xl p-8 hover:border-indigo-500/50 transition-all duration-300">
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  {/* Articles Preview */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-2xl p-6 hover:border-blue-500/50 transition-all duration-300 h-full">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
+                        <BookOpen className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 text-white">Articles</h3>
+                      <p className="text-slate-400 text-sm mb-4">
+                        Browse curated learning content with difficulty levels and read times
+                      </p>
+                      <div className="flex items-center space-x-2 text-xs text-blue-400">
+                        <span>View Articles</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </div>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => safeNavigate('/dsa/tutorials')}
-                    className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
-                  >
-                    <Play className="w-5 h-5" />
-                    <span>Start Learning</span>
-                  </button>
-                </div>
-              </div>
 
-              {/* Tutorial Card 2 - Practice Problems */}
-              <div className="group relative">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
-                <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-2xl p-8 hover:border-purple-500/50 transition-all duration-300 h-full">
-                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6">
-                    <FileText className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4 text-white">250+ Problems</h3>
-                  <p className="text-slate-400 mb-6 leading-relaxed">
-                    Practice with curated DSA problems. From basics to advanced, with detailed solutions.
-                  </p>
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-purple-400" />
-                      <span>Difficulty Levels</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-purple-400" />
-                      <span>Detailed Solutions</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-purple-400" />
-                      <span>Progress Tracking</span>
+                  {/* AI Assistant Preview */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-600 to-pink-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-2xl p-6 hover:border-orange-500/50 transition-all duration-300 h-full">
+                      <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-pink-500 rounded-xl flex items-center justify-center mb-4">
+                        <Brain className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 text-white">AI Assistant</h3>
+                      <p className="text-slate-400 text-sm mb-4">
+                        Generate code explanations with typing animation effects
+                      </p>
+                      <div className="flex items-center space-x-2 text-xs text-orange-400">
+                        <span>Try AI</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </div>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => safeNavigate('/dsa')}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
-                  >
-                    <Code className="w-5 h-5" />
-                    <span>Practice Now</span>
-                  </button>
                 </div>
-              </div>
 
-              {/* Tutorial Card 3 - Interview Prep */}
-              <div className="group relative">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-600 to-yellow-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
-                <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-2xl p-8 hover:border-orange-500/50 transition-all duration-300 h-full">
-                  <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-2xl flex items-center justify-center mb-6">
-                    <Award className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4 text-white">Interview Ready</h3>
-                  <p className="text-slate-400 mb-6 leading-relaxed">
-                    Prepare for technical interviews with company-specific questions and patterns.
-                  </p>
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-orange-400" />
-                      <span>FAANG Questions</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-orange-400" />
-                      <span>Common Patterns</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-orange-400" />
-                      <span>Mock Interviews</span>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => safeNavigate('/dsa/interview')}
-                    className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
-                  >
-                    <Trophy className="w-5 h-5" />
-                    <span>Get Started</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Tutorial Card 4 - Striver Tribute */}
-              <div className="group relative">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-red-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
-                <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-2xl p-8 hover:border-pink-500/50 transition-all duration-300 h-full">
-                  <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-red-500 rounded-2xl flex items-center justify-center mb-6">
-                    <Heart className="w-8 h-8 text-white fill-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4 text-white">Tribute to Striver</h3>
-                  <p className="text-slate-400 mb-6 leading-relaxed">
-                    Honoring Striver's incredible contribution to DSA education. Free resources for millions.
-                  </p>
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-pink-400" />
-                      <span>YouTube Playlists</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-pink-400" />
-                      <span>Learning Resources</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-pink-400" />
-                      <span>Success Stories</span>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => safeNavigate('/striver-tribute')}
-                    className="w-full bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center space-x-2"
-                  >
-                    <Heart className="w-5 h-5" />
-                    <span>View Tribute</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* DSA Topics Grid */}
-            <div className="mt-16">
-              <h3 className="text-2xl font-bold text-white mb-8 text-center">Popular Topics</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {[
-                  { name: 'Arrays', color: 'from-blue-500 to-cyan-500' },
-                  { name: 'Linked Lists', color: 'from-purple-500 to-pink-500' },
-                  { name: 'Trees', color: 'from-green-500 to-emerald-500' },
-                  { name: 'Graphs', color: 'from-orange-500 to-red-500' },
-                  { name: 'Dynamic Programming', color: 'from-yellow-500 to-orange-500' },
-                  { name: 'Sorting', color: 'from-cyan-500 to-blue-500' },
-                  { name: 'Searching', color: 'from-pink-500 to-purple-500' },
-                  { name: 'Recursion', color: 'from-indigo-500 to-purple-500' },
-                  { name: 'Stacks', color: 'from-teal-500 to-cyan-500' },
-                  { name: 'Queues', color: 'from-rose-500 to-pink-500' },
-                  { name: 'Hash Tables', color: 'from-violet-500 to-purple-500' },
-                  { name: 'Heaps', color: 'from-amber-500 to-orange-500' }
-                ].map((topic, index) => (
+                {/* CTA Button */}
+                <div className="text-center">
                   <button
-                    key={index}
-                    className={`group relative overflow-hidden bg-gradient-to-r ${topic.color} p-4 rounded-xl text-white font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl`}
+                    onClick={() => safeNavigate('/learn')}
+                    className="inline-flex items-center space-x-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-indigo-500/25 hover:shadow-2xl hover:shadow-indigo-500/40 transform hover:scale-105 relative overflow-hidden group"
                   >
-                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors"></div>
-                    <span className="relative text-sm">{topic.name}</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                    <Sparkles className="w-6 h-6 relative z-10" />
+                    <span className="relative z-10">Explore Learning Hub</span>
+                    <ArrowRight className="w-6 h-6 relative z-10 group-hover:translate-x-1 transition-transform" />
                   </button>
-                ))}
+                </div>
               </div>
             </div>
 
+            {/* Features List */}
+            <div className="grid md:grid-cols-3 gap-4 mt-12">
+              {[
+                { icon: '📖', label: 'Curated Articles', color: 'from-blue-500 to-cyan-500' },
+                { icon: '🤖', label: 'AI Code Gen', color: 'from-orange-500 to-red-500' },
+                { icon: '✨', label: 'Smooth Animations', color: 'from-green-500 to-emerald-500' }
+              ].map((feature, index) => (
+                <div
+                  key={index}
+                  className={`group relative overflow-hidden bg-gradient-to-r ${feature.color} p-4 rounded-xl text-white font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer`}
+                >
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors"></div>
+                  <div className="relative flex items-center space-x-3">
+                    <span className="text-2xl">{feature.icon}</span>
+                    <span className="text-sm font-bold">{feature.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* LeetCode-Style Editor Section */}
+        <div className="relative py-24 bg-gradient-to-b from-slate-900/0 via-green-900/5 to-slate-900/0">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-green-500/10 to-emerald-500/10 text-green-400 border border-green-500/20 mb-6">
+                <Trophy className="w-4 h-4 mr-2" />
+                Competitive Programming
+              </div>
+              <h2 className="text-5xl font-black mb-6">
+                LeetCode-Style
+                <span className="block bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                  Problem Solving
+                </span>
+              </h2>
+              <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+                Practice with 150 curated problems in a professional LeetCode-inspired environment
+              </p>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-green-600 to-emerald-600 rounded-3xl blur-2xl opacity-20"></div>
+              <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-3xl p-8 hover:border-green-500/50 transition-all duration-300">
+                
+                {/* Feature Grid */}
+                <div className="grid md:grid-cols-3 gap-6 mb-8">
+                  {/* Split Panel Layout */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-2xl p-6 hover:border-green-500/50 transition-all duration-300 h-full">
+                      <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-4">
+                        <Layers className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 text-white">Split Panel Design</h3>
+                      <p className="text-slate-400 text-sm mb-4">
+                        Problem description on left, Monaco code editor on right - just like LeetCode
+                      </p>
+                      <div className="flex items-center space-x-2 text-xs text-green-400">
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Professional Layout</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 150 Problems */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-2xl p-6 hover:border-blue-500/50 transition-all duration-300 h-full">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
+                        <FileText className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 text-white">150 Problems</h3>
+                      <p className="text-slate-400 text-sm mb-4">
+                        Arrays, Strings, Trees, Graphs, DP and more - all difficulty levels
+                      </p>
+                      <div className="flex items-center space-x-2 text-xs text-blue-400">
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Curated Collection</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Test & Submit */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-2xl p-6 hover:border-purple-500/50 transition-all duration-300 h-full">
+                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4">
+                        <Play className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 text-white">Run & Submit</h3>
+                      <p className="text-slate-400 text-sm mb-4">
+                        Test with custom inputs, submit solutions, see runtime and memory stats
+                      </p>
+                      <div className="flex items-center space-x-2 text-xs text-purple-400">
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Real-time Feedback</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Screenshot/Preview */}
+                <div className="relative rounded-2xl overflow-hidden border border-slate-700/50 mb-8">
+                  <div className="bg-slate-900 p-4">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <span className="ml-4 text-sm text-slate-400">LeetCode Editor</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+                        <div className="text-xs text-green-400 mb-2">Problem Description</div>
+                        <div className="space-y-2">
+                          <div className="h-2 bg-slate-700 rounded w-3/4"></div>
+                          <div className="h-2 bg-slate-700 rounded w-full"></div>
+                          <div className="h-2 bg-slate-700 rounded w-5/6"></div>
+                        </div>
+                      </div>
+                      <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+                        <div className="text-xs text-blue-400 mb-2">Code Editor</div>
+                        <div className="space-y-2 font-mono text-xs">
+                          <div className="h-2 bg-blue-500/20 rounded w-2/3"></div>
+                          <div className="h-2 bg-purple-500/20 rounded w-full"></div>
+                          <div className="h-2 bg-green-500/20 rounded w-4/5"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <div className="text-center">
+                  <button
+                    onClick={() => safeNavigate('/leetcode')}
+                    className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-green-500/25 hover:shadow-2xl hover:shadow-green-500/40 transform hover:scale-105 relative overflow-hidden group"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                    <Trophy className="w-6 h-6 relative z-10" />
+                    <span className="relative z-10">Start Solving Problems</span>
+                    <ArrowRight className="w-6 h-6 relative z-10 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-slate-700/50">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-green-400 mb-1">150+</div>
+                    <div className="text-sm text-slate-400">Problems</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-400 mb-1">15+</div>
+                    <div className="text-sm text-slate-400">Categories</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-purple-400 mb-1">3</div>
+                    <div className="text-sm text-slate-400">Difficulty Levels</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1246,7 +1284,7 @@ const WelcomeScreenModern = () => {
                         <div className="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
                           <Code className="w-5 h-5 text-orange-400" />
                         </div>
-                        <span className="text-slate-300 font-medium">DSA & Problem Solving</span>
+                        <span className="text-slate-300 font-medium">Code Editors & Tools</span>
                       </div>
                       <div className="flex items-center space-x-4">
                         <div className="w-10 h-10 bg-pink-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -1327,11 +1365,11 @@ const WelcomeScreenModern = () => {
               </button>
               
               <button
-                onClick={() => safeNavigate('/dsa')}
+                onClick={() => safeNavigate('/learn')}
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-green-500/25 hover:shadow-2xl hover:shadow-green-500/40 transform hover:scale-105 flex items-center justify-center space-x-3"
               >
                 <Trophy className="w-6 h-6" />
-                <span>Practice DSA</span>
+                <span>Start Learning</span>
               </button>
               
               <button

@@ -10,6 +10,7 @@
   html {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    scroll-behavior: smooth;
   }
   
   body {

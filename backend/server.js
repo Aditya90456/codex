@@ -60,6 +60,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Import AI Generator routes
 const aiGeneratorRoutes = require('./routes/ai-generator');
+const codeExplainerRoutes = require('./routes/code-explainer');
 
 // In-memory storage (for simplicity)
 let users = [];
@@ -147,6 +148,7 @@ app.get('/health', (req, res) => {
 
 // Mount AI Generator routes
 app.use('/api/ai', aiGeneratorRoutes);
+app.use('/api/ai', codeExplainerRoutes);
 
 // API Routes
 

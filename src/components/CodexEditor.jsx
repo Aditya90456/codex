@@ -9,8 +9,6 @@ import WebEditor from './WebEditor';
 import AdvancedWebEditor from './AdvancedWebEditor';
 import AndroidStudioFixed from './AndroidStudioFixed';
 import InteractiveRoadmap from './Roadmap/InteractiveRoadmap';
-import DSAComicViewer from './DSA/DSAComicViewer';
-import ArticleViewer from './Articles/ArticleViewer';
 import CodexEditorRedesigned from './CodexEditorRedesigned';
 import ScrollToTop from './ScrollToTop';
 import { useUniversalAuth } from '../hooks/useUniversalAuth';
@@ -47,8 +45,6 @@ const CodexEditor = () => {
   const [showIDEDemo, setShowIDEDemo] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
-  const [showDSAComic, setShowDSAComic] = useState(false);
-  const [showArticles, setShowArticles] = useState(false);
   const [showCodexRedesigned, setShowCodexRedesigned] = useState(false);
   const [authMode, setAuthMode] = useState('login');
 
@@ -164,8 +160,6 @@ console.log("💡 Try modifying the code and run it again!");
       setShowTestDemo(false);
       setShowIDEDemo(false);
       setShowRoadmap(false);
-      setShowDSAComic(false);
-      setShowArticles(false);
       setShowCodexRedesigned(false);
       console.log('🔄 Reset - User logged out, all states cleared');
     }
@@ -497,15 +491,6 @@ int main() {
     return (
       <ArticleViewer onBack={() => {
         setShowArticles(false);
-        setShowWelcome(true);
-      }} />
-    );
-  }
-
-  if (showDSAComic) {
-    return (
-      <DSAComicViewer onBack={() => {
-        setShowDSAComic(false);
         setShowWelcome(true);
       }} />
     );
