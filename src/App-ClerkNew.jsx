@@ -11,6 +11,7 @@ import WelcomeScreenModern from './components/WelcomeScreenModern';
 import CodexEditorModern from './components/CodexEditorModern';
 import DSAWithAIPage from './pages/DSAWithAIPage';
 import AIUniversalCreatorModern from './components/AI/AIUniversalCreatorModern';
+import ReactCodeAI from './components/AI/ReactCodeAI';
 import AdvancedWebEditor from './components/AdvancedWebEditor';
 import Dashboard from './components/Dashboard';
 import ClerkSetupGuide from './components/Auth/ClerkSetupGuide';
@@ -80,6 +81,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <AIUniversalCreatorModern />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/react-ai" 
+            element={
+              <ProtectedRoute>
+                <ReactCodeAI />
               </ProtectedRoute>
             } 
           />
