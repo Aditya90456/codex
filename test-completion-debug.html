@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Code Completion Debug</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1e1e1e;
+      color: #fff;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px 0;
+      background: #007acc;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #005a9e;
+    }
+    #output {
+      margin-top: 20px;
+      padding: 15px;
+      background: #2d2d2d;
+      border-radius: 5px;
+      white-space: pre-wrap;
+    }
+    .success { color: #4ec9b0; }
+    .error { color: #f48771; }
+    .info { color: #9cdcfe; }
+  </style>
+</head>
+<body>
+  <h1>Code Completion API Debug</h1>
+  
+  <button onclick="testAPI()">Test API Connection</button>
+  <button onclick="testCompletion()">Test Code Completion</button>
+  
+  <div id="output"></div>
+
+  <script>
+    const API_URL = 'http://localhost:3001';
+    const output = document.getElementById('output');
+
+    function log(message, type = 'info') {
+      const line = document.createElement('div');
+      line.className = type;
+      line.textContent = message;
+      output.appendChild(line);
+    }
+
+    function clear() {
+      output.innerHTML = '';
+    }
+
+    async function testAPI() {
+      clear();
+      log('Testing API connection...', 'info');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/code-completion/health`);
+        const data = await response.json();
+        
+        if (data.status === 'healthy') {
+          log('✅ API is healthy!', 'success');
+          log(JSON.stringify(data, null, 2), 'info');
+        } else {
+          log('❌ API returned unexpected response', 'error');
+          log(JSON.stringify(data, null, 2), 'error');
+        }
+      } catch (error) {
+        log('❌ Failed to connect to API', 'error');
+        log(`Error: ${error.message}`, 'error');
+        log('\n💡 Make sure backend is running:', 'info');
+        log('   cd backend && npm start', 'info');
+      }
+    }
+
+    async function testCompletion() {
+      clear();
+      log('Testing code completion...', 'info');
+      
+      try {
+        const testCode = 'function twoSum(nums, target) {\n  const map = new ';
+        
+        log(`\nSending request to: ${API_URL}/api/code-completion/complete`, 'info');
+        log(`Code: ${testCode}`, 'info');
+        log(`Cursor position: 50`, 'info');
+        
+        const response = await fetch(`${API_URL}/api/code-completion/complete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            code: testCode,
+            cursorPosition: 50,
+            language: 'javascript',
+            context: 'Solving Two Sum problem',
+            maxSuggestions: 3
+          })
+        });
+
+        log(`\nResponse status: ${response.status}`, 'info');
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          log(`\n✅ Success! Received ${data.suggestions.length} suggestions:`, 'success');
+          data.suggestions.forEach((suggestion, idx) => {
+            log(`\n${idx + 1}. [${suggestion.type}] Confidence: ${suggestion.confidence}%`, 'success');
+            log(`   ${suggestion.text.substring(0, 100)}...`, 'info');
+          });
+        } else {
+          log('\n❌ API returned error:', 'error');
+          log(JSON.stringify(data, null, 2), 'error');
+        }
+      } catch (error) {
+        log('\n❌ Failed to get completions', 'error');
+        log(`Error: ${error.message}`, 'error');
+      }
+    }
+
+    // Auto-test on load
+    window.onload = () => {
+      setTimeout(testAPI, 500);
+    };
+  </script>
+</body>
+</html>

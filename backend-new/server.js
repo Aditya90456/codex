@@ -19,6 +19,7 @@ const clerkRouter = require('./routes/clerk');
 const aiGeneratorRouter = require('./routes/ai-generator');
 const dsaAIRouter = require('./routes/dsa-ai');
 const codeExplainerRouter = require('./routes/code-explainer');
+const codeCompletionRouter = require('./routes/code-completion');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -156,10 +157,12 @@ app.use('/api/projects', projectsRouter);
 app.use('/api/ai', aiGeneratorRouter);
 app.use('/api/ai', dsaAIRouter);
 app.use('/api/ai', codeExplainerRouter);
+app.use('/api/code-completion', codeCompletionRouter);
 
 console.log('✅ AI Generator route registered');
 console.log('✅ DSA AI route registered');
 console.log('✅ Code Explainer route registered');
+console.log('✅ Code Completion route registered');
 
 // API documentation endpoint
 app.get('/api', (req, res) => { 

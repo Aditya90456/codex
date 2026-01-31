@@ -25,10 +25,17 @@ import {
   Shield,
   Home,
   Brain,
-  Lightbulb
+  Lightbulb,
+  Youtube,
+  Zap
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import AICodeExplainer from './AI/AICodeExplainer';
+import { useCodeCompletion } from '../hooks/useCodeCompletion';
+import CodeCompletionPanel from './CodeCompletionPanel';
+import VideoPlayer from './VideoPlayer';
+import { useDryRunAnimation } from '../hooks/useDryRunAnimation';
+import DryRunAnimationPanel from './DryRunAnimationPanel';
 
 const LeetCodeEditor = () => {
   const { user, isSignedIn } = useUser();
@@ -54,6 +61,27 @@ const LeetCodeEditor = () => {
   const [outputComparison, setOutputComparison] = useState(null);
   const editorRef = useRef(null);
   const userDropdownRef = useRef(null);
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
+
+  // AI Code Completion
+  const {
+    suggestions,
+    isLoading: isLoadingCompletions,
+    requestCompletions,
+    clearSuggestions
+  } = useCodeCompletion(language, true);
+  
+  const [completionPanelPosition, setCompletionPanelPosition] = useState({ top: 0, left: 0 });
+  const [showCompletions, setShowCompletions] = useState(false);
+
+  // Auto Dry Run Animation
+  const {
+    dryRunData,
+    isAnalyzing,
+    showAnimation,
+    closeDryRun,
+    triggerDryRun
+  } = useDryRunAnimation(code, language, selectedProblem);
 
   const languages = [
     { value: 'javascript', label: 'JavaScript' },
@@ -86,12 +114,109 @@ const LeetCodeEditor = () => {
     };
   }, []);
 
-  const handleEditorDidMount = (editor) => {
+  const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
+    
+    // Add keyboard shortcut for AI completions
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, () => {
+      const position = editor.getPosition();
+      const model = editor.getModel();
+      
+      if (position && model) {
+        const offset = model.getOffsetAt(position);
+        const value = model.getValue();
+        
+        // Force request completions
+        requestCompletions(
+          value,
+          offset,
+          `Solving: ${selectedProblem.title} - ${selectedProblem.difficulty}`,
+          0
+        );
+        setShowCompletions(true);
+      }
+    });
+    
+    // Escape to close completions
+    editor.addCommand(monaco.KeyCode.Escape, () => {
+      clearSuggestions();
+      setShowCompletions(false);
+    });
   };
 
   const handleEditorChange = (value) => {
     setCode(value || '');
+    
+    // Get cursor position from Monaco editor for AI completions
+    if (editorRef.current) {
+      const position = editorRef.current.getPosition();
+      const model = editorRef.current.getModel();
+      
+      if (position && model) {
+        const offset = model.getOffsetAt(position);
+        
+        console.log('[AI Completion] Requesting completions:', {
+          codeLength: (value || '').length,
+          offset,
+          language,
+          problem: selectedProblem.title
+        });
+        
+        // Request AI completions with debouncing
+        requestCompletions(
+          value || '',
+          offset,
+          `Solving: ${selectedProblem.title} - ${selectedProblem.difficulty} - ${selectedProblem.category}`,
+          600 // 600ms debounce
+        );
+        
+        // Calculate panel position
+        const coords = editorRef.current.getScrolledVisiblePosition(position);
+        if (coords) {
+          setCompletionPanelPosition({
+            top: coords.top + coords.height + 100, // Adjust for editor offset
+            left: coords.left + 50
+          });
+        }
+        
+        setShowCompletions(true);
+      }
+    }
+  };
+
+  const handleSuggestionSelect = (suggestion) => {
+    if (editorRef.current) {
+      const position = editorRef.current.getPosition();
+      const model = editorRef.current.getModel();
+      
+      if (position && model) {
+        // Insert suggestion at cursor
+        const range = {
+          startLineNumber: position.lineNumber,
+          startColumn: position.column,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column
+        };
+        
+        editorRef.current.executeEdits('', [{
+          range: range,
+          text: suggestion.text
+        }]);
+        
+        // Move cursor to end of inserted text
+        const lines = suggestion.text.split('\n');
+        const lastLine = lines[lines.length - 1];
+        const newPosition = {
+          lineNumber: position.lineNumber + lines.length - 1,
+          column: lines.length > 1 ? lastLine.length + 1 : position.column + suggestion.text.length
+        };
+        editorRef.current.setPosition(newPosition);
+        editorRef.current.focus();
+      }
+    }
+    
+    clearSuggestions();
+    setShowCompletions(false);
   };
 
   // Helper function to get starter code for current language
@@ -707,6 +832,16 @@ const LeetCodeEditor = () => {
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-xl font-bold">{selectedProblem.id}. {selectedProblem.title}</h1>
               <div className="flex items-center gap-2">
+                {selectedProblem.videoUrl && (
+                  <button
+                    onClick={() => setShowVideoPlayer(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
+                    title="Watch Striver's Solution"
+                  >
+                    <Youtube className="w-4 h-4" />
+                    <span>Watch Solution</span>
+                  </button>
+                )}
                 <button
                   onClick={() => setLiked(!liked)}
                   className={`p-2 rounded-lg transition-colors ${liked ? 'text-green-500 bg-green-500/10' : 'hover:bg-slate-700'}`}
@@ -847,7 +982,7 @@ const LeetCodeEditor = () => {
           )}
 
           {/* Monaco Editor */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden" style={{ position: 'relative' }}>
             <Editor
               height="100%"
               language={language}
@@ -873,6 +1008,15 @@ const LeetCodeEditor = () => {
                 contextmenu: true,
                 selectOnLineNumbers: true
               }}
+            />
+            
+            {/* AI Code Completion Panel */}
+            <CodeCompletionPanel
+              suggestions={suggestions}
+              isLoading={isLoadingCompletions}
+              onSelect={handleSuggestionSelect}
+              position={completionPanelPosition}
+              visible={showCompletions && suggestions.length > 0}
             />
           </div>
 
@@ -1163,6 +1307,15 @@ const LeetCodeEditor = () => {
 
             <div className="flex items-center gap-3">
               <button
+                onClick={triggerDryRun}
+                disabled={isAnalyzing}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600 disabled:opacity-50 rounded-lg transition-colors text-sm font-medium"
+                title="Visualize code execution step-by-step"
+              >
+                <Zap className="w-4 h-4" />
+                {isAnalyzing ? 'Analyzing...' : 'Dry Run'}
+              </button>
+              <button
                 onClick={runCode}
                 disabled={isRunning}
                 className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700 disabled:opacity-50 rounded-lg transition-colors text-sm font-medium"
@@ -1182,6 +1335,24 @@ const LeetCodeEditor = () => {
           </div>
         </div>
       </div>
+
+      {/* Video Player Modal */}
+      {showVideoPlayer && selectedProblem.videoUrl && (
+        <VideoPlayer
+          videoUrl={selectedProblem.videoUrl}
+          title={selectedProblem.title}
+          onClose={() => setShowVideoPlayer(false)}
+        />
+      )}
+
+      {/* Dry Run Animation Panel */}
+      {showAnimation && (
+        <DryRunAnimationPanel
+          dryRunData={dryRunData}
+          isAnalyzing={isAnalyzing}
+          onClose={closeDryRun}
+        />
+      )}
     </div>
   );
 };

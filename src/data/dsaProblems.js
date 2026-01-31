@@ -7,6 +7,7 @@ export const dsaProblems = [
     difficulty: "Easy",
     category: "Arrays",
     description: "Given an array of integers nums and an integer target, return indices of the two numbers that add up to target.",
+    videoUrl: "https://www.youtube.com/watch?v=UXDSeD9mN-k",
     examples: [
       { input: "[2,7,11,15], target = 9", output: "[0,1]" },
       { input: "[3,2,4], target = 6", output: "[1,2]" }
@@ -48,6 +49,7 @@ public:
     difficulty: "Easy",
     category: "Arrays",
     description: "Find the maximum profit from buying and selling a stock once.",
+    videoUrl: "https://www.youtube.com/watch?v=eMSfBgbiEjk",
     examples: [
       { input: "[7,1,5,3,6,4]", output: "5" }
     ],
@@ -154,6 +156,7 @@ public:
     difficulty: "Medium",
     category: "Arrays",
     description: "Find the contiguous subarray with the largest sum.",
+    videoUrl: "https://www.youtube.com/watch?v=w_KEoQvnC-Y",
     examples: [{ input: "[-2,1,-3,4,-1,2,1,-5,4]", output: "6" }],
     starterCode: {
       javascript: `function maxSubArray(nums) {
@@ -290,6 +293,7 @@ public:
     difficulty: "Medium",
     category: "Arrays",
     description: "Find all unique triplets that sum to zero.",
+    videoUrl: "https://www.youtube.com/watch?v=DhFh8Kw7ymk",
     examples: [{ input: "[-1,0,1,2,-1,-4]", output: "[[-1,-1,2],[-1,0,1]]" }],
     starterCode: {
       javascript: `function threeSum(nums) {
@@ -324,6 +328,7 @@ public:
     difficulty: "Medium",
     category: "Arrays",
     description: "Find two lines that together with x-axis form a container with most water.",
+    videoUrl: "https://www.youtube.com/watch?v=8rwcaSz8jV8",
     examples: [{ input: "[1,8,6,2,5,4,8,3,7]", output: "49" }],
     starterCode: {
       javascript: `function maxArea(height) {
@@ -427,6 +432,7 @@ public:
     difficulty: "Medium",
     category: "Strings",
     description: "Find the length of the longest substring without repeating characters.",
+    videoUrl: "https://www.youtube.com/watch?v=-zSxTJkcdAo",
     examples: [{ input: "'abcabcbb'", output: "3" }],
     starterCode: {
       javascript: `function lengthOfLongestSubstring(s) {
@@ -461,6 +467,7 @@ public:
     difficulty: "Medium",
     category: "Strings",
     description: "Find the longest palindromic substring in a string.",
+    videoUrl: "https://www.youtube.com/watch?v=XYQecbcd6_c",
     examples: [{ input: "'babad'", output: "'bab' or 'aba'" }],
     starterCode: {
       javascript: `function longestPalindrome(s) {
@@ -495,6 +502,7 @@ public:
     difficulty: "Medium",
     category: "Strings",
     description: "Group strings that are anagrams of each other.",
+    videoUrl: "https://www.youtube.com/watch?v=vzdNOK2oB2E",
     examples: [{ input: "['eat','tea','tan','ate','nat','bat']", output: "[['bat'],['nat','tan'],['ate','eat','tea']]" }],
     starterCode: {
       javascript: `function groupAnagrams(strs) {
@@ -530,6 +538,7 @@ public:
     difficulty: "Easy",
     category: "Linked Lists",
     description: "Reverse a singly linked list.",
+    videoUrl: "https://www.youtube.com/watch?v=iRtLEoL-r-g",
     examples: [{ input: "1->2->3->4->5", output: "5->4->3->2->1" }],
     starterCode: {
       javascript: `function reverseList(head) {
@@ -598,6 +607,7 @@ public:
     difficulty: "Easy",
     category: "Linked Lists",
     description: "Determine if a linked list has a cycle.",
+    videoUrl: "https://www.youtube.com/watch?v=wiOo4DC5GGA",
     examples: [{ input: "3->2->0->-4 (cycle at node 1)", output: "true" }],
     starterCode: {
       javascript: `function hasCycle(head) {
@@ -632,6 +642,7 @@ public:
     difficulty: "Medium",
     category: "Linked Lists",
     description: "Remove the nth node from the end of a linked list.",
+    videoUrl: "https://www.youtube.com/watch?v=Lhu3MsXZy-Q",
     examples: [{ input: "1->2->3->4->5, n = 2", output: "1->2->3->5" }],
     starterCode: {
       javascript: `function removeNthFromEnd(head, n) {
@@ -769,6 +780,7 @@ public:
     difficulty: "Easy",
     category: "Trees",
     description: "Invert a binary tree (mirror image).",
+    videoUrl: "https://www.youtube.com/watch?v=OnSn2XEQ4MY",
     examples: [{ input: "[4,2,7,1,3,6,9]", output: "[4,7,2,9,6,3,1]" }],
     starterCode: {
       javascript: `function invertTree(root) {
@@ -1026,6 +1038,7 @@ public:
     difficulty: "Easy",
     category: "Dynamic Programming",
     description: "Count ways to climb n stairs taking 1 or 2 steps at a time.",
+    videoUrl: "https://www.youtube.com/watch?v=mLfjzJsN8us",
     examples: [{ input: "n = 3", output: "3" }],
     starterCode: {
       javascript: `function climbStairs(n) {
@@ -1060,6 +1073,7 @@ public:
     difficulty: "Medium",
     category: "Dynamic Programming",
     description: "Rob houses to maximize money without robbing adjacent houses.",
+    videoUrl: "https://www.youtube.com/watch?v=GrMBfJNk_NY",
     examples: [{ input: "[1,2,3,1]", output: "4" }],
     starterCode: {
       javascript: `function rob(nums) {
@@ -1094,6 +1108,7 @@ public:
     difficulty: "Medium",
     category: "Dynamic Programming",
     description: "Find minimum coins needed to make up an amount.",
+    videoUrl: "https://www.youtube.com/watch?v=H9bfqozjoqs",
     examples: [{ input: "coins = [1,2,5], amount = 11", output: "3" }],
     starterCode: {
       javascript: `function coinChange(coins, amount) {
@@ -1147,6 +1162,7 @@ public:
     difficulty: "Medium",
     category: "Graphs",
     description: "Count number of islands in a 2D grid.",
+    videoUrl: "https://www.youtube.com/watch?v=muncqlKJrH0",
     examples: [{ input: "grid with 1s and 0s", output: "1" }],
     starterCode: {
       javascript: `function numIslands(grid) {
@@ -1215,6 +1231,7 @@ public:
     difficulty: "Medium",
     category: "Graphs",
     description: "Determine if you can finish all courses given prerequisites.",
+    videoUrl: "https://www.youtube.com/watch?v=WAOfKpxYHR8",
     examples: [{ input: "numCourses = 2, prerequisites = [[1,0]]", output: "true" }],
     starterCode: {
       javascript: `function canFinish(numCourses, prerequisites) {
@@ -1372,6 +1389,7 @@ public:
     difficulty: "Medium",
     category: "Backtracking",
     description: "Return all possible subsets of a set.",
+    videoUrl: "https://www.youtube.com/watch?v=b7AYbpM5YrE",
     examples: [{ input: "[1,2,3]", output: "[[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]" }],
     starterCode: {
       javascript: `function subsets(nums) {
@@ -1406,6 +1424,7 @@ public:
     difficulty: "Medium",
     category: "Backtracking",
     description: "Return all possible permutations.",
+    videoUrl: "https://www.youtube.com/watch?v=YK78FU5Ffjw",
     examples: [{ input: "[1,2,3]", output: "[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]" }],
     starterCode: {
       javascript: `function permute(nums) {
@@ -1440,6 +1459,7 @@ public:
     difficulty: "Medium",
     category: "Backtracking",
     description: "Find all combinations that sum to target.",
+    videoUrl: "https://www.youtube.com/watch?v=OyZFFqQtu98",
     examples: [{ input: "candidates = [2,3,6,7], target = 7", output: "[[2,2,3],[7]]" }],
     starterCode: {
       javascript: `function combinationSum(candidates, target) {
@@ -1593,6 +1613,7 @@ public:
     difficulty: "Hard",
     category: "Strings",
     description: "Find minimum window substring containing all characters of t.",
+    videoUrl: "https://www.youtube.com/watch?v=jSto0O4AJbM",
     examples: [{ input: "s = 'ADOBECODEBANC', t = 'ABC'", output: "'BANC'" }],
     starterCode: `function minWindow(s, t) {\n  \n}`
   },
@@ -1621,6 +1642,7 @@ public:
     difficulty: "Medium",
     category: "Linked Lists",
     description: "Add two numbers represented by linked lists.",
+    videoUrl: "https://www.youtube.com/watch?v=LBVsXSMOIk4",
     examples: [{ input: "(2->4->3) + (5->6->4)", output: "7->0->8" }],
     starterCode: `function addTwoNumbers(l1, l2) {\n  \n}`
   },
@@ -1693,6 +1715,7 @@ public:
     difficulty: "Hard",
     category: "Linked Lists",
     description: "Merge k sorted linked lists.",
+    videoUrl: "https://www.youtube.com/watch?v=q5a5OiGbT6Q",
     examples: [{ input: "[[1,4,5],[1,3,4],[2,6]]", output: "1->1->2->3->4->4->5->6" }],
     starterCode: `function mergeKLists(lists) {\n  \n}`
   },
@@ -1766,6 +1789,7 @@ public:
     difficulty: "Hard",
     category: "Trees",
     description: "Find maximum path sum in a binary tree.",
+    videoUrl: "https://www.youtube.com/watch?v=WszrfSwMz58",
     examples: [{ input: "[1,2,3]", output: "6" }],
     starterCode: `function maxPathSum(root) {\n  \n}`
   },
@@ -1812,6 +1836,7 @@ public:
     difficulty: "Medium",
     category: "Dynamic Programming",
     description: "Determine if you can reach the last index.",
+    videoUrl: "https://www.youtube.com/watch?v=Yan0cv2cLy8",
     examples: [{ input: "[2,3,1,1,4]", output: "true" }],
     starterCode: `function canJump(nums) {\n  \n}`
   },
@@ -1848,6 +1873,7 @@ public:
     difficulty: "Hard",
     category: "Dynamic Programming",
     description: "Find minimum operations to convert word1 to word2.",
+    videoUrl: "https://www.youtube.com/watch?v=fJaKO8FbDdo",
     examples: [{ input: "word1 = 'horse', word2 = 'ros'", output: "3" }],
     starterCode: `function minDistance(word1, word2) {\n  \n}`
   },
@@ -1857,6 +1883,7 @@ public:
     difficulty: "Medium",
     category: "Dynamic Programming",
     description: "Find length of longest common subsequence.",
+    videoUrl: "https://www.youtube.com/watch?v=NPZn9jBrX8U",
     examples: [{ input: "text1 = 'abcde', text2 = 'ace'", output: "3" }],
     starterCode: `function longestCommonSubsequence(text1, text2) {\n  \n}`
   },
@@ -1912,6 +1939,7 @@ public:
     difficulty: "Hard",
     category: "Graphs",
     description: "Find shortest transformation sequence from beginWord to endWord.",
+    videoUrl: "https://www.youtube.com/watch?v=tRPda0rcf8E",
     examples: [{ input: "beginWord = 'hit', endWord = 'cog', wordList = ['hot','dot','dog','lot','log','cog']", output: "5" }],
     starterCode: `function ladderLength(beginWord, endWord, wordList) {\n  \n}`
   },
@@ -1930,6 +1958,7 @@ public:
     difficulty: "Medium",
     category: "Graphs",
     description: "Find minimum time for all oranges to rot.",
+    videoUrl: "https://www.youtube.com/watch?v=yf3oUhkvqA0",
     examples: [{ input: "[[2,1,1],[1,1,0],[0,1,1]]", output: "4" }],
     starterCode: `function orangesRotting(grid) {\n  \n}`
   },
@@ -1985,6 +2014,7 @@ public:
     difficulty: "Medium",
     category: "Backtracking",
     description: "Check if word exists in grid.",
+    videoUrl: "https://www.youtube.com/watch?v=pfiQ_PS1g8E",
     examples: [{ input: "board = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']], word = 'ABCCED'", output: "true" }],
     starterCode: `function exist(board, word) {\n  \n}`
   },
@@ -1994,6 +2024,7 @@ public:
     difficulty: "Hard",
     category: "Backtracking",
     description: "Place n queens on n×n chessboard.",
+    videoUrl: "https://www.youtube.com/watch?v=i05Ju7AftcM",
     examples: [{ input: "n = 4", output: "[['.Q..','...Q','Q...','..Q.'],['..Q.','Q...','...Q','.Q..']]" }],
     starterCode: `function solveNQueens(n) {\n  \n}`
   },
@@ -2003,6 +2034,7 @@ public:
     difficulty: "Medium",
     category: "Backtracking",
     description: "Partition string into palindrome substrings.",
+    videoUrl: "https://www.youtube.com/watch?v=WBgsABoClE0",
     examples: [{ input: "'aab'", output: "[['a','a','b'],['aa','b']]" }],
     starterCode: `function partition(s) {\n  \n}`
   },

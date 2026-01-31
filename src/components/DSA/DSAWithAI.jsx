@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
-import { Sparkles, Code, Brain, Lightbulb, CheckCircle, XCircle, Play, BookOpen, ChevronUp, Zap, Filter, Search } from 'lucide-react';
+import { Sparkles, Code, Brain, Lightbulb, CheckCircle, XCircle, Play, BookOpen, ChevronUp, Zap, Filter, Search, Youtube } from 'lucide-react';
 import { dsaProblems, categories, difficulties } from '../../data/dsaProblems';
+import VideoPlayer from '../VideoPlayer';
 
 const DSAWithAI = () => {
   const [selectedProblem, setSelectedProblem] = useState(null);
@@ -17,6 +18,7 @@ const DSAWithAI = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const editorRef = useRef(null);
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
 
   // Scroll to top functionality
   useEffect(() => {
@@ -248,7 +250,19 @@ const DSAWithAI = () => {
               <>
                 {/* Problem Description */}
                 <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
-                  <h2 className="text-3xl font-bold mb-4">{selectedProblem.title}</h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-3xl font-bold">{selectedProblem.title}</h2>
+                    {selectedProblem.videoUrl && (
+                      <button
+                        onClick={() => setShowVideoPlayer(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
+                        title="Watch Striver's Solution"
+                      >
+                        <Youtube className="w-5 h-5" />
+                        <span>Watch Solution</span>
+                      </button>
+                    )}
+                  </div>
                   <p className="text-gray-300 mb-4">{selectedProblem.description}</p>
                   
                   <div className="space-y-3">
@@ -470,6 +484,15 @@ const DSAWithAI = () => {
         >
           <ChevronUp className="w-6 h-6 text-white group-hover:animate-bounce" />
         </button>
+      )}
+
+      {/* Video Player Modal */}
+      {showVideoPlayer && selectedProblem?.videoUrl && (
+        <VideoPlayer
+          videoUrl={selectedProblem.videoUrl}
+          title={selectedProblem.title}
+          onClose={() => setShowVideoPlayer(false)}
+        />
       )}
     </div>
   );
