@@ -38,6 +38,10 @@ export default defineConfig({
     fs: {
       // Allow serving files from one level up to the project root
       allow: ['..']
+    },
+    headers: {
+      // Disable CSP for local development
+      'Content-Security-Policy': ''
     }
   },
   // Enable faster HMR

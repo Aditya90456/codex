@@ -1,3 +1,15 @@
+index-lUdI2Ti5.js:2125 
+ Connecting to 'http://localhost:3001/api/leetcode/run' violates the following Content Security Policy directive: "connect-src 'self' https://clerk.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://api.stripe.com wss://*.clerk.com wss://*.clerk.accounts.dev https://cdn.jsdelivr.net". The action has been blocked.
+index-lUdI2Ti5.js:2125 
+ Fetch API cannot load http://localhost:3001/api/leetcode/run. Refused to connect because it violates the document's Content Security Policy.
+index-lUdI2Ti5.js:1883 [CodeCompletionPanel] Render: 
+Object
+index-lUdI2Ti5.js:1883 [CodeCompletionPanel] Render: 
+Object
+[NEW] Explain Console errors by using Copilot in Edge: click 
+ to explain an error. Learn more
+Don't show again
+﻿
 # ✅ Gemini API Model - Fixed!
 
 ## 🎉 Success!
