@@ -46,7 +46,7 @@ const fetch = globalThis.fetch || simpleFetch;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
 // Speed-optimized API configuration with working model
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 // Speed-optimized generation config
 const SPEED_OPTIMIZED_CONFIG = {

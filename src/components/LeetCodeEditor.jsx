@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUser, UserButton, useClerk } from '@clerk/clerk-react';
 import Editor from '@monaco-editor/react';
 import { 
@@ -27,7 +28,12 @@ import {
   Brain,
   Lightbulb,
   Youtube,
-  Zap
+  Zap,
+  Github,
+  GitBranch,
+  Upload,
+  Download,
+  Copy
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import AICodeExplainer from './AI/AICodeExplainer';
@@ -36,8 +42,10 @@ import CodeCompletionPanel from './CodeCompletionPanel';
 import VideoPlayer from './VideoPlayer';
 import { useDryRunAnimation } from '../hooks/useDryRunAnimation';
 import DryRunAnimationPanel from './DryRunAnimationPanel';
+import SolutionViewer from './SolutionViewer';
 
 const LeetCodeEditor = () => {
+  const navigate = useNavigate();
   const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
   const [selectedProblem, setSelectedProblem] = useState(dsaProblems[0]);
@@ -74,6 +82,14 @@ const LeetCodeEditor = () => {
   const [completionPanelPosition, setCompletionPanelPosition] = useState({ top: 0, left: 0 });
   const [showCompletions, setShowCompletions] = useState(false);
 
+  // GitHub Integration
+  const [githubConnected, setGithubConnected] = useState(false);
+  const [githubUsername, setGithubUsername] = useState('');
+  const [autoSyncGithub, setAutoSyncGithub] = useState(true);
+  const [showGithubModal, setShowGithubModal] = useState(false);
+  const [isSyncingGithub, setIsSyncingGithub] = useState(false);
+  const [githubSyncStatus, setGithubSyncStatus] = useState(null);
+
   // Auto Dry Run Animation
   const {
     dryRunData,
@@ -90,6 +106,32 @@ const LeetCodeEditor = () => {
     { value: 'cpp', label: 'C++' },
     { value: 'typescript', label: 'TypeScript' }
   ];
+
+  // Helper function to get user stats from localStorage
+  const getUserStats = () => {
+    if (!user?.id) return {
+      totalSubmissions: 0,
+      solvedProblems: 0,
+      solvedProblemsSet: [],
+      acceptedSubmissions: 0,
+      currentStreak: 0,
+      maxStreak: 0,
+      rating: 1200,
+      totalRuns: 0
+    };
+    
+    const stats = localStorage.getItem(`userStats_${user.id}`);
+    return stats ? JSON.parse(stats) : {
+      totalSubmissions: 0,
+      solvedProblems: 0,
+      solvedProblemsSet: [],
+      acceptedSubmissions: 0,
+      currentStreak: 0,
+      maxStreak: 0,
+      rating: 1200,
+      totalRuns: 0
+    };
+  };
 
   useEffect(() => {
     if (selectedProblem) {
@@ -352,6 +394,194 @@ const LeetCodeEditor = () => {
     }
   };
 
+  // GitHub Integration Functions
+  
+  // Simple download solution (no backend required)
+  const downloadSolution = () => {
+    console.log('📥 Download button clicked!');
+    console.log('Test Results:', testResults);
+    console.log('Selected Problem:', selectedProblem?.title);
+    console.log('Language:', language);
+    
+    try {
+      // Ensure we have test results
+      if (!testResults) {
+        console.error('❌ No test results available');
+        setGithubSyncStatus({
+          type: 'error',
+          message: '❌ No test results available. Submit your code first.'
+        });
+        setTimeout(() => setGithubSyncStatus(null), 3000);
+        return;
+      }
+
+      console.log('✅ Generating file content...');
+      const content = generateGithubFileContent(selectedProblem, code, testResults);
+      const fileName = `${selectedProblem.id}-${selectedProblem.title.replace(/\s+/g, '-').toLowerCase()}.${getFileExtension(language)}`;
+      
+      console.log('✅ Creating download:', fileName);
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      console.log('✅ Download triggered successfully!');
+      setGithubSyncStatus({
+        type: 'success',
+        message: '✅ Solution downloaded! Upload to your GitHub repo.'
+      });
+      
+      setTimeout(() => setGithubSyncStatus(null), 5000);
+    } catch (error) {
+      console.error('❌ Download error:', error);
+      setGithubSyncStatus({
+        type: 'error',
+        message: `❌ Download failed: ${error.message}`
+      });
+      setTimeout(() => setGithubSyncStatus(null), 5000);
+    }
+  };
+  
+  const syncToGithub = async (problemData, submittedCode, submissionResult) => {
+    if (!githubConnected || !autoSyncGithub) return;
+
+    setIsSyncingGithub(true);
+    setGithubSyncStatus({ type: 'info', message: 'Syncing to GitHub...' });
+
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      
+      // Prepare file content
+      const fileContent = generateGithubFileContent(problemData, submittedCode, submissionResult);
+      const fileName = `${problemData.id}-${problemData.title.replace(/\s+/g, '-').toLowerCase()}.${getFileExtension(language)}`;
+      const folderPath = `${problemData.difficulty}/${problemData.category}`;
+
+      const response = await fetch(`${backendUrl}/api/github/sync-solution`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user?.id,
+          username: githubUsername,
+          fileName,
+          folderPath,
+          content: fileContent,
+          problemTitle: problemData.title,
+          difficulty: problemData.difficulty,
+          category: problemData.category,
+          language
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setGithubSyncStatus({ 
+          type: 'success', 
+          message: `✅ Synced to GitHub!`,
+          url: data.fileUrl 
+        });
+      } else {
+        throw new Error(data.error || 'GitHub sync failed');
+      }
+    } catch (error) {
+      console.error('GitHub sync error:', error);
+      setGithubSyncStatus({ 
+        type: 'error', 
+        message: `❌ GitHub sync failed: ${error.message}` 
+      });
+    } finally {
+      setIsSyncingGithub(false);
+      // Clear status after 5 seconds
+      setTimeout(() => setGithubSyncStatus(null), 5000);
+    }
+  };
+
+  const generateGithubFileContent = (problem, code, result) => {
+    const timestamp = new Date().toISOString();
+    const languageComments = {
+      javascript: { start: '//', block: '/*', blockEnd: '*/' },
+      python: { start: '#', block: '"""', blockEnd: '"""' },
+      java: { start: '//', block: '/*', blockEnd: '*/' },
+      cpp: { start: '//', block: '/*', blockEnd: '*/' },
+      typescript: { start: '//', block: '/*', blockEnd: '*/' }
+    };
+
+    const comment = languageComments[language] || languageComments.javascript;
+
+    return `${comment.block}
+ * Problem: ${problem.title}
+ * Difficulty: ${problem.difficulty}
+ * Category: ${problem.category}
+ * 
+ * Description:
+ * ${problem.description}
+ * 
+ * Submission Result:
+ * - Status: ${result.accepted ? 'Accepted ✅' : 'Failed ❌'}
+ * - Test Cases Passed: ${result.passedTestCases}/${result.totalTestCases}
+ * ${result.accepted ? `- Runtime: ${result.runtime}\n * - Memory: ${result.memory}` : ''}
+ * 
+ * Submitted: ${timestamp}
+ * Language: ${language}
+ ${comment.blockEnd}
+
+${code}
+`;
+  };
+
+  const getFileExtension = (lang) => {
+    const extensions = {
+      javascript: 'js',
+      python: 'py',
+      java: 'java',
+      cpp: 'cpp',
+      typescript: 'ts'
+    };
+    return extensions[lang] || 'txt';
+  };
+
+  const connectGithub = () => {
+    // Simply enable GitHub sync - uses token owner's account
+    setGithubConnected(true);
+    setGithubUsername('token-owner'); // Placeholder, actual username from token
+    setShowGithubModal(false);
+    
+    // Save to localStorage
+    localStorage.setItem('githubConnected', 'true');
+    localStorage.setItem('autoSyncGithub', 'true');
+    
+    setGithubSyncStatus({
+      type: 'success',
+      message: '✅ GitHub connected! Solutions will sync to your account.'
+    });
+    
+    setTimeout(() => setGithubSyncStatus(null), 3000);
+  };
+
+  const handleGithubConnect = (username) => {
+    // Legacy function - now just calls connectGithub
+    connectGithub();
+  };
+
+  // Load GitHub settings from localStorage
+  useEffect(() => {
+    const savedConnected = localStorage.getItem('githubConnected') === 'true';
+    const savedAutoSync = localStorage.getItem('autoSyncGithub') !== 'false';
+
+    if (savedConnected) {
+      setGithubConnected(true);
+      setGithubUsername('token-owner');
+      setAutoSyncGithub(savedAutoSync);
+    }
+  }, []);
+
   const submitCode = async () => {
     setIsSubmitting(true);
     setConsoleTab('result');
@@ -389,35 +619,50 @@ const LeetCodeEditor = () => {
         throw new Error(data.error || 'Submission failed');
       }
 
-      // Update Clerk user metadata with submission stats
+      // Update user stats (store in localStorage for now, as Clerk publicMetadata has restrictions)
       if (isSignedIn && user) {
         try {
-          const currentStats = user.publicMetadata || {};
-          const isAccepted = data.accepted;
+          const userId = user.id;
+          const currentStats = JSON.parse(localStorage.getItem(`userStats_${userId}`)) || {
+            totalSubmissions: 0,
+            solvedProblems: 0,
+            solvedProblemsSet: [],
+            acceptedSubmissions: 0,
+            currentStreak: 0,
+            maxStreak: 0,
+            rating: 1200,
+            totalRuns: 0
+          };
           
-          await user.update({
-            publicMetadata: {
-              ...currentStats,
-              totalSubmissions: (currentStats.totalSubmissions || 0) + 1,
-              solvedProblems: isAccepted ? 
-                (currentStats.solvedProblems || 0) + (currentStats.solvedProblemsSet?.includes?.(selectedProblem.id) ? 0 : 1) :
-                (currentStats.solvedProblems || 0),
-              solvedProblemsSet: isAccepted ? 
-                [...new Set([...(currentStats.solvedProblemsSet || []), selectedProblem.id])] :
-                (currentStats.solvedProblemsSet || []),
-              acceptedSubmissions: isAccepted ? 
-                (currentStats.acceptedSubmissions || 0) + 1 :
-                (currentStats.acceptedSubmissions || 0),
-              lastSubmission: new Date().toISOString(),
-              currentStreak: isAccepted ? 
-                (currentStats.currentStreak || 0) + 1 : 0,
-              maxStreak: isAccepted ? 
-                Math.max((currentStats.maxStreak || 0), (currentStats.currentStreak || 0) + 1) :
-                (currentStats.maxStreak || 0),
-              rating: Math.min(3000, (currentStats.rating || 1200) + (isAccepted ? 25 : -10)),
-              lastActivity: new Date().toISOString()
-            }
-          });
+          const isAccepted = data.accepted;
+          const alreadySolved = currentStats.solvedProblemsSet.includes(selectedProblem.id);
+          
+          const updatedStats = {
+            ...currentStats,
+            totalSubmissions: currentStats.totalSubmissions + 1,
+            solvedProblems: isAccepted && !alreadySolved ? 
+              currentStats.solvedProblems + 1 : 
+              currentStats.solvedProblems,
+            solvedProblemsSet: isAccepted ? 
+              [...new Set([...currentStats.solvedProblemsSet, selectedProblem.id])] :
+              currentStats.solvedProblemsSet,
+            acceptedSubmissions: isAccepted ? 
+              currentStats.acceptedSubmissions + 1 :
+              currentStats.acceptedSubmissions,
+            lastSubmission: new Date().toISOString(),
+            currentStreak: isAccepted ? 
+              currentStats.currentStreak + 1 : 0,
+            maxStreak: isAccepted ? 
+              Math.max(currentStats.maxStreak, currentStats.currentStreak + 1) :
+              currentStats.maxStreak,
+            rating: Math.min(3000, currentStats.rating + (isAccepted ? 25 : -10)),
+            lastActivity: new Date().toISOString()
+          };
+          
+          // Save to localStorage
+          localStorage.setItem(`userStats_${userId}`, JSON.stringify(updatedStats));
+          
+          console.log('✅ User stats updated:', updatedStats);
         } catch (error) {
           console.log('Failed to update submission stats:', error);
         }
@@ -436,6 +681,11 @@ const LeetCodeEditor = () => {
         };
         setTestResults(results);
         setOutputComparison(null);
+        
+        // Sync to GitHub if connected and auto-sync is enabled
+        if (githubConnected && autoSyncGithub) {
+          await syncToGithub(selectedProblem, code, results);
+        }
       } else {
         // Find first failed test case
         const failedResult = data.results?.find(r => !r.passed);
@@ -519,7 +769,7 @@ const LeetCodeEditor = () => {
           </div>
           
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={() => navigate('/')}
             className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
           >
             <Home className="w-4 h-4" />
@@ -573,7 +823,8 @@ const LeetCodeEditor = () => {
                         </div>
                         <div className="flex items-center gap-1 mt-1">
                           {(() => {
-                            const rank = getUserRank(user.publicMetadata?.rating || 1200);
+                            const userStats = getUserStats();
+                            const rank = getUserRank(userStats.rating);
                             const RankIcon = rank.icon;
                             return (
                               <>
@@ -594,19 +845,19 @@ const LeetCodeEditor = () => {
                     <div className="grid grid-cols-3 gap-4">
                       <div className="text-center">
                         <div className="text-lg font-bold text-green-400">
-                          {user.publicMetadata?.solvedProblems || 0}
+                          {getUserStats().solvedProblems}
                         </div>
                         <div className="text-xs text-slate-400">Solved</div>
                       </div>
                       <div className="text-center border-l border-slate-600">
                         <div className="text-lg font-bold text-blue-400">
-                          {user.publicMetadata?.rating || 1200}
+                          {getUserStats().rating}
                         </div>
                         <div className="text-xs text-slate-400">Rating</div>
                       </div>
                       <div className="text-center border-l border-slate-600">
                         <div className="text-lg font-bold text-orange-400">
-                          {user.publicMetadata?.currentStreak || 0}
+                          {getUserStats().currentStreak}
                         </div>
                         <div className="text-xs text-slate-400">Streak</div>
                       </div>
@@ -619,25 +870,25 @@ const LeetCodeEditor = () => {
                       <div className="flex justify-between">
                         <span className="text-slate-400">Submissions:</span>
                         <span className="text-white font-medium">
-                          {user.publicMetadata?.totalSubmissions || 0}
+                          {getUserStats().totalSubmissions}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Accepted:</span>
                         <span className="text-green-400 font-medium">
-                          {user.publicMetadata?.acceptedSubmissions || 0}
+                          {getUserStats().acceptedSubmissions}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Max Streak:</span>
                         <span className="text-orange-400 font-medium">
-                          {user.publicMetadata?.maxStreak || 0}
+                          {getUserStats().maxStreak}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Total Runs:</span>
                         <span className="text-blue-400 font-medium">
-                          {user.publicMetadata?.totalRuns || 0}
+                          {getUserStats().totalRuns}
                         </span>
                       </div>
                     </div>
@@ -645,9 +896,15 @@ const LeetCodeEditor = () => {
 
                   {/* Menu Items */}
                   <div className="py-2">
-                    <button className="w-full px-4 py-2 text-left hover:bg-slate-700 transition-colors flex items-center gap-3 text-sm">
+                    <button 
+                      onClick={() => {
+                        navigate('/profile');
+                        setShowUserDropdown(false);
+                      }}
+                      className="w-full px-4 py-2 text-left hover:bg-slate-700 transition-colors flex items-center gap-3 text-sm"
+                    >
                       <User className="w-4 h-4 text-slate-400" />
-                      <span>Profile</span>
+                      <span>Profile Settings</span>
                     </button>
                     <button className="w-full px-4 py-2 text-left hover:bg-slate-700 transition-colors flex items-center gap-3 text-sm">
                       <Settings className="w-4 h-4 text-slate-400" />
@@ -816,6 +1073,20 @@ const LeetCodeEditor = () => {
                 <h3 className="text-lg font-semibold mb-3">Follow-up:</h3>
                 <p className="text-gray-300 text-sm">Can you come up with an algorithm that is less than O(n²) time complexity?</p>
               </div>
+
+              {/* Solution Viewer */}
+              <div className="mt-6">
+                <SolutionViewer 
+                  problemId={selectedProblem.id}
+                  language={language}
+                  onUseSolution={(solutionCode) => {
+                    setCode(solutionCode);
+                    if (editorRef.current) {
+                      editorRef.current.setValue(solutionCode);
+                    }
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -845,9 +1116,32 @@ const LeetCodeEditor = () => {
                 <Brain className="w-4 h-4" />
                 <span className="hidden sm:inline">Explain</span>
               </button>
+              
+              {/* GitHub Button - More Visible */}
+              {githubConnected ? (
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-green-600/20 hover:bg-green-600/30 border border-green-500/50 rounded-lg text-sm font-medium transition-colors"
+                  title="GitHub Connected - Click to manage"
+                >
+                  <Github className="w-4 h-4 text-green-400" />
+                  <span className="hidden sm:inline text-green-400">Connected</span>
+                </button>
+              ) : (
+                <button
+                  onClick={connectGithub}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors"
+                  title="Connect GitHub to auto-save solutions"
+                >
+                  <Github className="w-4 h-4" />
+                  <span className="hidden sm:inline">GitHub</span>
+                </button>
+              )}
+              
               <button
                 onClick={() => setShowSettings(!showSettings)}
                 className="p-1.5 hover:bg-slate-700 rounded transition-colors"
+                title="Settings"
               >
                 <Settings className="w-4 h-4" />
               </button>
@@ -859,7 +1153,7 @@ const LeetCodeEditor = () => {
 
           {/* Settings Panel */}
           {showSettings && (
-            <div className="bg-slate-800 border-b border-slate-700 p-4">
+            <div className="bg-slate-800 border-b border-slate-700 p-4 space-y-4">
               <div className="flex items-center gap-4">
                 <label className="text-sm text-gray-400">Font Size:</label>
                 <input
@@ -871,6 +1165,69 @@ const LeetCodeEditor = () => {
                   className="w-32"
                 />
                 <span className="text-sm">{fontSize}px</span>
+              </div>
+              
+              {/* GitHub Integration Settings */}
+              <div className="border-t border-slate-700 pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Github className="w-5 h-5 text-gray-400" />
+                    <span className="text-sm font-medium">GitHub Integration</span>
+                  </div>
+                  {githubConnected && (
+                    <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" />
+                      Connected
+                    </span>
+                  )}
+                </div>
+                
+                {githubConnected ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Account:</span>
+                      <span className="text-white font-mono">Token Owner</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Auto-sync on submit</span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={autoSyncGithub}
+                          onChange={(e) => {
+                            setAutoSyncGithub(e.target.checked);
+                            localStorage.setItem('autoSyncGithub', e.target.checked);
+                          }}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setGithubConnected(false);
+                        setGithubUsername('');
+                        localStorage.removeItem('githubUsername');
+                        localStorage.removeItem('githubConnected');
+                      }}
+                      className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      Disconnect GitHub
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={connectGithub}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors text-sm"
+                  >
+                    <Github className="w-4 h-4" />
+                    Connect GitHub
+                  </button>
+                )}
+                
+                <p className="text-xs text-gray-500 mt-2">
+                  Automatically save your accepted solutions to a GitHub repository
+                </p>
               </div>
             </div>
           )}
@@ -1138,22 +1495,33 @@ const LeetCodeEditor = () => {
                       )}
 
                       {testResults.accepted && (
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="p-3 bg-slate-800 rounded-lg">
-                            <div className="text-gray-400 text-xs mb-1">Runtime</div>
-                            <div className="text-white font-semibold">{testResults.runtime}</div>
-                            <div className="text-green-500 text-xs mt-1">
-                              Beats {testResults.runtimePercentile}%
+                        <>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="p-3 bg-slate-800 rounded-lg">
+                              <div className="text-gray-400 text-xs mb-1">Runtime</div>
+                              <div className="text-white font-semibold">{testResults.runtime}</div>
+                              <div className="text-green-500 text-xs mt-1">
+                                Beats {testResults.runtimePercentile}%
+                              </div>
+                            </div>
+                            <div className="p-3 bg-slate-800 rounded-lg">
+                              <div className="text-gray-400 text-xs mb-1">Memory</div>
+                              <div className="text-white font-semibold">{testResults.memory}</div>
+                              <div className="text-green-500 text-xs mt-1">
+                                Beats {testResults.memoryPercentile}%
+                              </div>
                             </div>
                           </div>
-                          <div className="p-3 bg-slate-800 rounded-lg">
-                            <div className="text-gray-400 text-xs mb-1">Memory</div>
-                            <div className="text-white font-semibold">{testResults.memory}</div>
-                            <div className="text-green-500 text-xs mt-1">
-                              Beats {testResults.memoryPercentile}%
-                            </div>
-                          </div>
-                        </div>
+                          
+                          {/* Download Solution Button */}
+                          <button
+                            onClick={downloadSolution}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg text-white font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
+                          >
+                            <Download className="w-4 h-4" />
+                            Download Solution for GitHub
+                          </button>
+                        </>
                       )}
 
                       <div className="p-3 bg-slate-800 rounded-lg">
@@ -1246,6 +1614,85 @@ const LeetCodeEditor = () => {
           isAnalyzing={isAnalyzing}
           onClose={closeDryRun}
         />
+      )}
+
+      {/* GitHub Connection Modal */}
+      {showGithubModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full mx-4 border border-slate-700 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <Github className="w-6 h-6 text-white" />
+              <h3 className="text-xl font-bold text-white">Connect GitHub</h3>
+            </div>
+            
+            <p className="text-gray-400 text-sm mb-4">
+              Enable automatic syncing of your accepted solutions to GitHub.
+            </p>
+            
+            <div className="space-y-4">
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                <p className="text-sm text-blue-300 mb-2">
+                  <strong>How it works:</strong>
+                </p>
+                <ul className="text-xs text-blue-300 space-y-1 list-disc list-inside">
+                  <li>Solutions sync to YOUR GitHub account (token owner)</li>
+                  <li>Creates "leetcode-solutions" repository automatically</li>
+                  <li>Organizes by difficulty and category</li>
+                  <li>Includes problem description and stats</li>
+                </ul>
+              </div>
+              
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
+                <p className="text-xs text-yellow-300">
+                  <strong>Required:</strong> GitHub Personal Access Token must be configured in backend/.env
+                </p>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={connectGithub}
+                  className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
+                >
+                  Enable Auto-Sync
+                </button>
+                <button
+                  onClick={() => setShowGithubModal(false)}
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GitHub Sync Status Toast */}
+      {githubSyncStatus && (
+        <div className="fixed bottom-8 right-8 z-50 animate-in slide-in-from-bottom">
+          <div className={`px-6 py-3 rounded-lg shadow-2xl border flex items-center gap-3 ${
+            githubSyncStatus.type === 'success' ? 'bg-green-500/20 border-green-500/50 text-green-300' :
+            githubSyncStatus.type === 'error' ? 'bg-red-500/20 border-red-500/50 text-red-300' :
+            'bg-blue-500/20 border-blue-500/50 text-blue-300'
+          }`}>
+            {githubSyncStatus.type === 'success' && <CheckCircle className="w-5 h-5" />}
+            {githubSyncStatus.type === 'error' && <XCircle className="w-5 h-5" />}
+            {githubSyncStatus.type === 'info' && <Upload className="w-5 h-5 animate-pulse" />}
+            <div>
+              <p className="font-medium">{githubSyncStatus.message}</p>
+              {githubSyncStatus.url && (
+                <a 
+                  href={githubSyncStatus.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs underline hover:no-underline"
+                >
+                  View on GitHub →
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

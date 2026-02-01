@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Brain, ArrowLeft, Copy, Download, Code, Layers, FileText, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Send, Brain, ArrowLeft, Copy, Download, Code, Layers, FileText, Zap, Home } from 'lucide-react';
 
 const ReactCodeAI = ({ onBack }) => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -296,9 +298,19 @@ Generate a complete, production-ready React application.`;
                 <p className="text-xs text-gray-400">Powered by AI • Full Stack Ready</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 px-3 py-1.5 bg-green-900/30 border border-green-700 rounded-full text-xs text-green-400">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>Online</span>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => navigate('/')}
+                className="flex items-center space-x-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg transition-colors text-gray-300 hover:text-white"
+                title="Back to Home"
+              >
+                <Home className="w-4 h-4" />
+                <span className="text-sm hidden md:inline">Home</span>
+              </button>
+              <div className="flex items-center space-x-2 px-3 py-1.5 bg-green-900/30 border border-green-700 rounded-full text-xs text-green-400">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Online</span>
+              </div>
             </div>
           </div>
         </div>

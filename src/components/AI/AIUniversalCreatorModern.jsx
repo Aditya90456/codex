@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Brain, ArrowLeft, Copy, Plus, MoreVertical, Download, Code, Moon, Sun } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Send, Brain, ArrowLeft, Copy, Plus, MoreVertical, Download, Code, Moon, Sun, Home } from 'lucide-react';
 
 const AIUniversalCreatorModern = ({ onBack }) => {
+    const navigate = useNavigate();
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
@@ -340,6 +342,13 @@ const AIUniversalCreatorModern = ({ onBack }) => {
                         </div>
                     </div>
                     <div className="flex items-center space-x-2">
+                        <button
+                            onClick={() => navigate('/')}
+                            className={`p-2 ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'} rounded-lg transition-colors`}
+                            title="Back to Home"
+                        >
+                            <Home className="w-5 h-5" />
+                        </button>
                         <button
                             onClick={() => setDarkMode(!darkMode)}
                             className={`p-2 ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'} rounded-lg transition-colors`}

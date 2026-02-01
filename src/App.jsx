@@ -6,6 +6,7 @@ import ReactCodeAI from './components/AI/ReactCodeAI';
 import AdvancedWebEditor from './components/AdvancedWebEditor';
 import DSAWithAIPage from './pages/DSAWithAIPage';
 import LeetCodePage from './pages/LeetCodePage';
+import ProfilePage from './pages/ProfilePage';
 import './App.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="/dsa-ai" element={<DSAWithAIPage />} /> 
           <Route path="/ai" element={<AIUniversalCreatorModern />} />
           <Route path="/react-ai" element={<ReactCodeAI />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </div>
     </Router>

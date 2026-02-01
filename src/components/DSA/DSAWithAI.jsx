@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
-import { Sparkles, Code, Brain, Lightbulb, CheckCircle, XCircle, Play, BookOpen, ChevronUp, Zap, Filter, Search, Youtube } from 'lucide-react';
+import { Sparkles, Code, Brain, Lightbulb, CheckCircle, XCircle, Play, BookOpen, ChevronUp, Zap, Filter, Search, Youtube, Home } from 'lucide-react';
 import { dsaProblems, categories, difficulties } from '../../data/dsaProblems';
 import VideoPlayer from '../VideoPlayer';
 
 const DSAWithAI = () => {
+  const navigate = useNavigate();
   const [selectedProblem, setSelectedProblem] = useState(null);
   const [userCode, setUserCode] = useState('');
   const [aiHint, setAiHint] = useState('');
@@ -159,6 +161,14 @@ const DSAWithAI = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
+            <button
+              onClick={() => navigate('/')}
+              className="absolute left-6 top-6 flex items-center gap-2 px-4 py-2 bg-slate-800/80 hover:bg-slate-700/80 rounded-lg transition-colors border border-purple-500/30"
+              title="Back to Home"
+            >
+              <Home className="w-4 h-4" />
+              <span className="text-sm font-medium">Home</span>
+            </button>
             <Brain className="w-12 h-12 text-purple-400" />
             <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               DSA + AI Learning

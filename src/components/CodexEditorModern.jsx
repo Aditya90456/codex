@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import {
   Play, Save, Copy, Maximize2, Minimize2, Terminal, FileText,
   RotateCcw, X, CheckCircle, AlertCircle, Info, AlertTriangle, Settings,
-  Moon, Sun, Palette, Command
+  Moon, Sun, Palette, Command, Home
 } from 'lucide-react';
 
 const CodexEditorModern = () => {
+  const navigate = useNavigate();
   const [code, setCode] = useState(`// 🚀 Welcome to Codex - Modern Code Editor
 // Write, run, and debug your code with style!
 
@@ -300,6 +302,17 @@ console.log("\\n🎯 Click 'Run Code' to see the magic!");
 
           {/* Right - Actions */}
           <div className="flex items-center space-x-2">
+            <button
+              onClick={() => navigate('/')}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+              }`}
+              title="Back to Home"
+            >
+              <Home className="w-4 h-4" />
+              <span className="hidden md:inline">Home</span>
+            </button>
+            
             <button
               onClick={executeCode}
               disabled={isExecuting}

@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUniversalAuth } from '../hooks/useUniversalAuth';
 import UserProfile from './UserProfile';
 import Settings from './Settings';
 import { 
   User,
   LogOut,
-  Code,
   Settings as SettingsIcon,
   HelpCircle,
   ChevronDown,
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 
 function Navbar({ onShowAuth, onBackToWelcome }) {
+  const navigate = useNavigate();
   const { user, logout } = useUniversalAuth();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -224,13 +225,13 @@ function Navbar({ onShowAuth, onBackToWelcome }) {
                     <div className="py-2">
                       <button 
                         onClick={() => {
-                          setShowProfile(true);
+                          navigate('/profile');
                           setShowUserDropdown(false);
                         }}
                         className="w-full flex items-center space-x-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
                       >
                         <UserCircle size={16} />
-                        <span className="text-sm">Profile</span>
+                        <span className="text-sm">Profile Settings</span>
                       </button>
                       
                       <button className="w-full flex items-center space-x-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">

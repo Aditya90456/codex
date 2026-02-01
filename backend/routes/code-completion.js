@@ -42,7 +42,7 @@ function simpleFetch(url, options = {}) {
 const fetch = globalThis.fetch || simpleFetch;
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-exp:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 // AI Code Completion endpoint
 router.post('/complete', async (req, res) => {
@@ -76,6 +76,18 @@ router.post('/complete', async (req, res) => {
 
     console.log(`🤖 Generating code completions for ${language}...`);
     const suggestions = await generateCompletionsWithGemini(code, cursorPosition, language, context, maxSuggestions);
+
+    // If Gemini returns empty, use fallback
+    if (!suggestions || suggestions.length === 0) {
+      console.warn('⚠️  Gemini returned no suggestions, using fallback');
+      const fallbackSuggestions = generateFallbackCompletions(code, language, cursorPosition);
+      return res.json({
+        success: true,
+        suggestions: fallbackSuggestions,
+        source: 'fallback',
+        timestamp: new Date().toISOString()
+      });
+    }
 
     res.json({
       success: true,
@@ -116,40 +128,19 @@ async function generateCompletionsWithGemini(code, cursorPosition, language, con
   const currentLine = lines[lines.length - 1];
   const previousLines = lines.slice(Math.max(0, lines.length - 5), lines.length - 1).join('\n');
 
-  const prompt = `You are an expert ${language} code completion AI. Provide intelligent, context-aware code suggestions.
+  const prompt = `You are a code completion AI. Generate VALID JSON ONLY.
 
 Language: ${language}
-Context: ${context || 'General coding'}
+Current line: ${currentLine}
 
-Previous code:
-\`\`\`${language}
-${previousLines}
-\`\`\`
+Generate ${maxSuggestions} code completions as a JSON array.
 
-Current line (cursor at end): ${currentLine}
+CRITICAL: Return ONLY valid JSON. No markdown, no explanations, no extra text.
 
-Next code:
-\`\`\`${language}
-${afterCursor.split('\n').slice(0, 3).join('\n')}
-\`\`\`
+Format (copy exactly):
+[{"text":"suggestion1","description":"desc1","type":"snippet"},{"text":"suggestion2","description":"desc2","type":"snippet"}]
 
-Provide ${maxSuggestions} intelligent code completion suggestions for what should come next. Consider:
-- Syntax correctness
-- Common patterns in ${language}
-- Variable/function naming conventions
-- Code context and logic flow
-- Best practices
-
-Return ONLY a JSON array of suggestions in this exact format:
-[
-  {
-    "text": "completion text here",
-    "description": "brief description",
-    "type": "keyword|function|variable|snippet"
-  }
-]
-
-Return ONLY the JSON array, no markdown, no explanations.`;
+Your response:`;
 
   try {
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -160,10 +151,10 @@ Return ONLY the JSON array, no markdown, no explanations.`;
           parts: [{ text: prompt }]
         }],
         generationConfig: {
-          temperature: 0.3,
-          topK: 20,
-          topP: 0.8,
-          maxOutputTokens: 1024,
+          temperature: 0.1,
+          topK: 10,
+          topP: 0.5,
+          maxOutputTokens: 512,
         },
         safetySettings: [
           { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
@@ -191,10 +182,37 @@ Return ONLY the JSON array, no markdown, no explanations.`;
       cleanedText = jsonMatch[0];
     }
 
-    const suggestions = JSON.parse(cleanedText);
+    let suggestions = [];
+    try {
+      suggestions = JSON.parse(cleanedText);
+    } catch (parseError) {
+      console.warn('JSON parse failed, trying to fix common issues:', parseError.message);
+      
+      // Try to fix common JSON issues
+      try {
+        // Remove trailing commas
+        cleanedText = cleanedText.replace(/,(\s*[}\]])/g, '$1');
+        // Fix unescaped quotes in strings
+        cleanedText = cleanedText.replace(/: "([^"]*)"([^,}\]]*)/g, (match, p1, p2) => {
+          if (p2 && !p2.match(/^\s*[,}\]]/)) {
+            return `: "${p1}\\"${p2}`;
+          }
+          return match;
+        });
+        suggestions = JSON.parse(cleanedText);
+      } catch (fixError) {
+        console.warn('Could not fix JSON, returning empty array');
+        return [];
+      }
+    }
+    
+    if (!Array.isArray(suggestions)) {
+      console.warn('Gemini returned non-array response, wrapping in array');
+      suggestions = [suggestions];
+    }
     
     return suggestions.slice(0, maxSuggestions).map(s => ({
-      text: s.text || '',
+      text: s.text || s.completion || '',
       description: s.description || 'Code suggestion',
       type: s.type || 'snippet',
       confidence: 0.9
@@ -202,7 +220,8 @@ Return ONLY the JSON array, no markdown, no explanations.`;
 
   } catch (error) {
     console.error('Gemini completion error:', error);
-    throw error;
+    // Return empty array instead of throwing to allow fallback
+    return [];
   }
 }
 
@@ -343,7 +362,7 @@ router.get('/health', (req, res) => {
     status: 'healthy',
     service: 'Code Completion API',
     geminiConfigured: !!GEMINI_API_KEY,
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-2.5-flash',
     timestamp: new Date().toISOString()
   });
 });

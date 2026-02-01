@@ -12,7 +12,8 @@ import {
   Users,
   Award,
   Clock,
-  Target
+  Target,
+  Home
 } from 'lucide-react';
 
 const RoadmapPage = () => {
@@ -63,8 +64,18 @@ const RoadmapPage = () => {
               <button
                 onClick={() => navigate('/')}
                 className="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
+                title="Back to Home"
               >
                 <ArrowLeft size={20} className="text-white" />
+              </button>
+              
+              <button
+                onClick={() => navigate('/')}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors text-white"
+                title="Home"
+              >
+                <Home size={18} />
+                <span className="hidden md:inline">Home</span>
               </button>
               
               <div>

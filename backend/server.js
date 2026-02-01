@@ -63,6 +63,7 @@ const aiGeneratorRoutes = require('./routes/ai-generator');
 const codeExplainerRoutes = require('./routes/code-explainer');
 const codeCompletionRoutes = require('./routes/code-completion');
 const leetcodeRoutes = require('./routes/leetcode-execute');
+const githubRoutes = require('./routes/github');
 
 // In-memory storage (for simplicity)
 let users = [];
@@ -153,8 +154,10 @@ app.use('/api/ai', aiGeneratorRoutes);
 app.use('/api/ai', codeExplainerRoutes);
 app.use('/api/code-completion', codeCompletionRoutes);
 app.use('/api/leetcode', leetcodeRoutes);
+app.use('/api/github', githubRoutes);
 
 console.log('✅ AI Generator routes mounted');
+console.log('✅ GitHub integration routes mounted');
 console.log('✅ Code Explainer routes mounted');
 console.log('✅ Code Completion routes mounted');
 console.log('✅ LeetCode Execution routes mounted');

@@ -1,13 +1,14 @@
 import { UserProfile, useUser } from '@clerk/clerk-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, User, Shield, Bell, Key, 
-  Mail, Smartphone, Globe, Award, Sparkles, ArrowUp, ChevronDown
+  Mail, Smartphone, Globe, Award, Sparkles, ArrowUp, ChevronDown, Home
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
 const ProfilePage = () => {
   const { user } = useUser();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const containerRef = useRef(null);
   const settingsRef = useRef(null);
@@ -106,13 +107,22 @@ const ProfilePage = () => {
         <div className="pt-24 pb-16 px-4">
           <div className="max-w-6xl mx-auto">
             {/* Back Button */}
-            <Link 
-              to="/dashboard" 
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors group animate-fade-in-up"
-            >
-              <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-              <span className="font-semibold">Back to Dashboard</span>
-            </Link>
+            <div className="flex items-center gap-4 mb-8">
+              <Link 
+                to="/dashboard" 
+                className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors group animate-fade-in-up"
+              >
+                <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                <span className="font-semibold">Back to Dashboard</span>
+              </Link>
+              <button
+                onClick={() => navigate('/')}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 rounded-lg transition-colors text-slate-300 hover:text-white"
+              >
+                <Home size={18} />
+                <span className="font-semibold">Home</span>
+              </button>
+            </div>
 
             {/* Header */}
             <div className="text-center mb-12 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { 
   Play, Save, Download, Upload, Copy, Maximize2, Minimize2, Terminal,
@@ -7,10 +8,11 @@ import {
   Tablet, Layers, GitBranch, Database, Cloud, Cpu, Wifi, WifiOff,
   Bug, TestTube, Rocket, Box, Wrench, Search, Filter, MoreHorizontal,
   ChevronDown, ChevronRight, FolderOpen, Image, Video, Music, Archive,
-  Split, Sidebar, PanelLeft, PanelRight, PanelTop, PanelBottom
+  Split, Sidebar, PanelLeft, PanelRight, PanelTop, PanelBottom, Home
 } from 'lucide-react';
 
 const AdvancedWebEditor = ({ onBack }) => {
+  const navigate = useNavigate();
   // Advanced project templates
   const [projectTemplates] = useState([
     {
@@ -1282,6 +1284,16 @@ User Agent: \${navigator.userAgent}\`;
           </div>
 
           <div className="flex items-center space-x-2">
+            {/* Home Button */}
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-gray-300 hover:text-white"
+              title="Back to Home"
+            >
+              <Home className="w-4 h-4" />
+              <span className="text-sm hidden lg:inline">Home</span>
+            </button>
+            
             {/* Template Selector */}
             <select
               value={selectedTemplate}

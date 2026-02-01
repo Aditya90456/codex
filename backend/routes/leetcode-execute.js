@@ -394,34 +394,28 @@ async function executeJavaScript(code, input) {
 
 // Execute Python code with detailed error handling
 async function executePython(code, input) {
-  const tempDir = path.join(os.tmpdir(), `leetcode_${Date.now()}`);
-  const tempFile = path.join(tempDir, 'solution.py');
+  // Use web-based Python execution (no local Python needed!)
+  console.log('🌐 Using web-based Python compiler (no Python installation required)');
   
   try {
-    await fs.mkdir(tempDir, { recursive: true });
+    const fetch = require('node-fetch');
     
-    // Parse input string to extract values
+    // Parse input
     let nums, target;
-    
-    // Handle different input formats
     if (input.includes('], ')) {
-      // Format: "[2,7,11,15], 9"
       const parts = input.split('], ');
       nums = JSON.parse(parts[0] + ']');
-      target = parseInt(parts[1].replace(/\D/g, '')); // Extract only digits
+      target = parseInt(parts[1].replace(/\D/g, ''));
     } else if (input.includes(', target = ')) {
-      // Format: "[2,7,11,15], target = 9"
       const parts = input.split(', target = ');
       nums = JSON.parse(parts[0]);
       target = parseInt(parts[1]);
     } else {
-      // Try to match pattern: [array], number
       const arrayTargetMatch = input.match(/\[([^\]]+)\],\s*(?:target\s*=\s*)?(\d+)/);
       if (arrayTargetMatch) {
         nums = JSON.parse(`[${arrayTargetMatch[1]}]`);
         target = parseInt(arrayTargetMatch[2]);
       } else {
-        // Fallback
         try {
           const parsed = JSON.parse(`[${input}]`);
           nums = parsed[0];
@@ -435,7 +429,6 @@ async function executePython(code, input) {
 
     const wrappedCode = `
 import json
-import sys
 
 ${code}
 
@@ -455,93 +448,96 @@ else:
 print(json.dumps(result))
 `;
 
-    await fs.writeFile(tempFile, wrappedCode);
-    
-    const { stdout, stderr } = await execPromise(`python "${tempFile}"`, {
-      timeout: 5000,
-      cwd: tempDir
+    // Use Piston API
+    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        language: 'python',
+        version: '3.10.0',
+        files: [{
+          content: wrappedCode
+        }]
+      }),
+      timeout: 10000
     });
 
-    if (stderr && !stderr.includes('Warning')) {
-      // Parse Python errors
-      const errorMessage = stderr;
+    const result = await response.json();
+    
+    // Check for runtime errors
+    if (result.run && result.run.code !== 0) {
+      const errorMsg = result.run.stderr || result.run.output;
       
-      if (errorMessage.includes('SyntaxError')) {
-        const lineMatch = errorMessage.match(/line (\d+)/);
-        throw new Error(`Compilation Error: SyntaxError on line ${lineMatch ? lineMatch[1] : 'unknown'}\n\n${errorMessage}\n\nCheck your Python syntax - missing colons, incorrect indentation, or invalid syntax.`);
-      } else if (errorMessage.includes('IndentationError')) {
-        throw new Error(`Compilation Error: IndentationError\n\n${errorMessage}\n\nPython requires consistent indentation. Use either spaces or tabs, not both.`);
-      } else if (errorMessage.includes('NameError')) {
-        const match = errorMessage.match(/name '(\w+)' is not defined/);
+      if (errorMsg.includes('SyntaxError')) {
+        const lineMatch = errorMsg.match(/line (\d+)/);
+        throw new Error(`Compilation Error: SyntaxError on line ${lineMatch ? lineMatch[1] : 'unknown'}\n\n${errorMsg}\n\nCheck your Python syntax.`);
+      } else if (errorMsg.includes('IndentationError')) {
+        throw new Error(`Compilation Error: IndentationError\n\n${errorMsg}\n\nPython requires consistent indentation.`);
+      } else if (errorMsg.includes('NameError')) {
+        const match = errorMsg.match(/name '(\w+)' is not defined/);
         const varName = match ? match[1] : 'variable';
-        throw new Error(`Runtime Error: NameError - '${varName}' is not defined\n\nMake sure all variables and functions are defined before use.`);
-      } else if (errorMessage.includes('TypeError')) {
-        throw new Error(`Runtime Error: TypeError\n\n${errorMessage}\n\nCheck your data types and function arguments.`);
-      } else if (errorMessage.includes('IndexError')) {
-        throw new Error(`Runtime Error: IndexError - list index out of range\n\n${errorMessage}\n\nYou're trying to access an index that doesn't exist in the list.`);
-      } else if (errorMessage.includes('KeyError')) {
-        throw new Error(`Runtime Error: KeyError\n\n${errorMessage}\n\nThe key doesn't exist in the dictionary.`);
-      } else if (errorMessage.includes('AttributeError')) {
-        throw new Error(`Runtime Error: AttributeError\n\n${errorMessage}\n\nThe object doesn't have the attribute or method you're trying to access.`);
-      } else if (errorMessage.includes('RecursionError') || errorMessage.includes('maximum recursion depth')) {
-        throw new Error(`Runtime Error: RecursionError - Maximum recursion depth exceeded\n\nYour recursive function is calling itself too many times. Check your base case.`);
-      } else if (errorMessage.includes('ZeroDivisionError')) {
-        throw new Error(`Runtime Error: ZeroDivisionError - Division by zero\n\nYou're trying to divide by zero.`);
+        throw new Error(`Runtime Error: NameError - '${varName}' is not defined\n\nMake sure all variables are defined before use.`);
+      } else if (errorMsg.includes('TypeError')) {
+        throw new Error(`Runtime Error: TypeError\n\n${errorMsg}\n\nCheck your data types.`);
+      } else if (errorMsg.includes('IndexError')) {
+        throw new Error(`Runtime Error: IndexError - list index out of range\n\n${errorMsg}`);
+      } else if (errorMsg.includes('KeyError')) {
+        throw new Error(`Runtime Error: KeyError\n\n${errorMsg}`);
+      } else if (errorMsg.includes('RecursionError')) {
+        throw new Error(`Runtime Error: RecursionError - Maximum recursion depth exceeded\n\nCheck your base case.`);
+      } else if (errorMsg.includes('ZeroDivisionError')) {
+        throw new Error(`Runtime Error: ZeroDivisionError - Division by zero`);
       } else {
-        throw new Error(`Runtime Error: ${errorMessage}`);
+        throw new Error(`Runtime Error: ${errorMsg}`);
       }
     }
 
-    const result = JSON.parse(stdout.trim());
-    return result;
-  } catch (error) {
-    if (error.killed) {
-      throw new Error('Time Limit Exceeded\n\nYour code took longer than 5 seconds to execute. Optimize your algorithm.');
+    // Parse output
+    if (result.run && result.run.stdout) {
+      const output = result.run.stdout.trim();
+      try {
+        return JSON.parse(output);
+      } catch (e) {
+        return output;
+      }
     }
+
+    throw new Error('No output from Python compiler');
+    
+  } catch (error) {
     if (error.message.startsWith('Compilation Error') || error.message.startsWith('Runtime Error')) {
       throw error;
     }
-    throw new Error(`Runtime Error: ${error.message}`);
-  } finally {
-    try {
-      await fs.rm(tempDir, { recursive: true, force: true });
-    } catch (e) {
-      // Ignore cleanup errors
-    }
+    throw new Error(`Python Execution Error: ${error.message}\n\n💡 Python is running in web-based mode (no local installation needed!)`);
   }
 }
 
 // Execute Java code with detailed error handling
 async function executeJava(code, input) {
-  const tempDir = path.join(os.tmpdir(), `leetcode_${Date.now()}`);
-  const className = 'Solution';
-  const javaFile = path.join(tempDir, `${className}.java`);
+  // Use web-based Java execution (no local JDK needed!)
+  console.log('🌐 Using web-based Java compiler (no JDK installation required)');
   
   try {
-    await fs.mkdir(tempDir, { recursive: true });
+    const fetch = require('node-fetch');
     
-    // Parse input string to extract values
+    // Parse input
     let nums, target;
-    
-    // Handle different input formats
     if (input.includes('], ')) {
-      // Format: "[2,7,11,15], 9"
       const parts = input.split('], ');
       nums = JSON.parse(parts[0] + ']');
-      target = parseInt(parts[1].replace(/\D/g, '')); // Extract only digits
+      target = parseInt(parts[1].replace(/\D/g, ''));
     } else if (input.includes(', target = ')) {
-      // Format: "[2,7,11,15], target = 9"
       const parts = input.split(', target = ');
       nums = JSON.parse(parts[0]);
       target = parseInt(parts[1]);
     } else {
-      // Try to match pattern: [array], number
       const arrayTargetMatch = input.match(/\[([^\]]+)\],\s*(?:target\s*=\s*)?(\d+)/);
       if (arrayTargetMatch) {
         nums = JSON.parse(`[${arrayTargetMatch[1]}]`);
         target = parseInt(arrayTargetMatch[2]);
       } else {
-        // Fallback
         try {
           const parsed = JSON.parse(`[${input}]`);
           nums = parsed[0];
@@ -575,103 +571,96 @@ class Main {
 }
 `;
 
-    await fs.writeFile(javaFile, wrappedCode);
-    
-    // Compile
-    try {
-      await execPromise(`javac "${javaFile}"`, { 
-        timeout: 5000,
-        cwd: tempDir 
-      });
-    } catch (compileError) {
-      const errorMessage = compileError.stderr || compileError.message;
-      
-      if (errorMessage.includes('error:')) {
-        // Extract specific compilation errors
-        const errors = errorMessage.split('\n').filter(line => line.includes('error:'));
-        throw new Error(`Compilation Error:\n\n${errors.join('\n')}\n\nFix the syntax errors in your Java code.`);
-      }
-      throw new Error(`Compilation Error: ${errorMessage}`);
-    }
-    
-    // Run
-    const { stdout, stderr } = await execPromise(`java -cp "${tempDir}" Main`, {
-      timeout: 5000,
-      cwd: tempDir
+    // Use Piston API
+    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        language: 'java',
+        version: '15.0.2',
+        files: [{
+          name: 'Main.java',
+          content: wrappedCode
+        }]
+      }),
+      timeout: 10000
     });
 
-    if (stderr) {
-      // Parse Java runtime errors
-      if (stderr.includes('Exception in thread')) {
-        if (stderr.includes('NullPointerException')) {
-          throw new Error(`Runtime Error: NullPointerException\n\n${stderr}\n\nYou're trying to access a null object.`);
-        } else if (stderr.includes('ArrayIndexOutOfBoundsException')) {
-          throw new Error(`Runtime Error: ArrayIndexOutOfBoundsException\n\n${stderr}\n\nYou're trying to access an array index that doesn't exist.`);
-        } else if (stderr.includes('StackOverflowError')) {
-          throw new Error(`Runtime Error: StackOverflowError\n\nYour recursive function is calling itself too many times. Check your base case.`);
-        } else if (stderr.includes('OutOfMemoryError')) {
-          throw new Error(`Runtime Error: OutOfMemoryError\n\nYour code is using too much memory. Optimize your algorithm.`);
-        } else if (stderr.includes('ArithmeticException')) {
-          throw new Error(`Runtime Error: ArithmeticException\n\n${stderr}\n\nArithmetic error (possibly division by zero).`);
-        } else if (stderr.includes('ClassCastException')) {
-          throw new Error(`Runtime Error: ClassCastException\n\n${stderr}\n\nInvalid type casting.`);
-        } else {
-          throw new Error(`Runtime Error: ${stderr}`);
-        }
+    const result = await response.json();
+    
+    // Check for compilation errors
+    if (result.compile && result.compile.code !== 0) {
+      const errorMsg = result.compile.stderr || result.compile.output;
+      if (errorMsg.includes('error:')) {
+        const errors = errorMsg.split('\n').filter(line => line.includes('error:')).slice(0, 5);
+        throw new Error(`Compilation Error:\n\n${errors.join('\n')}\n\nFix the syntax errors in your Java code.`);
       }
-      throw new Error(`Runtime Error: ${stderr}`);
+      throw new Error(`Compilation Error: ${errorMsg}`);
     }
 
-    const result = JSON.parse(stdout.trim());
-    return result;
-  } catch (error) {
-    if (error.killed) {
-      throw new Error('Time Limit Exceeded\n\nYour code took longer than 5 seconds to execute. Optimize your algorithm.');
+    // Check for runtime errors
+    if (result.run && result.run.code !== 0) {
+      const errorMsg = result.run.stderr || result.run.output;
+      
+      if (errorMsg.includes('NullPointerException')) {
+        throw new Error(`Runtime Error: NullPointerException\n\n${errorMsg}\n\nYou're trying to access a null object.`);
+      } else if (errorMsg.includes('ArrayIndexOutOfBoundsException')) {
+        throw new Error(`Runtime Error: ArrayIndexOutOfBoundsException\n\n${errorMsg}\n\nArray index out of bounds.`);
+      } else if (errorMsg.includes('StackOverflowError')) {
+        throw new Error(`Runtime Error: StackOverflowError\n\nRecursive function calling itself too many times.`);
+      } else if (errorMsg.includes('ArithmeticException')) {
+        throw new Error(`Runtime Error: ArithmeticException\n\n${errorMsg}`);
+      } else {
+        throw new Error(`Runtime Error: ${errorMsg}`);
+      }
     }
+
+    // Parse output
+    if (result.run && result.run.stdout) {
+      const output = result.run.stdout.trim();
+      try {
+        return JSON.parse(output);
+      } catch (e) {
+        return output;
+      }
+    }
+
+    throw new Error('No output from Java compiler');
+    
+  } catch (error) {
     if (error.message.startsWith('Compilation Error') || error.message.startsWith('Runtime Error')) {
       throw error;
     }
-    throw new Error(`Runtime Error: ${error.message}`);
-  } finally {
-    try {
-      await fs.rm(tempDir, { recursive: true, force: true });
-    } catch (e) {
-      // Ignore cleanup errors
-    }
+    throw new Error(`Java Execution Error: ${error.message}\n\n💡 Java is running in web-based mode (no JDK installation needed!)`);
   }
 }
 
-// Execute C++ code with detailed error handling
+// Execute C++ code with detailed error handling using web-based compiler
 async function executeCpp(code, input) {
-  const tempDir = path.join(os.tmpdir(), `leetcode_${Date.now()}`);
-  const cppFile = path.join(tempDir, 'solution.cpp');
-  const outputFile = path.join(tempDir, 'solution.exe');
+  // Use online C++ compiler API (no local g++ needed!)
+  console.log('🌐 Using web-based C++ compiler (no g++ installation required)');
   
   try {
-    await fs.mkdir(tempDir, { recursive: true });
+    const fetch = require('node-fetch');
     
-    // Parse input string to extract values
+    // Parse input
     let nums, target;
-    
-    // Handle different input formats
     if (input.includes('], ')) {
-      // Format: "[2,7,11,15], 9"
       const parts = input.split('], ');
       nums = JSON.parse(parts[0] + ']');
-      target = parseInt(parts[1].replace(/\D/g, '')); // Extract only digits
+      target = parseInt(parts[1].replace(/\D/g, ''));
     } else if (input.includes(', target = ')) {
-      // Format: "[2,7,11,15], target = 9"
       const parts = input.split(', target = ');
       nums = JSON.parse(parts[0]);
       target = parseInt(parts[1]);
     } else {
-      // Try to match pattern: [array], number
       const arrayTargetMatch = input.match(/\[([^\]]+)\],\s*(?:target\s*=\s*)?(\d+)/);
       if (arrayTargetMatch) {
         nums = JSON.parse(`[${arrayTargetMatch[1]}]`);
         target = parseInt(arrayTargetMatch[2]);
       } else {
-        // Fallback
         try {
           const parsed = JSON.parse(`[${input}]`);
           nums = parsed[0];
@@ -683,9 +672,19 @@ async function executeCpp(code, input) {
       }
     }
 
+    // Wrap code with main function and all common headers
     const wrappedCode = `
 #include <iostream>
 #include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <map>
+#include <set>
+#include <queue>
+#include <stack>
+#include <algorithm>
+#include <string>
+#include <cmath>
 using namespace std;
 
 ${code}
@@ -707,68 +706,79 @@ int main() {
 }
 `;
 
-    await fs.writeFile(cppFile, wrappedCode);
-    
-    // Compile
-    const compileCmd = process.platform === 'win32' 
-      ? `g++ "${cppFile}" -o "${outputFile}"` 
-      : `g++ "${cppFile}" -o "${outputFile}"`;
-    
-    try {
-      await execPromise(compileCmd, { 
-        timeout: 5000,
-        cwd: tempDir 
-      });
-    } catch (compileError) {
-      const errorMessage = compileError.stderr || compileError.message;
-      
-      if (errorMessage.includes('error:')) {
-        // Extract specific compilation errors
-        const errors = errorMessage.split('\n').filter(line => line.includes('error:'));
-        throw new Error(`Compilation Error:\n\n${errors.join('\n')}\n\nFix the syntax errors in your C++ code.`);
-      }
-      throw new Error(`Compilation Error: ${errorMessage}`);
-    }
-    
-    // Run
-    const runCmd = process.platform === 'win32' 
-      ? `"${outputFile}"` 
-      : outputFile;
-      
-    const { stdout, stderr } = await execPromise(runCmd, {
-      timeout: 5000,
-      cwd: tempDir
+    // Use Piston API (free, no API key needed!)
+    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        language: 'c++',
+        version: '10.2.0',
+        files: [{
+          content: wrappedCode
+        }]
+      }),
+      timeout: 10000
     });
 
-    if (stderr && !stderr.includes('warning')) {
-      // Parse C++ runtime errors
-      if (stderr.includes('segmentation fault') || stderr.includes('SIGSEGV')) {
+    const result = await response.json();
+    
+    // Check for compilation errors
+    if (result.compile && result.compile.code !== 0) {
+      const errorMsg = result.compile.stderr || result.compile.output;
+      if (errorMsg.includes('error:')) {
+        const errors = errorMsg.split('\n').filter(line => line.includes('error:')).slice(0, 5);
+        throw new Error(`Compilation Error:\n\n${errors.join('\n')}\n\nFix the syntax errors in your C++ code.`);
+      }
+      throw new Error(`Compilation Error: ${errorMsg}`);
+    }
+
+    // Check for runtime errors
+    if (result.run && result.run.code !== 0) {
+      const errorMsg = result.run.stderr || result.run.output;
+      
+      if (errorMsg.includes('Segmentation fault') || errorMsg.includes('SIGSEGV')) {
         throw new Error(`Runtime Error: Segmentation Fault\n\nYou're trying to access memory that doesn't belong to your program. Common causes:\n- Array index out of bounds\n- Dereferencing null pointer\n- Stack overflow from infinite recursion`);
-      } else if (stderr.includes('abort') || stderr.includes('SIGABRT')) {
-        throw new Error(`Runtime Error: Program Aborted\n\n${stderr}\n\nYour program was terminated abnormally.`);
-      } else if (stderr.includes('floating point exception') || stderr.includes('SIGFPE')) {
+      } else if (errorMsg.includes('abort') || errorMsg.includes('SIGABRT')) {
+        throw new Error(`Runtime Error: Program Aborted\n\n${errorMsg}\n\nYour program was terminated abnormally.`);
+      } else if (errorMsg.includes('floating point exception') || errorMsg.includes('SIGFPE')) {
         throw new Error(`Runtime Error: Floating Point Exception\n\nArithmetic error (possibly division by zero).`);
       } else {
-        throw new Error(`Runtime Error: ${stderr}`);
+        throw new Error(`Runtime Error: ${errorMsg}`);
       }
     }
 
-    const result = JSON.parse(stdout.trim());
-    return result;
-  } catch (error) {
-    if (error.killed) {
-      throw new Error('Time Limit Exceeded\n\nYour code took longer than 5 seconds to execute. Optimize your algorithm.');
+    // Parse output
+    if (result.run && result.run.stdout) {
+      const output = result.run.stdout.trim();
+      
+      try {
+        return JSON.parse(output);
+      } catch (e) {
+        // If output isn't JSON, return as is
+        return output;
+      }
     }
+
+    throw new Error('No output from C++ compiler');
+    
+  } catch (error) {
     if (error.message.startsWith('Compilation Error') || error.message.startsWith('Runtime Error')) {
       throw error;
     }
-    throw new Error(`Runtime Error: ${error.message}`);
-  } finally {
-    try {
-      await fs.rm(tempDir, { recursive: true, force: true });
-    } catch (e) {
-      // Ignore cleanup errors
-    }
+    
+    // Fallback: Show helpful message about using online compiler
+    throw new Error(`C++ Execution Error: ${error.message}
+
+💡 C++ is running in web-based mode (no local installation needed!)
+
+If you're experiencing issues, try:
+1. Using JavaScript or Python instead
+2. Testing your code at: https://www.onlinegdb.com/online_c++_compiler
+3. Checking your C++ syntax
+
+Your code is being compiled online, so it may take a few seconds.`);
   }
 }
 
