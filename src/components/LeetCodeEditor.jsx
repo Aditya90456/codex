@@ -70,6 +70,20 @@ const LeetCodeEditor = () => {
   const editorRef = useRef(null);
   const userDropdownRef = useRef(null);
   const [showVideoPlayer, setShowVideoPlayer] = useState(false);
+  const [monacoLoaded, setMonacoLoaded] = useState(false);
+  const [monacoError, setMonacoError] = useState(false);
+
+  // Monaco loading timeout
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!monacoLoaded) {
+        console.warn('Monaco failed to load, using fallback editor');
+        setMonacoError(true);
+      }
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [monacoLoaded]);
 
   // AI Code Completion
   const {
@@ -158,6 +172,8 @@ const LeetCodeEditor = () => {
 
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
+    setMonacoLoaded(true);
+    console.log('Monaco Editor loaded successfully');
     
     // Add keyboard shortcut for AI completions
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, () => {
@@ -1234,14 +1250,33 @@ ${code}
 
           {/* Monaco Editor */}
           <div className="flex-1 overflow-hidden" style={{ position: 'relative' }}>
-            <Editor
-              height="100%"
-              language={language}
-              value={code}
-              onChange={handleEditorChange}
-              onMount={handleEditorDidMount}
-              theme="vs-dark"
-              options={{
+            {monacoError ? (
+              /* Fallback Textarea Editor */
+              <textarea
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className="w-full h-full bg-slate-900 text-gray-100 p-4 font-mono resize-none focus:outline-none"
+                style={{ fontSize: `${fontSize}px`, lineHeight: '1.6', tabSize: 2 }}
+                placeholder="// Write your code here..."
+                spellCheck={false}
+              />
+            ) : (
+              <Editor
+                height="100%"
+                language={language}
+                value={code}
+                onChange={handleEditorChange}
+                onMount={handleEditorDidMount}
+                loading={
+                  <div className="flex items-center justify-center h-full bg-slate-900">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                      <p className="text-gray-400">Loading editor...</p>
+                    </div>
+                  </div>
+                }
+                theme="vs-dark"
+                options={{
                 minimap: { enabled: false },
                 fontSize: fontSize,
                 lineNumbers: 'on',
@@ -1260,6 +1295,7 @@ ${code}
                 selectOnLineNumbers: true
               }}
             />
+            )}
             
             {/* AI Code Completion Panel */}
             <CodeCompletionPanel
