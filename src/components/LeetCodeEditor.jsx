@@ -241,185 +241,111 @@ const LeetCodeEditor = () => {
     setOutputComparison(null);
 
     try {
-      // Step 1: Check for basic syntax errors
-      setConsoleOutput([{ type: 'info', message: '⏳ Checking syntax...' }]);
-      
-      try {
-        // Try to parse the code to check for syntax errors
-        new Function(code);
-      } catch (syntaxError) {
-        // Extract line number from error
-        const lineMatch = syntaxError.message.match(/line (\d+)/i);
-        const line = lineMatch ? parseInt(lineMatch[1]) : 1;
+      setConsoleOutput([{ type: 'info', message: '⏳ Compiling and running...' }]);
+
+      // Prepare test case
+      const testCase = {
+        input: customInput || selectedProblem.examples[0].input,
+        expected: selectedProblem.examples[0].output
+      };
+
+      // Call backend API for multi-language execution
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const response = await fetch(`${backendUrl}/api/leetcode/run`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code,
+          language,
+          testCases: [testCase],
+          problemId: selectedProblem.id
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Execution failed');
+      }
+
+      const result = data.results[0];
+
+      // Handle compilation/runtime errors
+      if (result.error) {
+        const errorType = result.error.includes('Syntax') ? 'Compilation Error' : 'Runtime Error';
         
-        const errors = [{
-          line: line,
-          column: 1,
-          message: syntaxError.message,
-          severity: 'error'
-        }];
-        
-        setCompilerErrors(errors);
         setConsoleOutput([
-          { type: 'error', message: '❌ Compilation Failed' },
-          { type: 'error', message: `Line ${line} - ${syntaxError.message}` },
-          { type: 'info', message: 'Fix the syntax errors and try again.' }
+          { type: 'error', message: `❌ ${errorType}` },
+          { type: 'error', message: '' },
+          { type: 'error', message: result.error },
+          { type: 'info', message: '' },
+          { type: 'info', message: 'Last executed input:' },
+          { type: 'info', message: testCase.input }
         ]);
+        
+        setRuntimeErrors([{
+          line: 1,
+          message: result.error,
+          type: errorType
+        }]);
+        
         setIsRunning(false);
         return;
       }
 
-      // Step 2: Execute the code with test cases
-      setConsoleOutput([
-        { type: 'success', message: '✓ Compilation successful' },
-        { type: 'info', message: '⏳ Running test cases...' }
-      ]);
+      // Create comparison object
+      const comparison = {
+        testCase: 1,
+        input: testCase.input,
+        userOutput: JSON.stringify(result.output),
+        expectedOutput: testCase.expected,
+        passed: result.passed,
+        runtime: `${result.runtime}ms`,
+        memory: `${(result.memory / 1024).toFixed(1)} MB`
+      };
 
-      // Get test case from problem or use custom input
-      const testInput = customInput || selectedProblem.examples[0].input;
-      const expectedOutput = selectedProblem.examples[0].output;
+      setOutputComparison(comparison);
 
-      try {
-        // Execute user's code
-        let userOutput;
-        let executionTime;
-        const startTime = performance.now();
-
-        // Create a safe execution environment
-        const executeUserCode = new Function('input', `
-          ${code}
-          
-          // Parse input based on problem type
-          const parseInput = (input) => {
-            try {
-              // Handle array inputs like "[2,7,11,15]"
-              if (input.includes('[')) {
-                return JSON.parse(input.replace(/'/g, '"'));
-              }
-              // Handle number inputs
-              if (!isNaN(input)) {
-                return Number(input);
-              }
-              return input;
-            } catch (e) {
-              return input;
+      // Track run attempt in Clerk metadata (if signed in)
+      if (isSignedIn && user) {
+        try {
+          await user.update({
+            publicMetadata: {
+              ...user.publicMetadata,
+              totalRuns: (user.publicMetadata?.totalRuns || 0) + 1,
+              lastActivity: new Date().toISOString(),
+              currentProblem: selectedProblem.id
             }
-          };
-          
-          const parsedInput = parseInput(input);
-          
-          // Try to find and call the solution function
-          if (typeof twoSum !== 'undefined') {
-            const nums = Array.isArray(parsedInput) ? parsedInput : [2,7,11,15];
-            const target = 9;
-            return twoSum(nums, target);
-          }
-          
-          // Generic function call
-          if (typeof solution !== 'undefined') {
-            return solution(parsedInput);
-          }
-          
-          throw new Error('No solution function found. Please define twoSum() or solution()');
-        `);
-
-        userOutput = executeUserCode(testInput);
-        executionTime = (performance.now() - startTime).toFixed(2);
-
-        // Convert output to string for comparison
-        const userOutputStr = JSON.stringify(userOutput);
-        const expectedOutputStr = expectedOutput;
-        const isMatch = userOutputStr === expectedOutputStr;
-
-        // Create comparison object
-        const comparison = {
-          testCase: 1,
-          input: testInput,
-          userOutput: userOutputStr,
-          expectedOutput: expectedOutputStr,
-          passed: isMatch,
-          runtime: `${executionTime}ms`,
-          memory: `${(Math.random() * 10 + 40).toFixed(1)} MB`
-        };
-
-        setOutputComparison(comparison);
-
-        // Track run attempt in Clerk metadata (if signed in)
-        if (isSignedIn && user) {
-          try {
-            await user.update({
-              publicMetadata: {
-                ...user.publicMetadata,
-                totalRuns: (user.publicMetadata?.totalRuns || 0) + 1,
-                lastActivity: new Date().toISOString(),
-                currentProblem: selectedProblem.id
-              }
-            });
-          } catch (error) {
-            console.log('Failed to update run stats:', error);
-          }
+          });
+        } catch (error) {
+          console.log('Failed to update run stats:', error);
         }
-
-        // Update console output
-        const output = [
-          { type: 'success', message: '✓ Compilation successful' },
-          { type: 'info', message: '✓ Code executed successfully' },
-          { type: 'success', message: '' },
-          { type: 'success', message: 'Test Case 1:' },
-          { type: 'info', message: `Input: ${comparison.input}` },
-          { type: isMatch ? 'success' : 'error', message: `Your Output: ${comparison.userOutput}` },
-          { type: 'success', message: `Expected: ${comparison.expectedOutput}` },
-          { type: isMatch ? 'success' : 'error', message: isMatch ? '✓ Test case passed' : '✗ Test case failed - Output mismatch' },
-          { type: 'info', message: '' },
-          { type: 'info', message: `Runtime: ${comparison.runtime}` },
-          { type: 'info', message: `Memory: ${comparison.memory}` }
-        ];
-        setConsoleOutput(output);
-
-      } catch (runtimeError) {
-        // Handle runtime errors - LeetCode style
-        const errorLine = code.split('\n').findIndex(line => 
-          runtimeError.stack && runtimeError.stack.includes(line.trim())
-        ) + 1 || 1;
-
-        // Format error message like LeetCode
-        let errorType = 'Runtime Error';
-        let errorMessage = runtimeError.message;
-        
-        // Categorize common errors
-        if (runtimeError instanceof TypeError) {
-          errorType = 'TypeError';
-        } else if (runtimeError instanceof ReferenceError) {
-          errorType = 'ReferenceError';
-        } else if (runtimeError instanceof RangeError) {
-          errorType = 'RangeError';
-        }
-
-        const errors = [{
-          line: errorLine,
-          message: errorMessage,
-          type: errorType,
-          stack: runtimeError.stack
-        }];
-        
-        setRuntimeErrors(errors);
-        
-        // LeetCode-style error display
-        setConsoleOutput([
-          { type: 'error', message: `Runtime Error` },
-          { type: 'error', message: '' },
-          { type: 'error', message: errorType },
-          { type: 'info', message: errorMessage },
-          { type: 'info', message: '' },
-          { type: 'info', message: 'Last executed input:' },
-          { type: 'info', message: testInput }
-        ]);
       }
+
+      // Update console output
+      const output = [
+        { type: 'success', message: '✓ Compilation successful' },
+        { type: 'info', message: '✓ Code executed successfully' },
+        { type: 'success', message: '' },
+        { type: 'success', message: 'Test Case 1:' },
+        { type: 'info', message: `Input: ${comparison.input}` },
+        { type: result.passed ? 'success' : 'error', message: `Your Output: ${comparison.userOutput}` },
+        { type: 'success', message: `Expected: ${comparison.expectedOutput}` },
+        { type: result.passed ? 'success' : 'error', message: result.passed ? '✓ Test case passed' : '✗ Test case failed - Output mismatch' },
+        { type: 'info', message: '' },
+        { type: 'info', message: `Runtime: ${comparison.runtime}` },
+        { type: 'info', message: `Memory: ${comparison.memory}` }
+      ];
+      setConsoleOutput(output);
 
     } catch (error) {
       setConsoleOutput([
-        { type: 'error', message: '❌ Unexpected error' },
-        { type: 'error', message: error.message }
+        { type: 'error', message: '❌ Execution error' },
+        { type: 'error', message: error.message },
+        { type: 'info', message: '' },
+        { type: 'info', message: 'Make sure the backend server is running on port 3001' }
       ]);
     } finally {
       setIsRunning(false);
@@ -434,97 +360,50 @@ const LeetCodeEditor = () => {
     setOutputComparison(null);
 
     try {
-      // Run all test cases
-      const allTestCases = selectedProblem.examples || [];
-      let passedTests = 0;
-      let failedTestCase = null;
+      setConsoleOutput([{ type: 'info', message: '⏳ Running all test cases...' }]);
 
-      for (let i = 0; i < allTestCases.length; i++) {
-        const testCase = allTestCases[i];
-        
-        try {
-          // Execute user's code for each test case
-          const executeUserCode = new Function('input', `
-            ${code}
-            
-            const parseInput = (input) => {
-              try {
-                if (input.includes('[')) {
-                  return JSON.parse(input.replace(/'/g, '"'));
-                }
-                if (!isNaN(input)) {
-                  return Number(input);
-                }
-                return input;
-              } catch (e) {
-                return input;
-              }
-            };
-            
-            const parsedInput = parseInput(input);
-            
-            if (typeof twoSum !== 'undefined') {
-              const nums = Array.isArray(parsedInput) ? parsedInput : [2,7,11,15];
-              const target = 9;
-              return twoSum(nums, target);
-            }
-            
-            if (typeof solution !== 'undefined') {
-              return solution(parsedInput);
-            }
-            
-            throw new Error('No solution function found');
-          `);
+      // Prepare all test cases
+      const allTestCases = selectedProblem.examples.map(example => ({
+        input: example.input,
+        expected: example.output
+      }));
 
-          const userOutput = executeUserCode(testCase.input);
-          const userOutputStr = JSON.stringify(userOutput);
-          const expectedOutputStr = testCase.output;
+      // Call backend API for submission
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const response = await fetch(`${backendUrl}/api/leetcode/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code,
+          language,
+          problemId: selectedProblem.id,
+          userId: user?.id
+        })
+      });
 
-          if (userOutputStr === expectedOutputStr) {
-            passedTests++;
-          } else {
-            // First failed test case
-            if (!failedTestCase) {
-              failedTestCase = {
-                testCase: i + 1,
-                input: testCase.input,
-                userOutput: userOutputStr,
-                expectedOutput: expectedOutputStr,
-                passed: false,
-                totalTests: allTestCases.length,
-                passedTests: passedTests
-              };
-            }
-            break;
-          }
-        } catch (error) {
-          // Runtime error during submission
-          failedTestCase = {
-            testCase: i + 1,
-            input: testCase.input,
-            error: error.message,
-            totalTests: allTestCases.length,
-            passedTests: passedTests
-          };
-          break;
-        }
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Submission failed');
       }
 
       // Update Clerk user metadata with submission stats
       if (isSignedIn && user) {
         try {
           const currentStats = user.publicMetadata || {};
-          const isAccepted = passedTests === allTestCases.length;
+          const isAccepted = data.accepted;
           
           await user.update({
             publicMetadata: {
               ...currentStats,
               totalSubmissions: (currentStats.totalSubmissions || 0) + 1,
               solvedProblems: isAccepted ? 
-                (currentStats.solvedProblems || 0) + (currentStats.solvedProblemsSet?.has?.(selectedProblem.id) ? 0 : 1) :
+                (currentStats.solvedProblems || 0) + (currentStats.solvedProblemsSet?.includes?.(selectedProblem.id) ? 0 : 1) :
                 (currentStats.solvedProblems || 0),
               solvedProblemsSet: isAccepted ? 
-                [...(currentStats.solvedProblemsSet || []), selectedProblem.id] :
+                [...new Set([...(currentStats.solvedProblemsSet || []), selectedProblem.id])] :
                 (currentStats.solvedProblemsSet || []),
               acceptedSubmissions: isAccepted ? 
                 (currentStats.acceptedSubmissions || 0) + 1 :
@@ -545,33 +424,48 @@ const LeetCodeEditor = () => {
       }
 
       // All tests passed
-      if (passedTests === allTestCases.length) {
+      if (data.accepted) {
         const results = {
           accepted: true,
-          runtime: `${(Math.random() * 50 + 50).toFixed(0)} ms`,
-          memory: `${(Math.random() * 10 + 40).toFixed(1)} MB`,
+          runtime: `${data.runtime || data.stats?.avgRuntime || 50} ms`,
+          memory: `${((data.memory || data.stats?.avgMemory || 40000) / 1024).toFixed(1)} MB`,
           runtimePercentile: (Math.random() * 30 + 70).toFixed(1),
           memoryPercentile: (Math.random() * 30 + 60).toFixed(1),
-          totalTestCases: allTestCases.length,
-          passedTestCases: passedTests
+          totalTestCases: data.totalTestCases,
+          passedTestCases: data.passedTestCases
         };
         setTestResults(results);
         setOutputComparison(null);
       } else {
-        // Some tests failed
-        setOutputComparison(failedTestCase);
+        // Find first failed test case
+        const failedResult = data.results?.find(r => !r.passed);
+        if (failedResult) {
+          setOutputComparison({
+            testCase: data.results.indexOf(failedResult) + 1,
+            input: failedResult.input,
+            userOutput: JSON.stringify(failedResult.output),
+            expectedOutput: failedResult.expected,
+            passed: false,
+            totalTests: data.totalTestCases,
+            passedTests: data.passedTestCases,
+            error: failedResult.error
+          });
+        }
+        
         setTestResults({
           accepted: false,
-          failedTestCase: failedTestCase.testCase,
-          totalTestCases: allTestCases.length,
-          passedTestCases: passedTests
+          failedTestCase: data.results?.findIndex(r => !r.passed) + 1 || 1,
+          totalTestCases: data.totalTestCases,
+          passedTestCases: data.passedTestCases
         });
       }
 
     } catch (error) {
       setConsoleOutput([
         { type: 'error', message: '❌ Submission failed' },
-        { type: 'error', message: error.message }
+        { type: 'error', message: error.message },
+        { type: 'info', message: '' },
+        { type: 'info', message: 'Make sure the backend server is running on port 3001' }
       ]);
     } finally {
       setIsSubmitting(false);
