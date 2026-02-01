@@ -19,6 +19,14 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (userLoaded && authLoaded) {
       setIsReady(true);
+    } else {
+      // Fallback: if Clerk doesn't load within 5 seconds, mark as ready anyway
+      const timeout = setTimeout(() => {
+        console.warn('Clerk loading timeout - marking as ready');
+        setIsReady(true);
+      }, 5000);
+      
+      return () => clearTimeout(timeout);
     }
   }, [userLoaded, authLoaded]);
 
