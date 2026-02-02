@@ -43,6 +43,8 @@ import VideoPlayer from './VideoPlayer';
 import { useDryRunAnimation } from '../hooks/useDryRunAnimation';
 import DryRunAnimationPanel from './DryRunAnimationPanel';
 import SolutionViewer from './SolutionViewer';
+import SpotifyPlayerFree from './SpotifyPlayerFree';
+import NetworkMonitor from './NetworkMonitor';
 
 const LeetCodeEditor = () => {
   const navigate = useNavigate();
@@ -1730,6 +1732,12 @@ ${code}
           </div>
         </div>
       )}
+
+      {/* Spotify Music Player with Search */}
+      <SpotifyPlayerFree />
+
+      {/* Network Monitor */}
+      <NetworkMonitor />
     </div>
   );
 };

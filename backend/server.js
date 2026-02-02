@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3001;
 // CORS configuration - Allow multiple origins for deployment
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://127.0.0.1:5173',
   'http://localhost:3000',
   'http://localhost:5174',
   'https://codex-playground-editor.vercel.app',
@@ -156,11 +157,20 @@ app.use('/api/code-completion', codeCompletionRoutes);
 app.use('/api/leetcode', leetcodeRoutes);
 app.use('/api/github', githubRoutes);
 
+// Mount Spotify routes
+const spotifyRoutes = require('./routes/spotify');
+app.use('/api/spotify', spotifyRoutes);
+
+// Mount Jamendo routes (Free music API)
+const jamendoRoutes = require('./routes/jamendo');
+app.use('/api/jamendo', jamendoRoutes);
+
 console.log('✅ AI Generator routes mounted');
 console.log('✅ GitHub integration routes mounted');
 console.log('✅ Code Explainer routes mounted');
 console.log('✅ Code Completion routes mounted');
 console.log('✅ LeetCode Execution routes mounted');
+console.log('✅ Spotify integration routes mounted');
 
 // API Routes
 

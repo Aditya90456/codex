@@ -35,6 +35,9 @@ export default defineConfig({
   },
   // Performance optimizations
   server: {
+    host: '0.0.0.0', // Listen on all network interfaces
+    port: 5173,
+    strictPort: true,
     fs: {
       // Allow serving files from one level up to the project root
       allow: ['..']
