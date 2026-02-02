@@ -8,6 +8,11 @@ const SpotifyPlayer = () => {
   // Coding playlists - Spotify embed URLs
   const playlists = [
     {
+      name: 'Bollywood Dance',
+      uri: 'spotify:playlist:37i9dQZF1DX8xfQRRX1PDm',
+      embed: 'https://open.spotify.com/embed/playlist/37i9dQZF1DX8xfQRRX1PDm'
+    },
+    {
       name: 'Deep Focus',
       uri: 'spotify:playlist:37i9dQZF1DWZeKCadgRdKQ',
       embed: 'https://open.spotify.com/embed/playlist/37i9dQZF1DWZeKCadgRdKQ'

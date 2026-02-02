@@ -1,5 +1,29 @@
-import { useState, useEffect, useRef } from 'react';
-import { Music, X, Search, Loader, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Music, X, Search, Loader, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Heart } from 'lucide-react';
+
+const MY_SONGS_KEY = 'codex_my_songs';
+
+const getMySongs = () => {
+  try {
+    const saved = localStorage.getItem(MY_SONGS_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveMySongs = (tracks) => {
+  localStorage.setItem(MY_SONGS_KEY, JSON.stringify(tracks));
+};
+
+const SPOTIFY_PLAYLISTS = [
+  { name: 'Bollywood Dance', embed: 'https://open.spotify.com/embed/playlist/37i9dQZF1DX8xfQRRX1PDm' },
+  { name: 'Deep Focus', embed: 'https://open.spotify.com/embed/playlist/37i9dQZF1DWZeKCadgRdKQ' },
+  { name: 'Coding Mode', embed: 'https://open.spotify.com/embed/playlist/37i9dQZF1DX5trt9i14X7j' },
+  { name: 'Instrumental Study', embed: 'https://open.spotify.com/embed/playlist/37i9dQZF1DX3PFzdbtx1Us' },
+  { name: 'Lo-Fi Beats', embed: 'https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRwui0ExPn' },
+  { name: 'Top 50 India', embed: 'https://open.spotify.com/embed/playlist/37i9dQZEVXbObFQZ3JLcXt' }
+];
 
 const SpotifyPlayerFree = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,6 +39,53 @@ const SpotifyPlayerFree = () => {
   const audioRef = useRef(null);
 
   const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001';
+  const [mySongs, setMySongs] = useState(getMySongs);
+  const [viewMode, setViewMode] = useState('popular'); // 'popular' | 'search' | 'mySongs' | 'spotify'
+  const [selectedSpotifyPlaylist, setSelectedSpotifyPlaylist] = useState(SPOTIFY_PLAYLISTS[0]);
+
+  const loadMySongs = useCallback(() => {
+    const saved = getMySongs();
+    setMySongs(saved);
+    setSearchResults(saved);
+    setViewMode('mySongs');
+  }, []);
+
+  const toggleSaveTrack = (track, e) => {
+    e?.stopPropagation();
+    const saved = getMySongs();
+    const exists = saved.some((t) => t.id === track.id);
+    const updated = exists ? saved.filter((t) => t.id !== track.id) : [...saved, track];
+    saveMySongs(updated);
+    setMySongs(updated);
+    if (viewMode === 'mySongs') setSearchResults(updated);
+  };
+
+  const isTrackSaved = (trackId) => mySongs.some((t) => t.id === trackId);
+
+  // Load popular tracks on open (real music from Jamendo)
+  const loadPopularTracks = useCallback(async () => {
+    setIsSearching(true);
+    setViewMode('popular');
+    try {
+      const res = await fetch(`${API_BASE}/api/jamendo/popular?limit=20`);
+      const data = await res.json();
+      if (data.success && data.tracks?.length > 0) {
+        setSearchResults(data.tracks);
+      } else {
+        setSearchResults([]);
+      }
+    } catch (err) {
+      console.error('Load popular error:', err);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  // Load popular tracks from API when player opens
+  useEffect(() => {
+    if (isOpen) loadPopularTracks();
+  }, [isOpen, loadPopularTracks]);
 
   // Update time
   useEffect(() => {
@@ -39,26 +110,52 @@ const SpotifyPlayerFree = () => {
     };
   }, []);
 
-  // Search tracks using Jamendo API (free, full songs!)
-  const searchTracks = async () => {
-    if (!searchQuery.trim()) return;
+  // Search tracks - Spotify API first (large catalog), then Jamendo API (full songs)
+  const searchTracks = async (queryOverride) => {
+    const q = (queryOverride ?? searchQuery).trim();
+    if (!q) return;
 
+    setSearchQuery(q);
     setIsSearching(true);
+    setViewMode('search');
+    let tracks = [];
+
     try {
-      const response = await fetch(
-        `${API_BASE}/api/jamendo/search?q=${encodeURIComponent(searchQuery)}&limit=20`
+      // Spotify API first (30-sec previews, large catalog)
+      const spotifyRes = await fetch(
+        `${API_BASE}/api/spotify/search/free?q=${encodeURIComponent(q)}`
       );
+      const spotifyData = await spotifyRes.json();
 
-      const data = await response.json();
-
-      if (data.success) {
-        setSearchResults(data.tracks);
+      if (spotifyData.success && spotifyData.tracks?.length > 0) {
+        tracks = spotifyData.tracks.map((t) => ({
+          id: t.id,
+          name: t.name,
+          artist: t.artist,
+          album: t.album,
+          albumArt: t.albumArt,
+          duration: t.duration,
+          audioUrl: t.previewUrl,
+        }));
       } else {
-        alert('Search failed. Please try again.');
+        // Fallback: Jamendo API (full songs)
+        const jamendoRes = await fetch(
+          `${API_BASE}/api/jamendo/search?q=${encodeURIComponent(q)}&limit=20`
+        );
+        const jamendoData = await jamendoRes.json();
+
+        if (jamendoData.success && jamendoData.tracks?.length > 0) {
+          tracks = jamendoData.tracks;
+        }
+      }
+
+      setSearchResults(tracks);
+      if (tracks.length === 0) {
+        console.warn('No tracks found. Try a different search term.');
       }
     } catch (error) {
       console.error('Search error:', error);
-      alert('Search failed. Please try again.');
+      alert('Search failed. Is the backend running on port 3001?');
     } finally {
       setIsSearching(false);
     }
@@ -74,7 +171,7 @@ const SpotifyPlayerFree = () => {
     setIsPlaying(true);
     
     if (audioRef.current) {
-      audioRef.current.src = track.audioUrl;
+      audioRef.current.src = track.audioUrl || track.previewUrl;
       audioRef.current.volume = volume / 100;
       audioRef.current.play();
     }
@@ -173,11 +270,73 @@ const SpotifyPlayerFree = () => {
           {/* Info Banner */}
           <div className="p-3 bg-green-900/30 border-b border-slate-700">
             <p className="text-xs text-green-300">
-              🎵 Full songs • 100% Free • No ads • Legal music from Jamendo
+              🎵 Spotify playlists • Jamendo search • Save to My Songs
             </p>
           </div>
 
-          {/* Search Bar */}
+          {/* Quick Search - Bollywood & More */}
+          <div className="px-4 pt-2 pb-1 border-b border-slate-700">
+            <p className="text-xs text-gray-400 mb-2">Quick search:</p>
+            <div className="flex flex-wrap gap-2">
+              {['Spotify', 'My Songs', 'Popular', 'Movies', 'Bollywood', 'Indian', 'Hindi', 'Chill', 'Rock', 'Jazz'].map((genre) => (
+                <button
+                  key={genre}
+                  onClick={() => {
+                    if (genre === 'Spotify') setViewMode('spotify');
+                    else if (genre === 'Popular') loadPopularTracks();
+                    else if (genre === 'My Songs') loadMySongs();
+                    else searchTracks(genre);
+                  }}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                    (genre === 'Spotify' && viewMode === 'spotify') ||
+                    (genre === 'My Songs' && viewMode === 'mySongs') ||
+                    (genre === 'Popular' && viewMode === 'popular')
+                      ? 'bg-green-600 text-white'
+                      : 'bg-slate-700 hover:bg-green-600 text-gray-300 hover:text-white'
+                  }`}
+                >
+                  {genre}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Spotify Playlists - when Spotify mode */}
+          {viewMode === 'spotify' && (
+            <>
+              <div className="p-4 border-b border-slate-700">
+                <label className="text-sm text-gray-400 mb-2 block">Spotify Playlist</label>
+                <select
+                  value={selectedSpotifyPlaylist.name}
+                  onChange={(e) => {
+                    const p = SPOTIFY_PLAYLISTS.find((pl) => pl.name === e.target.value);
+                    if (p) setSelectedSpotifyPlaylist(p);
+                  }}
+                  className="w-full bg-slate-700 text-white px-3 py-2 rounded-lg border border-slate-600 focus:outline-none focus:border-green-500"
+                >
+                  {SPOTIFY_PLAYLISTS.map((pl) => (
+                    <option key={pl.name} value={pl.name}>{pl.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1 p-4 min-h-[300px]">
+                <iframe
+                  src={selectedSpotifyPlaylist.embed}
+                  width="100%"
+                  height="352"
+                  frameBorder="0"
+                  allowFullScreen=""
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  className="rounded-lg"
+                />
+              </div>
+            </>
+          )}
+
+          {/* Search, Tracks, My Songs - when not Spotify mode */}
+          {viewMode !== 'spotify' && (
+          <>
           <div className="p-4 border-b border-slate-700">
             <div className="flex gap-2">
               <input
@@ -230,14 +389,16 @@ const SpotifyPlayerFree = () => {
           {/* Search Results */}
           {searchResults.length > 0 && (
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              <h4 className="text-sm font-semibold text-gray-400 mb-2">Search Results</h4>
+              <h4 className="text-sm font-semibold text-gray-400 mb-2">
+                {viewMode === 'mySongs' ? 'My Songs' : 'Tracks'}
+              </h4>
               {searchResults.map((track) => (
-                <button
+                <div
                   key={track.id}
-                  onClick={() => playTrack(track)}
-                  className={`w-full flex items-center gap-3 p-2 hover:bg-slate-700 rounded-lg transition-colors text-left ${
+                  className={`w-full flex items-center gap-3 p-2 hover:bg-slate-700 rounded-lg transition-colors cursor-pointer group ${
                     currentTrack?.id === track.id ? 'bg-slate-700' : ''
                   }`}
+                  onClick={() => playTrack(track)}
                 >
                   {track.albumArt && (
                     <img src={track.albumArt} alt={track.album} className="w-12 h-12 rounded flex-shrink-0" />
@@ -246,12 +407,23 @@ const SpotifyPlayerFree = () => {
                     <p className="text-white font-medium truncate">{track.name}</p>
                     <p className="text-sm text-gray-400 truncate">{track.artist}</p>
                   </div>
+                  <button
+                    onClick={(e) => toggleSaveTrack(track, e)}
+                    className={`p-1.5 rounded-full transition-colors flex-shrink-0 ${
+                      isTrackSaved(track.id)
+                        ? 'text-pink-500 hover:bg-pink-500/20'
+                        : 'text-gray-500 hover:text-pink-500 hover:bg-pink-500/20'
+                    }`}
+                    title={isTrackSaved(track.id) ? 'Remove from My Songs' : 'Add to My Songs'}
+                  >
+                    <Heart className={`w-5 h-5 ${isTrackSaved(track.id) ? 'fill-current' : ''}`} />
+                  </button>
                   {track.audioUrl ? (
                     <Play className="w-5 h-5 text-green-500 flex-shrink-0" />
                   ) : (
                     <span className="text-xs text-gray-500">No audio</span>
                   )}
-                </button>
+                </div>
               ))}
             </div>
           )}
@@ -260,10 +432,21 @@ const SpotifyPlayerFree = () => {
           {!currentTrack && searchResults.length === 0 && (
             <div className="flex-1 p-6 text-center">
               <Music className="w-16 h-16 text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-400 mb-2">Search for free music</p>
-              <p className="text-sm text-gray-500">
-                Try: electronic, jazz, rock, ambient, chill
-              </p>
+              {viewMode === 'mySongs' ? (
+                <>
+                  <p className="text-gray-400 mb-2">No songs saved yet</p>
+                  <p className="text-sm text-gray-500">
+                    Search for music and click the ♥ to add tracks to My Songs
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-gray-400 mb-2">Search for free music</p>
+                  <p className="text-sm text-gray-500">
+                    Try: Movies, Bollywood, Indian, electronic, jazz, rock, ambient, chill
+                  </p>
+                </>
+              )}
             </div>
           )}
 
@@ -320,6 +503,8 @@ const SpotifyPlayerFree = () => {
               </button>
             </div>
           </div>
+          </>
+          )}
         </div>
       )}
     </>
