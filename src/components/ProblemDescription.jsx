@@ -387,17 +387,101 @@ const ProblemDescription = ({ problem }) => {
         </div>
       )}
 
-      {/* Pattern-Based Problem Note - Only for DSA Pattern problems */}
+      {/* Start Solving CTA - Only for DSA Pattern problems */}
       {isDSAPatternProblem && (
-        <div className="bg-blue-600/10 border border-blue-400/20 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-blue-300 font-medium mb-2">Pattern-Based Problem</p>
-              <p className="text-blue-200 text-sm leading-relaxed">
-                This is a pattern-based problem from the DSA 150 collection. Practice this problem on multiple 
-                platforms to strengthen your understanding of the <strong>{problem.pattern}</strong> pattern.
-              </p>
+        <div className="mb-6">
+          <div className="bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 border border-blue-500/30 rounded-lg p-6">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Target className="w-6 h-6 text-blue-400" />
+                <h3 className="text-xl font-bold text-white">Start Solve Now</h3>
+              </div>
+              
+              <div className="mb-4">
+                <h4 className="text-lg font-semibold text-blue-300 mb-2">
+                  150 Curated DSA Problems
+                </h4>
+                <p className="text-gray-300 text-sm mb-1">
+                  Beginner → Advanced with Aditya Bakshi
+                </p>
+                <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+                  <span>Resolution: 100</span>
+                  <span>•</span>
+                  <span>Pattern: {problem.pattern}</span>
+                  <span>•</span>
+                  <span>Difficulty: {problem.difficulty}</span>
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-4">
+                {/* Primary Action Button - Enhanced */}
+                <button className="group w-full relative overflow-hidden flex items-center justify-center gap-3 px-8 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white rounded-2xl transition-all duration-300 transform hover:scale-[1.02] shadow-2xl hover:shadow-purple-500/25 font-bold text-xl">
+                  {/* Animated background */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                  
+                  {/* Sparkle effect */}
+                  <div className="absolute top-2 right-4 w-2 h-2 bg-white rounded-full opacity-60 animate-pulse"></div>
+                  <div className="absolute bottom-3 left-6 w-1 h-1 bg-white rounded-full opacity-40 animate-ping"></div>
+                  
+                  <Target className="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" />
+                  <span className="relative z-10">Start Solving Now</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                </button>
+                
+                {/* Platform Buttons - Improved */}
+                <div className="grid grid-cols-3 gap-3">
+                  {problem.leetcodeUrl && (
+                    <a
+                      href={problem.leetcodeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center justify-center gap-2 px-4 py-3 bg-orange-600/10 hover:bg-orange-600/20 text-orange-300 border border-orange-600/30 hover:border-orange-500/50 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-orange-500/10 font-medium"
+                    >
+                      <ExternalLink className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                      <span>LeetCode</span>
+                    </a>
+                  )}
+                  
+                  {problem.gfgUrl && (
+                    <a
+                      href={problem.gfgUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center justify-center gap-2 px-4 py-3 bg-green-600/10 hover:bg-green-600/20 text-green-300 border border-green-600/30 hover:border-green-500/50 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-green-500/10 font-medium"
+                    >
+                      <BookOpen className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                      <span>GFG</span>
+                    </a>
+                  )}
+                  
+                  {problem.codeforcesUrl && (
+                    <a
+                      href={problem.codeforcesUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center justify-center gap-2 px-4 py-3 bg-blue-600/10 hover:bg-blue-600/20 text-blue-300 border border-blue-600/30 hover:border-blue-500/50 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10 font-medium"
+                    >
+                      <Code className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                      <span>Codeforces</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>Time: {problem.timeComplexity}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Zap className="w-3 h-3" />
+                  <span>Space: {problem.spaceComplexity}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Building2 className="w-3 h-3" />
+                  <span>{problem.companies?.length || 0} Companies</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -409,6 +493,15 @@ const ProblemDescription = ({ problem }) => {
           <p className="text-yellow-300 font-medium mb-1">Follow-up Challenge:</p>
           <p className="text-yellow-200 text-sm">
             Can you come up with an algorithm that is less than O(n²) time complexity?
+          </p>
+        </div>
+      )}
+
+      {/* Pattern-Based Problem Note - Small footer for DSA problems */}
+      {isDSAPatternProblem && (
+        <div className="mt-4 p-3 bg-gray-800/30 border border-gray-700/30 rounded-lg">
+          <p className="text-gray-400 text-xs text-center">
+            Part of DSA 150 collection • Practice on multiple platforms to master the <strong className="text-gray-300">{problem.pattern}</strong> pattern
           </p>
         </div>
       )}

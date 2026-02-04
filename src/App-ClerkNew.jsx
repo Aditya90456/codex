@@ -100,6 +100,14 @@ function AppContent() {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/playground" 
+            element={
+              <ProtectedRoute>
+                <LeetCodeEditor />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
       </div>
     </Router>

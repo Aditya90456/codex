@@ -50,12 +50,22 @@ import DSACertificateSystem from './DSACertificateSystem';
 import AILeetCodeAssistant from './AILeetCodeAssistant';
 import ProblemDescription from './ProblemDescription';
 import LeetCodeTopmat from './LeetCodeTopmat';
-import DSAPatternSidebar from './DSAPatternSidebar';
+import { useClerkProgress } from '../hooks/useClerkProgress';
 
 const LeetCodeEditor = () => {
   const navigate = useNavigate();
   const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
+  
+  // Clerk-based progress tracking
+  const { 
+    progress, 
+    loading: progressLoading, 
+    markProblemCompleted, 
+    recordSubmission, 
+    getProgressStats 
+  } = useClerkProgress();
+  
   const [selectedProblem, setSelectedProblem] = useState(dsaProblems[0]);
   const [code, setCode] = useState(dsaProblems[0].starterCode || '');
   const [language, setLanguage] = useState('javascript');
@@ -88,10 +98,6 @@ const LeetCodeEditor = () => {
 
   // LeetCode Topmat state
   const [showTopmat, setShowTopmat] = useState(false);
-
-  // DSA Pattern Sidebar state
-  const [showDSASidebar, setShowDSASidebar] = useState(true);
-  const [currentDSAProblem, setCurrentDSAProblem] = useState(null);
 
   // Load completed problems from localStorage
   useEffect(() => {
@@ -313,30 +319,38 @@ const LeetCodeEditor = () => {
     { value: 'typescript', label: 'TypeScript' }
   ];
 
-  // Helper function to get user stats from localStorage
+  // Helper function to get user stats from Clerk progress
   const getUserStats = () => {
-    if (!user?.id) return {
-      totalSubmissions: 0,
-      solvedProblems: 0,
-      solvedProblemsSet: [],
-      acceptedSubmissions: 0,
-      currentStreak: 0,
-      maxStreak: 0,
-      rating: 1200,
-      totalRuns: 0
+    if (progressLoading) {
+      return {
+        totalSubmissions: 0,
+        solvedProblems: 0,
+        acceptedSubmissions: 0,
+        currentStreak: 0,
+        maxStreak: 0,
+        rating: 1200,
+        totalRuns: 0
+      };
+    }
+
+    const stats = getProgressStats();
+    return {
+      totalSubmissions: stats.totalSubmissions,
+      solvedProblems: stats.totalProblems,
+      acceptedSubmissions: progress.acceptedSubmissions,
+      currentStreak: stats.currentStreak,
+      maxStreak: stats.maxStreak,
+      rating: calculateRating(stats.totalProblems, stats.currentStreak),
+      totalRuns: progress.totalSubmissions // Using total submissions as runs for now
     };
-    
-    const stats = localStorage.getItem(`userStats_${user.id}`);
-    return stats ? JSON.parse(stats) : {
-      totalSubmissions: 0,
-      solvedProblems: 0,
-      solvedProblemsSet: [],
-      acceptedSubmissions: 0,
-      currentStreak: 0,
-      maxStreak: 0,
-      rating: 1200,
-      totalRuns: 0
-    };
+  };
+
+  // Calculate user rating based on problems solved and streak
+  const calculateRating = (problemsSolved, streak) => {
+    const baseRating = 1200;
+    const problemBonus = problemsSolved * 10;
+    const streakBonus = streak * 25;
+    return Math.min(3000, baseRating + problemBonus + streakBonus);
   };
 
   useEffect(() => {
@@ -558,17 +572,12 @@ const LeetCodeEditor = () => {
 
       setOutputComparison(comparison);
 
-      // Track run attempt in Clerk metadata (if signed in)
+      // Track run attempt using Clerk progress (if signed in)
       if (isSignedIn && user) {
         try {
-          await user.update({
-            publicMetadata: {
-              ...user.publicMetadata,
-              totalRuns: (user.publicMetadata?.totalRuns || 0) + 1,
-              lastActivity: new Date().toISOString(),
-              currentProblem: selectedProblem.id
-            }
-          });
+          // Record the run as a submission attempt
+          await recordSubmission(selectedProblem.id, result.passed, language, 1);
+          console.log('✅ Run tracked via Clerk progress');
         } catch (error) {
           console.log('Failed to update run stats:', error);
         }
@@ -827,52 +836,35 @@ ${code}
         throw new Error(data.error || 'Submission failed');
       }
 
-      // Update user stats (store in localStorage for now, as Clerk publicMetadata has restrictions)
+      // Update user stats using Clerk progress tracking
       if (isSignedIn && user) {
         try {
-          const userId = user.id;
-          const currentStats = JSON.parse(localStorage.getItem(`userStats_${userId}`)) || {
-            totalSubmissions: 0,
-            solvedProblems: 0,
-            solvedProblemsSet: [],
-            acceptedSubmissions: 0,
-            currentStreak: 0,
-            maxStreak: 0,
-            rating: 1200,
-            totalRuns: 0
-          };
-          
           const isAccepted = data.accepted;
-          const alreadySolved = currentStats.solvedProblemsSet.includes(selectedProblem.id);
+          const timeSpent = 5; // Estimate 5 minutes per submission
           
-          const updatedStats = {
-            ...currentStats,
-            totalSubmissions: currentStats.totalSubmissions + 1,
-            solvedProblems: isAccepted && !alreadySolved ? 
-              currentStats.solvedProblems + 1 : 
-              currentStats.solvedProblems,
-            solvedProblemsSet: isAccepted ? 
-              [...new Set([...currentStats.solvedProblemsSet, selectedProblem.id])] :
-              currentStats.solvedProblemsSet,
-            acceptedSubmissions: isAccepted ? 
-              currentStats.acceptedSubmissions + 1 :
-              currentStats.acceptedSubmissions,
-            lastSubmission: new Date().toISOString(),
-            currentStreak: isAccepted ? 
-              currentStats.currentStreak + 1 : 0,
-            maxStreak: isAccepted ? 
-              Math.max(currentStats.maxStreak, currentStats.currentStreak + 1) :
-              currentStats.maxStreak,
-            rating: Math.min(3000, currentStats.rating + (isAccepted ? 25 : -10)),
-            lastActivity: new Date().toISOString()
-          };
+          // Record the submission
+          await recordSubmission(selectedProblem.id, isAccepted, language, timeSpent);
           
-          // Save to localStorage
-          localStorage.setItem(`userStats_${userId}`, JSON.stringify(updatedStats));
+          // If accepted and not already completed, mark as completed
+          if (isAccepted && !progress.completedProblems.includes(selectedProblem.id)) {
+            const achievements = await markProblemCompleted(
+              selectedProblem.id, 
+              selectedProblem.difficulty, 
+              selectedProblem.category || 'General',
+              language,
+              timeSpent
+            );
+            
+            // Show achievement notifications if any
+            if (achievements && achievements.length > 0) {
+              console.log('🏆 New achievements unlocked:', achievements);
+              // You can add UI notifications here
+            }
+          }
           
-          console.log('✅ User stats updated:', updatedStats);
+          console.log('✅ Progress updated via Clerk');
         } catch (error) {
-          console.log('Failed to update submission stats:', error);
+          console.log('Failed to update Clerk progress:', error);
         }
       }
 
@@ -951,89 +943,6 @@ ${code}
     }
   };
 
-  // Handle DSA problem selection from sidebar
-  const handleDSAProblemSelect = (dsaProblem) => {
-    setCurrentDSAProblem(dsaProblem);
-    
-    // Create a problem object compatible with the ProblemDescription component
-    const adaptedProblem = {
-      id: dsaProblem.id,
-      title: dsaProblem.title,
-      difficulty: dsaProblem.difficulty,
-      pattern: dsaProblem.pattern,
-      timeComplexity: dsaProblem.timeComplexity,
-      spaceComplexity: dsaProblem.spaceComplexity,
-      companies: dsaProblem.companies,
-      leetcodeUrl: dsaProblem.leetcodeUrl,
-      gfgUrl: dsaProblem.gfgUrl,
-      codeforcesUrl: dsaProblem.codeforcesUrl,
-      videoUrl: dsaProblem.videoUrl,
-      hindiVideoUrl: dsaProblem.hindiVideoUrl,
-      description: `
-        <div class="problem-description">
-          <h3>Problem: ${dsaProblem.title}</h3>
-          <p><strong>Difficulty:</strong> <span class="${dsaProblem.difficulty.toLowerCase()}">${dsaProblem.difficulty}</span></p>
-          <p><strong>Pattern:</strong> ${dsaProblem.pattern}</p>
-          <p><strong>Time Complexity:</strong> ${dsaProblem.timeComplexity}</p>
-          <p><strong>Space Complexity:</strong> ${dsaProblem.spaceComplexity}</p>
-          
-          <h4>Companies:</h4>
-          <p>${dsaProblem.companies.join(', ')}</p>
-          
-          <h4>Practice Links:</h4>
-          <ul>
-            <li><a href="${dsaProblem.leetcodeUrl}" target="_blank" rel="noopener noreferrer">LeetCode Problem</a></li>
-            <li><a href="${dsaProblem.gfgUrl}" target="_blank" rel="noopener noreferrer">GeeksforGeeks Article</a></li>
-            <li><a href="${dsaProblem.codeforcesUrl}" target="_blank" rel="noopener noreferrer">Codeforces Problem</a></li>
-          </ul>
-          
-          <h4>Video Solution:</h4>
-          <p><a href="${dsaProblem.videoUrl}" target="_blank" rel="noopener noreferrer">Watch Solution Video</a></p>
-          
-          <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400">
-            <p><strong>Note:</strong> This is a pattern-based problem from the DSA 150 collection. 
-            Practice this problem on multiple platforms to strengthen your understanding of the ${dsaProblem.pattern} pattern.</p>
-          </div>
-        </div>
-      `,
-      examples: [
-        {
-          input: "Check the linked platforms for examples",
-          output: "Refer to LeetCode, GFG, or Codeforces",
-          explanation: "Each platform provides detailed examples and test cases."
-        }
-      ],
-      constraints: ["Refer to the original problem on the linked platforms"],
-      starterCode: `// ${dsaProblem.title}
-// Pattern: ${dsaProblem.pattern}
-// Difficulty: ${dsaProblem.difficulty}
-// Time Complexity: ${dsaProblem.timeComplexity}
-// Space Complexity: ${dsaProblem.spaceComplexity}
-
-function solve() {
-    // Your solution here
-    // Practice this problem on:
-    // LeetCode: ${dsaProblem.leetcodeUrl}
-    // GeeksforGeeks: ${dsaProblem.gfgUrl}
-    // Codeforces: ${dsaProblem.codeforcesUrl}
-    
-    return null;
-}`,
-      videoUrl: dsaProblem.videoUrl,
-      testCases: [
-        {
-          input: "// Test cases available on the linked platforms",
-          expectedOutput: "// Check LeetCode, GFG, or Codeforces for test cases",
-          explanation: "Use the platform links to access full test suites"
-        }
-      ]
-    };
-    
-    // Update the selected problem and code
-    setSelectedProblem(adaptedProblem);
-    setCode(adaptedProblem.starterCode);
-  };
-
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
       case 'Easy': return 'text-green-500';
@@ -1068,18 +977,6 @@ function solve() {
           >
             <Home className="w-4 h-4" />
             <span className="text-sm font-medium">Home</span>
-          </button>
-          
-          <button
-            onClick={() => setShowDSASidebar(!showDSASidebar)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-              showDSASidebar 
-                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                : 'bg-slate-700 hover:bg-slate-600'
-            }`}
-          >
-            <Brain className="w-4 h-4" />
-            <span className="text-sm font-medium">DSA Patterns</span>
           </button>
           
           <button
@@ -1321,17 +1218,9 @@ function solve() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* DSA Pattern Sidebar */}
-        {showDSASidebar && (
-          <DSAPatternSidebar 
-            onProblemSelect={handleDSAProblemSelect}
-            currentProblem={currentDSAProblem}
-          />
-        )}
-        
+      <div className="flex-1 flex overflow-hidden">        
         {/* Left Panel - Problem Description */}
-        <div className={`${showDSASidebar ? 'w-1/3' : 'w-1/2'} border-r border-slate-700 flex flex-col`}>
+        <div className="w-1/2 border-r border-slate-700 flex flex-col">
           {/* Problem Header */}
           <div className="p-4 border-b border-slate-700">
             <div className="flex items-center justify-between mb-2">
@@ -1394,7 +1283,7 @@ function solve() {
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto p-6">
             {/* Use the new ProblemDescription component */}
-            <ProblemDescription problem={currentDSAProblem || selectedProblem} />
+            <ProblemDescription problem={selectedProblem} />
             
             {/* Solution Viewer */}
             <div className="mt-6">
@@ -1413,7 +1302,7 @@ function solve() {
         </div>
 
         {/* Right Panel - Code Editor */}
-        <div className={`${showDSASidebar ? 'flex-1' : 'w-1/2'} flex flex-col`}>
+        <div className="w-1/2 flex flex-col">
           {/* Editor Header */}
           <div className="h-12 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4">
             <div className="flex items-center gap-3">
