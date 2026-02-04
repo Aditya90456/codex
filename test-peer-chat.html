@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Peer Chat Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1e293b;
+            color: white;
+        }
+        .test-result {
+            background: #334155;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+        }
+        .error {
+            border-left-color: #ef4444;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        #output {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            min-height: 200px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 AI Peer Chat Test</h1>
+    <p>Testing the AI peer chat functionality with different scenarios:</p>
+    
+    <button onclick="testGreeting()">Test Greeting</button>
+    <button onclick="testDebugHelp()">Test Debug Help</button>
+    <button onclick="testCodeExplanation()">Test Code Explanation</button>
+    <button onclick="testOptimization()">Test Optimization</button>
+    
+    <div id="output">Click a test button to see results...</div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:3001';
+        
+        async function testPeerChat(message, context = {}) {
+            try {
+                const response = await fetch(`${API_BASE}/api/ai/peer-chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message, context })
+                });
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+        
+        function displayResult(testName, result) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            if (result.success) {
+                output.textContent += `[${timestamp}] ✅ ${testName}\n`;
+                output.textContent += `Message: ${result.message}\n`;
+                output.textContent += `Response: ${result.response}\n`;
+                output.textContent += `Source: ${result.source}\n\n`;
+            } else {
+                output.textContent += `[${timestamp}] ❌ ${testName} FAILED\n`;
+                output.textContent += `Error: ${result.error}\n\n`;
+            }
+            
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        async function testGreeting() {
+            const result = await testPeerChat("Hey there! I'm new to coding", {
+                language: 'javascript',
+                chatMode: 'casual'
+            });
+            displayResult('Greeting Test', result);
+        }
+        
+        async function testDebugHelp() {
+            const result = await testPeerChat("I'm getting a TypeError in my code", {
+                language: 'python',
+                chatMode: 'debug',
+                currentCode: 'def solution(nums): return nums[0] + nums[1]',
+                currentProblem: {
+                    title: 'Two Sum',
+                    difficulty: 'Easy',
+                    category: 'Array'
+                }
+            });
+            displayResult('Debug Help Test', result);
+        }
+        
+        async function testCodeExplanation() {
+            const result = await testPeerChat("Can you explain how this algorithm works?", {
+                language: 'javascript',
+                chatMode: 'explain',
+                currentCode: 'function twoSum(nums, target) { const map = new Map(); for (let i = 0; i < nums.length; i++) { const complement = target - nums[i]; if (map.has(complement)) { return [map.get(complement), i]; } map.set(nums[i], i); } }',
+                currentProblem: {
+                    title: 'Two Sum',
+                    difficulty: 'Easy',
+                    category: 'Array'
+                }
+            });
+            displayResult('Code Explanation Test', result);
+        }
+        
+        async function testOptimization() {
+            const result = await testPeerChat("How can I make this code faster?", {
+                language: 'javascript',
+                chatMode: 'optimize',
+                currentCode: 'function twoSum(nums, target) { for (let i = 0; i < nums.length; i++) { for (let j = i + 1; j < nums.length; j++) { if (nums[i] + nums[j] === target) { return [i, j]; } } } }',
+                currentProblem: {
+                    title: 'Two Sum',
+                    difficulty: 'Easy',
+                    category: 'Array'
+                }
+            });
+            displayResult('Optimization Test', result);
+        }
+    </script>
+</body>
+</html>

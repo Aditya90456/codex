@@ -13,7 +13,7 @@
 Fill in the form:
 - **App name**: `Codex Playground` (or any name you like)
 - **App description**: `Music player for coding sessions`
-- **Redirect URI**: `http://localhost:5173/spotify/callback`
+- **Redirect URI**: `http://127.0.0.1:5173/spotify/callback`
 - **Which API/SDKs are you planning to use?**: Select "Web API"
 - Accept terms and click **"Save"**
 
@@ -66,7 +66,7 @@ npm start
 ## Troubleshooting
 
 **"Redirect URI mismatch"**
-- Make sure redirect URI in Spotify dashboard exactly matches: `http://localhost:5173/spotify/callback`
+- Make sure redirect URI in Spotify dashboard exactly matches: `http://127.0.0.1:5173/spotify/callback`
 
 **"Invalid client"**
 - Double-check Client ID and Secret are copied correctly

@@ -654,6 +654,499 @@ function escapeHtml(text) {
   return text.replace(/[&<>"']/g, m => map[m]);
 }
 
+// AI Peer Chat endpoint - Casual coding buddy conversations
+router.post('/peer-chat', async (req, res) => {
+  try {
+    const { message, context = {} } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Message is required' 
+      });
+    }
+
+    // Check if Gemini API key is configured
+    if (!GEMINI_API_KEY) {
+      console.warn('⚠️  Gemini API key not configured, using fallback peer chat');
+      const response = await generatePeerChatFallback(message, context);
+      return res.json({
+        success: true,
+        message,
+        response,
+        timestamp: new Date().toISOString(),
+        source: 'fallback'
+      });
+    }
+
+    // Generate peer chat response using Gemini AI
+    console.log(`🚀 Generating peer chat response with Gemini AI...`);
+    const response = await generatePeerChatWithGemini(message, context);
+
+    res.json({
+      success: true,
+      message,
+      response,
+      timestamp: new Date().toISOString(),
+      source: 'gemini-ai'
+    });
+
+  } catch (error) {
+    console.error('❌ AI Peer Chat Error:', error.message);
+    
+    // Fallback to simple response if AI fails
+    try {
+      const fallbackResponse = await generatePeerChatFallback(req.body.message, req.body.context);
+      return res.json({
+        success: true,
+        message: req.body.message,
+        response: fallbackResponse,
+        timestamp: new Date().toISOString(),
+        source: 'fallback',
+        warning: 'AI chat temporarily unavailable, using fallback'
+      });
+    } catch (fallbackError) {
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to generate peer chat response',
+        message: error.message 
+      });
+    }
+  }
+});
+
+// Peer chat response using Gemini AI - Casual coding buddy style
+async function generatePeerChatWithGemini(message, context = {}) {
+  try {
+    const { currentCode, currentProblem, language, chatMode, conversationHistory } = context;
+
+    // Create a casual, peer-like system prompt
+    let systemPrompt = `You are a friendly coding buddy having a casual conversation. You're knowledgeable but approachable, like a peer programmer who's always willing to help.
+
+Personality:
+- Talk like a real person, not a formal assistant
+- Use casual language and programming slang when appropriate
+- Be encouraging and supportive
+- Share insights like you're pair programming
+- Use emojis occasionally but don't overdo it
+- Keep responses conversational and not too long
+
+Current context:
+- Language: ${language || 'JavaScript'}
+- Chat mode: ${chatMode || 'casual'}`;
+
+    if (currentProblem) {
+      systemPrompt += `
+- Working on: ${currentProblem.title} (${currentProblem.difficulty})
+- Category: ${currentProblem.category}`;
+    }
+
+    if (currentCode && currentCode.trim()) {
+      systemPrompt += `
+- Current code: ${currentCode.substring(0, 500)}${currentCode.length > 500 ? '...' : ''}`;
+    }
+
+    // Add conversation history for context
+    let conversationContext = '';
+    if (conversationHistory && conversationHistory.length > 0) {
+      const recentHistory = conversationHistory.slice(-3); // Last 3 messages
+      conversationContext = recentHistory.map(msg => 
+        `${msg.type === 'user' ? 'You' : 'Me'}: ${msg.content}`
+      ).join('\n');
+    }
+
+    const fullPrompt = `${systemPrompt}
+
+${conversationContext ? `Recent conversation:\n${conversationContext}\n` : ''}
+You: ${message}
+Me:`;
+
+    console.log(`🚀 Peer chat generation with context...`);
+    
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: fullPrompt
+          }]
+        }],
+        generationConfig: {
+          ...CHAT_SPEED_CONFIG,
+          maxOutputTokens: 600, // Slightly longer for peer chat
+          temperature: 0.7 // More creative for casual conversation
+        },
+        safetySettings: SPEED_SAFETY_SETTINGS
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Gemini API error: ${response.status} - ${JSON.stringify(errorData)}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error('No response generated from Gemini AI');
+    }
+
+    const generatedText = data.candidates[0]?.content?.parts[0]?.text || 
+      'Hey! I\'m having trouble thinking right now. Can you try asking again? 🤔';
+
+    console.log(`⚡ Generated peer chat response: ${generatedText.length} characters`);
+
+    return generatedText.trim();
+
+  } catch (error) {
+    console.error('❌ Gemini Peer Chat Error:', error.message);
+    throw error;
+  }
+}
+
+// Fallback peer chat responses - casual and friendly
+async function generatePeerChatFallback(message, context = {}) {
+  const lowerMessage = message.toLowerCase();
+  const { currentProblem, language, chatMode } = context;
+  
+  // Greeting responses
+  if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+    const greetings = [
+      "Hey there! 👋 What are we coding today?",
+      "Hi! Ready to tackle some algorithms? 🚀",
+      "Hello! I'm here to help with whatever you're working on 😊",
+      "Hey! What's the coding challenge today?"
+    ];
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  }
+  
+  // Thank you responses
+  if (lowerMessage.includes('thank')) {
+    const thanks = [
+      "No problem! Happy to help 😊",
+      "You got it! That's what coding buddies are for 🤝",
+      "Anytime! Keep crushing those problems 💪",
+      "Glad I could help! You're doing great 🌟"
+    ];
+    return thanks[Math.floor(Math.random() * thanks.length)];
+  }
+  
+  // Debug/error help
+  if (lowerMessage.includes('error') || lowerMessage.includes('bug') || lowerMessage.includes('debug')) {
+    const debugHelp = [
+      "Ah, the classic debugging session! 🐛 What's the error message saying?",
+      "Let's squash this bug together! Can you share the error details?",
+      "Debugging time! 🔍 What's not working as expected?",
+      "Errors are just learning opportunities in disguise! What's going wrong?"
+    ];
+    return debugHelp[Math.floor(Math.random() * debugHelp.length)];
+  }
+  
+  // Code explanation requests
+  if (lowerMessage.includes('explain') || lowerMessage.includes('how does') || lowerMessage.includes('understand')) {
+    const explanations = [
+      "Sure thing! I love breaking down code concepts 💡 What part needs explaining?",
+      "Absolutely! Let's walk through it step by step 🚶‍♂️",
+      "Of course! Understanding the 'why' is just as important as the 'how' 🤓",
+      "Happy to explain! What specific part is confusing you?"
+    ];
+    return explanations[Math.floor(Math.random() * explanations.length)];
+  }
+  
+  // Optimization requests
+  if (lowerMessage.includes('optimize') || lowerMessage.includes('faster') || lowerMessage.includes('efficient')) {
+    const optimizations = [
+      "Time to make it faster! ⚡ Let's look at the time complexity first",
+      "Optimization mode activated! 🚀 What's the current approach?",
+      "Love a good optimization challenge! Let's see what we can improve",
+      "Speed it up! 💨 Are we talking time or space complexity here?"
+    ];
+    return optimizations[Math.floor(Math.random() * optimizations.length)];
+  }
+  
+  // Problem-specific responses
+  if (currentProblem) {
+    const problemResponses = [
+      `Working on "${currentProblem.title}"? That's a solid ${currentProblem.difficulty} problem! What's your approach so far?`,
+      `Nice choice with "${currentProblem.title}"! ${currentProblem.category} problems are always fun to solve 🧩`,
+      `"${currentProblem.title}" - I remember this one! What part are you stuck on?`,
+      `${currentProblem.difficulty} problems like "${currentProblem.title}" are great practice! How's it going?`
+    ];
+    return problemResponses[Math.floor(Math.random() * problemResponses.length)];
+  }
+  
+  // Language-specific responses
+  if (language && (lowerMessage.includes(language) || lowerMessage.includes('language'))) {
+    const langResponses = {
+      javascript: "JavaScript is awesome! 🟨 Love the flexibility it gives us",
+      python: "Python is so clean and readable! 🐍 Great choice for algorithms",
+      java: "Java - solid and reliable! ☕ The verbosity pays off in larger projects",
+      cpp: "C++ - when you need that extra performance! ⚡ Classic choice for competitive programming",
+      typescript: "TypeScript! 💙 All the JavaScript goodness with type safety"
+    };
+    return langResponses[language] || `${language} is a great language to work with! 👍`;
+  }
+  
+  // General coding conversation
+  const generalResponses = [
+    "I'm here to help with whatever you're working on! What's on your mind? 🤔",
+    "Coding questions, algorithm help, or just want to chat about programming? I'm all ears! 👂",
+    "What are we building today? Always excited to help with coding challenges! 🚀",
+    "Hit me with your coding questions! Whether it's debugging, algorithms, or just brainstorming 💭",
+    "Ready to dive into some code! What can I help you figure out? 🔍"
+  ];
+  
+  return generalResponses[Math.floor(Math.random() * generalResponses.length)];
+}
+
+// AI LeetCode Assistant endpoint - Intelligent problem-solving assistance
+router.post('/leetcode-assistant', async (req, res) => {
+  try {
+    const { message, problem, code, language, testResults, assistanceMode, conversationHistory } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Message is required' 
+      });
+    }
+
+    // Check if Gemini API key is configured
+    if (!GEMINI_API_KEY) {
+      console.warn('⚠️  Gemini API key not configured, using fallback assistant');
+      const response = await generateLeetCodeAssistanceFallback(message, problem, assistanceMode);
+      return res.json({
+        success: true,
+        message,
+        response,
+        timestamp: new Date().toISOString(),
+        source: 'fallback'
+      });
+    }
+
+    // Generate LeetCode assistance using Gemini AI
+    console.log(`🧠 Generating LeetCode assistance (${assistanceMode}) with Gemini AI...`);
+    const response = await generateLeetCodeAssistanceWithGemini(message, problem, code, language, testResults, assistanceMode, conversationHistory);
+
+    res.json({
+      success: true,
+      message,
+      response,
+      timestamp: new Date().toISOString(),
+      source: 'gemini-ai'
+    });
+
+  } catch (error) {
+    console.error('❌ AI LeetCode Assistant Error:', error.message);
+    
+    // Fallback to simple response if AI fails
+    try {
+      const fallbackResponse = await generateLeetCodeAssistanceFallback(req.body.message, req.body.problem, req.body.assistanceMode);
+      return res.json({
+        success: true,
+        message: req.body.message,
+        response: fallbackResponse,
+        timestamp: new Date().toISOString(),
+        source: 'fallback',
+        warning: 'AI assistant temporarily unavailable, using fallback'
+      });
+    } catch (fallbackError) {
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to generate LeetCode assistance',
+        message: error.message 
+      });
+    }
+  }
+});
+
+// LeetCode assistance using Gemini AI - Intelligent problem-solving help
+async function generateLeetCodeAssistanceWithGemini(message, problem, code, language, testResults, assistanceMode, conversationHistory) {
+  try {
+    // Create specialized system prompt based on assistance mode
+    let systemPrompt = `You are an expert LeetCode AI assistant, similar to Kiro. You help programmers solve coding problems with intelligent guidance.
+
+Your personality:
+- Expert but approachable, like a senior developer mentor
+- Give hints and guidance rather than complete solutions (unless specifically asked)
+- Explain concepts clearly with examples
+- Encourage learning and understanding
+- Use emojis appropriately but not excessively
+
+Current context:
+- Problem: ${problem?.title || 'Unknown'} (${problem?.difficulty || 'Unknown'} difficulty)
+- Category: ${problem?.category || 'Unknown'}
+- Language: ${language || 'JavaScript'}
+- Assistance Mode: ${assistanceMode}`;
+
+    // Add problem description if available
+    if (problem?.description) {
+      systemPrompt += `\n- Problem Description: ${problem.description.substring(0, 500)}...`;
+    }
+
+    // Add current code context if available
+    if (code && code.trim()) {
+      systemPrompt += `\n- Current Code:\n\`\`\`${language}\n${code.substring(0, 1000)}${code.length > 1000 ? '...' : ''}\n\`\`\``;
+    }
+
+    // Add test results context if available
+    if (testResults) {
+      systemPrompt += `\n- Test Results: ${testResults.accepted ? 'All tests passed ✅' : 'Some tests failed ❌'}`;
+    }
+
+    // Mode-specific instructions
+    const modeInstructions = {
+      hint: `
+Mode: HINT GIVING
+- Give subtle hints that guide toward the solution without giving it away
+- Ask leading questions to help them think through the problem
+- Suggest which data structures or algorithms might be useful
+- Point out key insights about the problem without solving it`,
+
+      solution: `
+Mode: APPROACH EXPLANATION  
+- Explain different approaches to solve the problem
+- Discuss time and space complexity trade-offs
+- Provide step-by-step algorithmic thinking
+- Give pseudocode or high-level strategy, not complete implementation`,
+
+      debug: `
+Mode: CODE DEBUGGING
+- Analyze the provided code for logical errors
+- Identify potential edge cases that might be failing
+- Suggest specific fixes for bugs
+- Explain why certain approaches might not work`,
+
+      optimize: `
+Mode: OPTIMIZATION GUIDANCE
+- Analyze current solution's time and space complexity
+- Suggest more efficient approaches
+- Explain optimization techniques
+- Discuss trade-offs between different optimizations`
+    };
+
+    systemPrompt += modeInstructions[assistanceMode] || modeInstructions.hint;
+
+    // Add conversation history for context
+    let conversationContext = '';
+    if (conversationHistory && conversationHistory.length > 0) {
+      const recentHistory = conversationHistory.slice(-3);
+      conversationContext = recentHistory.map(msg => 
+        `${msg.type === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+      ).join('\n');
+    }
+
+    const fullPrompt = `${systemPrompt}
+
+${conversationContext ? `Recent conversation:\n${conversationContext}\n` : ''}
+User: ${message}
+Assistant:`;
+
+    console.log(`🧠 LeetCode assistance generation (${assistanceMode})...`);
+    
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: fullPrompt
+          }]
+        }],
+        generationConfig: {
+          ...CHAT_SPEED_CONFIG,
+          maxOutputTokens: 800,
+          temperature: 0.6 // Slightly more creative for teaching
+        },
+        safetySettings: SPEED_SAFETY_SETTINGS
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Gemini API error: ${response.status} - ${JSON.stringify(errorData)}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error('No response generated from Gemini AI');
+    }
+
+    const generatedText = data.candidates[0]?.content?.parts[0]?.text || 
+      'I\'m having trouble generating a response right now. Can you try asking again?';
+
+    console.log(`⚡ Generated LeetCode assistance: ${generatedText.length} characters`);
+
+    return generatedText.trim();
+
+  } catch (error) {
+    console.error('❌ Gemini LeetCode Assistant Error:', error.message);
+    throw error;
+  }
+}
+
+// Fallback LeetCode assistance responses
+async function generateLeetCodeAssistanceFallback(message, problem, assistanceMode) {
+  const lowerMessage = message.toLowerCase();
+  const problemTitle = problem?.title || 'this problem';
+  const difficulty = problem?.difficulty || 'Unknown';
+  
+  // Mode-specific fallback responses
+  if (assistanceMode === 'hint') {
+    const hints = [
+      `🔍 For ${problemTitle}, think about what data structure would help you track information efficiently.`,
+      `💡 Consider the time complexity - can you solve this in O(n) time?`,
+      `🎯 Look for patterns in the problem. What's the key insight that makes this solvable?`,
+      `🤔 Try working through a small example by hand. What steps do you naturally take?`,
+      `📊 Think about whether you need to store previous results or if you can solve it in one pass.`
+    ];
+    return hints[Math.floor(Math.random() * hints.length)];
+  }
+  
+  if (assistanceMode === 'solution') {
+    const approaches = [
+      `🎯 For ${problemTitle}, here are common approaches:\n\n1. **Brute Force**: Try all possibilities (O(n²) time)\n2. **Optimized**: Use a hash map or two pointers (O(n) time)\n3. **Advanced**: Consider if dynamic programming or greedy approach applies\n\nWhich approach interests you most?`,
+      `📋 Let's break down ${problemTitle}:\n\n**Step 1**: Understand the input/output\n**Step 2**: Identify the core operation needed\n**Step 3**: Choose appropriate data structure\n**Step 4**: Implement with edge cases in mind\n\nWhat step would you like help with?`,
+      `🧠 For ${difficulty} problems like this, consider:\n\n- What's the simplest solution that works?\n- Can you optimize it with better data structures?\n- Are there any mathematical properties to exploit?\n\nLet me know which direction you'd like to explore!`
+    ];
+    return approaches[Math.floor(Math.random() * approaches.length)];
+  }
+  
+  if (assistanceMode === 'debug') {
+    const debugHelp = [
+      `🐛 Let's debug your solution! Common issues in ${difficulty} problems:\n\n- Off-by-one errors in loops\n- Not handling edge cases (empty input, single element)\n- Incorrect boundary conditions\n- Logic errors in conditionals\n\nCan you share what specific error you're seeing?`,
+      `🔍 Debugging checklist for ${problemTitle}:\n\n✅ Are you handling all edge cases?\n✅ Is your loop logic correct?\n✅ Are you returning the right data type?\n✅ Did you test with the given examples?\n\nWhat part seems to be failing?`,
+      `⚠️ For debugging, try:\n\n1. Add console.log statements to trace execution\n2. Test with simple inputs first\n3. Check if your algorithm matches the expected approach\n4. Verify edge cases\n\nWhat's the current behavior vs expected?`
+    ];
+    return debugHelp[Math.floor(Math.random() * debugHelp.length)];
+  }
+  
+  if (assistanceMode === 'optimize') {
+    const optimizations = [
+      `⚡ Optimization strategies for ${problemTitle}:\n\n**Time Complexity**: Can you reduce nested loops?\n**Space Complexity**: Can you solve it in-place?\n**Data Structures**: Would a hash map, set, or heap help?\n**Algorithms**: Consider sorting, two pointers, or sliding window\n\nWhat's your current approach's complexity?`,
+      `🚀 To optimize ${difficulty} problems:\n\n1. **Analyze current solution**: What's the bottleneck?\n2. **Consider trade-offs**: Time vs space complexity\n3. **Use efficient data structures**: Hash maps for O(1) lookup\n4. **Apply algorithms**: Binary search, dynamic programming\n\nWhich aspect would you like to improve?`,
+      `📈 Optimization techniques:\n\n- **Memoization**: Store computed results\n- **Two Pointers**: Reduce O(n²) to O(n)\n- **Sorting**: Sometimes preprocessing helps\n- **Mathematical**: Look for patterns or formulas\n\nWhat's your current time/space complexity?`
+    ];
+    return optimizations[Math.floor(Math.random() * optimizations.length)];
+  }
+  
+  // General fallback responses
+  const generalResponses = [
+    `I'm here to help with ${problemTitle}! What specific aspect would you like assistance with?`,
+    `Great question about ${problemTitle}! Can you tell me more about what you're struggling with?`,
+    `Let's work through ${problemTitle} together. What approach have you tried so far?`,
+    `I'd love to help you solve this ${difficulty} problem! What's your current thinking?`
+  ];
+  
+  return generalResponses[Math.floor(Math.random() * generalResponses.length)];
+}
+
 // Health check
 router.get('/health', (req, res) => {
   res.json({ 
@@ -662,6 +1155,7 @@ router.get('/health', (req, res) => {
     geminiConfigured: !!GEMINI_API_KEY,
     model: 'gemini-2.5-flash',
     optimizations: 'Speed optimized for faster responses',
+    endpoints: ['generate', 'chat', 'peer-chat', 'leetcode-assistant'],
     timestamp: new Date().toISOString()
   });
 });

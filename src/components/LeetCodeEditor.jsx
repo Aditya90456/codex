@@ -33,7 +33,8 @@ import {
   GitBranch,
   Upload,
   Download,
-  Copy
+  Copy,
+  BookOpen
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import AICodeExplainer from './AI/AICodeExplainer';
@@ -43,8 +44,13 @@ import VideoPlayer from './VideoPlayer';
 import { useDryRunAnimation } from '../hooks/useDryRunAnimation';
 import DryRunAnimationPanel from './DryRunAnimationPanel';
 import SolutionViewer from './SolutionViewer';
-import SpotifyPlayerFree from './SpotifyPlayerFree';
 import NetworkMonitor from './NetworkMonitor';
+import AIPeerChat from './AIPeerChat';
+import DSACertificateSystem from './DSACertificateSystem';
+import AILeetCodeAssistant from './AILeetCodeAssistant';
+import ProblemDescription from './ProblemDescription';
+import LeetCodeTopmat from './LeetCodeTopmat';
+import DSAPatternSidebar from './DSAPatternSidebar';
 
 const LeetCodeEditor = () => {
   const navigate = useNavigate();
@@ -74,6 +80,190 @@ const LeetCodeEditor = () => {
   const [showVideoPlayer, setShowVideoPlayer] = useState(false);
   const [monacoLoaded, setMonacoLoaded] = useState(false);
   const [monacoError, setMonacoError] = useState(false);
+
+  // Certificate system state
+  const [completedProblems, setCompletedProblems] = useState(new Set());
+  const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [newCertificate, setNewCertificate] = useState(null);
+
+  // LeetCode Topmat state
+  const [showTopmat, setShowTopmat] = useState(false);
+
+  // DSA Pattern Sidebar state
+  const [showDSASidebar, setShowDSASidebar] = useState(true);
+  const [currentDSAProblem, setCurrentDSAProblem] = useState(null);
+
+  // Load completed problems from localStorage
+  useEffect(() => {
+    if (user?.id) {
+      const saved = localStorage.getItem(`dsa_progress_${user.id}`);
+      if (saved) {
+        setCompletedProblems(new Set(JSON.parse(saved)));
+      }
+    }
+  }, [user?.id]);
+
+  // Check certificate eligibility
+  const checkCertificateEligibility = async (problemId, language) => {
+    if (!user?.id) return;
+
+    // Mark problem as completed
+    const newCompleted = new Set(completedProblems);
+    if (newCompleted.has(problemId)) return; // Already completed
+
+    newCompleted.add(problemId);
+    setCompletedProblems(newCompleted);
+    
+    // Save to localStorage
+    localStorage.setItem(`dsa_progress_${user.id}`, JSON.stringify([...newCompleted]));
+
+    const completedCount = newCompleted.size;
+    console.log(`🎯 Problems completed: ${completedCount}/150`);
+
+    // Check for milestone certificates
+    const milestones = [
+      { count: 10, name: 'DSA Beginner', description: 'Completed first 10 problems' },
+      { count: 25, name: 'Problem Solver', description: 'Solved 25 DSA problems' },
+      { count: 50, name: 'Algorithm Expert', description: 'Mastered 50 algorithms' },
+      { count: 100, name: 'DSA Master', description: 'Conquered 100 challenges' },
+      { count: 150, name: 'DSA Grandmaster', description: 'Completed all 150 problems! 🎉' }
+    ];
+
+    // Check if user hit a milestone
+    const milestone = milestones.find(m => m.count === completedCount);
+    if (milestone) {
+      console.log(`🏆 Milestone reached: ${milestone.name}`);
+      await generateCertificate(milestone, language, completedCount);
+    }
+
+    // Check category completion
+    await checkCategoryCompletion(newCompleted, language);
+  };
+
+  // Check if user completed an entire category
+  const checkCategoryCompletion = async (completed, language) => {
+    const categories = ['Arrays', 'Strings', 'Linked Lists', 'Trees', 'Dynamic Programming', 'Graphs', 'Stack'];
+    
+    for (const category of categories) {
+      const categoryProblems = dsaProblems.filter(p => p.category === category);
+      const completedInCategory = categoryProblems.filter(p => completed.has(p.id));
+      
+      if (completedInCategory.length === categoryProblems.length) {
+        // Check if we already have this category certificate
+        const existingCerts = JSON.parse(localStorage.getItem(`dsa_certificates_${user.id}`) || '[]');
+        const hasCategory = existingCerts.some(cert => cert.challengeName === `${category} Master`);
+        
+        if (!hasCategory) {
+          console.log(`🎯 Category completed: ${category}`);
+          await generateCertificate({
+            name: `${category} Master`,
+            description: `Completed all ${categoryProblems.length} ${category} problems`,
+            type: 'category'
+          }, language, categoryProblems.length);
+        }
+      }
+    }
+  };
+
+  // Generate certificate
+  const generateCertificate = async (achievement, language, problemsCompleted) => {
+    try {
+      const userName = user?.firstName && user?.lastName 
+        ? `${user.firstName} ${user.lastName}`
+        : user?.emailAddresses?.[0]?.emailAddress || 'Coding Enthusiast';
+
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001';
+      
+      console.log(`🎖️ Generating certificate: ${achievement.name}`);
+      
+      const response = await fetch(`${backendUrl}/api/certificates/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userName,
+          userEmail: user?.emailAddresses?.[0]?.emailAddress,
+          challengeType: 'dsa',
+          challengeName: achievement.name,
+          completionTime: new Date().toISOString(),
+          score: 100,
+          language: language,
+          difficulty: achievement.count >= 100 ? 'Grandmaster' : achievement.count >= 50 ? 'Expert' : 'Advanced'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const certificate = {
+          ...data.certificate,
+          achievement,
+          problemsCompleted,
+          generatedAt: new Date().toISOString()
+        };
+
+        // Save certificate to localStorage
+        const existingCerts = JSON.parse(localStorage.getItem(`dsa_certificates_${user.id}`) || '[]');
+        const updatedCerts = [...existingCerts, certificate];
+        localStorage.setItem(`dsa_certificates_${user.id}`, JSON.stringify(updatedCerts));
+
+        // Show certificate modal
+        setNewCertificate(certificate);
+        setShowCertificateModal(true);
+
+        console.log(`✅ Certificate generated: ${certificate.verificationCode}`);
+      }
+    } catch (error) {
+      console.error('Certificate generation error:', error);
+    }
+  };
+
+  // Download certificate
+  const downloadCertificate = (certificate) => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:3001';
+    window.open(`${backendUrl}/api/certificates/download/${certificate.id}`, '_blank');
+  };
+
+  // Share certificate
+  const shareCertificate = (certificate) => {
+    const shareText = `🎉 I just earned the "${certificate.challengeName}" certificate for completing DSA challenges! 💪 #DSA #Coding #Achievement`;
+    const shareUrl = `${window.location.origin}/verify/${certificate.verificationCode}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'DSA Certificate Achievement',
+        text: shareText,
+        url: shareUrl
+      });
+    } else {
+      navigator.clipboard.writeText(`${shareText}\n\nVerify: ${shareUrl}`);
+      alert('Certificate link copied to clipboard!');
+    }
+  };
+
+  // Handle code suggestions from AI assistant
+  const handleCodeSuggestion = (suggestion) => {
+    if (editorRef.current && suggestion.code) {
+      const position = editorRef.current.getPosition();
+      const model = editorRef.current.getModel();
+      
+      if (position && model) {
+        // Insert suggestion at cursor or replace selection
+        const range = editorRef.current.getSelection() || {
+          startLineNumber: position.lineNumber,
+          startColumn: position.column,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column
+        };
+        
+        editorRef.current.executeEdits('ai-suggestion', [{
+          range: range,
+          text: suggestion.code
+        }]);
+        
+        editorRef.current.focus();
+      }
+    }
+  };
 
   // Monaco loading timeout
   useEffect(() => {
@@ -700,6 +890,9 @@ ${code}
         setTestResults(results);
         setOutputComparison(null);
         
+        // Check for certificate eligibility when problem is solved
+        await checkCertificateEligibility(selectedProblem.id, language);
+        
         // Sync to GitHub if connected and auto-sync is enabled
         if (githubConnected && autoSyncGithub) {
           await syncToGithub(selectedProblem, code, results);
@@ -758,6 +951,89 @@ ${code}
     }
   };
 
+  // Handle DSA problem selection from sidebar
+  const handleDSAProblemSelect = (dsaProblem) => {
+    setCurrentDSAProblem(dsaProblem);
+    
+    // Create a problem object compatible with the ProblemDescription component
+    const adaptedProblem = {
+      id: dsaProblem.id,
+      title: dsaProblem.title,
+      difficulty: dsaProblem.difficulty,
+      pattern: dsaProblem.pattern,
+      timeComplexity: dsaProblem.timeComplexity,
+      spaceComplexity: dsaProblem.spaceComplexity,
+      companies: dsaProblem.companies,
+      leetcodeUrl: dsaProblem.leetcodeUrl,
+      gfgUrl: dsaProblem.gfgUrl,
+      codeforcesUrl: dsaProblem.codeforcesUrl,
+      videoUrl: dsaProblem.videoUrl,
+      hindiVideoUrl: dsaProblem.hindiVideoUrl,
+      description: `
+        <div class="problem-description">
+          <h3>Problem: ${dsaProblem.title}</h3>
+          <p><strong>Difficulty:</strong> <span class="${dsaProblem.difficulty.toLowerCase()}">${dsaProblem.difficulty}</span></p>
+          <p><strong>Pattern:</strong> ${dsaProblem.pattern}</p>
+          <p><strong>Time Complexity:</strong> ${dsaProblem.timeComplexity}</p>
+          <p><strong>Space Complexity:</strong> ${dsaProblem.spaceComplexity}</p>
+          
+          <h4>Companies:</h4>
+          <p>${dsaProblem.companies.join(', ')}</p>
+          
+          <h4>Practice Links:</h4>
+          <ul>
+            <li><a href="${dsaProblem.leetcodeUrl}" target="_blank" rel="noopener noreferrer">LeetCode Problem</a></li>
+            <li><a href="${dsaProblem.gfgUrl}" target="_blank" rel="noopener noreferrer">GeeksforGeeks Article</a></li>
+            <li><a href="${dsaProblem.codeforcesUrl}" target="_blank" rel="noopener noreferrer">Codeforces Problem</a></li>
+          </ul>
+          
+          <h4>Video Solution:</h4>
+          <p><a href="${dsaProblem.videoUrl}" target="_blank" rel="noopener noreferrer">Watch Solution Video</a></p>
+          
+          <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400">
+            <p><strong>Note:</strong> This is a pattern-based problem from the DSA 150 collection. 
+            Practice this problem on multiple platforms to strengthen your understanding of the ${dsaProblem.pattern} pattern.</p>
+          </div>
+        </div>
+      `,
+      examples: [
+        {
+          input: "Check the linked platforms for examples",
+          output: "Refer to LeetCode, GFG, or Codeforces",
+          explanation: "Each platform provides detailed examples and test cases."
+        }
+      ],
+      constraints: ["Refer to the original problem on the linked platforms"],
+      starterCode: `// ${dsaProblem.title}
+// Pattern: ${dsaProblem.pattern}
+// Difficulty: ${dsaProblem.difficulty}
+// Time Complexity: ${dsaProblem.timeComplexity}
+// Space Complexity: ${dsaProblem.spaceComplexity}
+
+function solve() {
+    // Your solution here
+    // Practice this problem on:
+    // LeetCode: ${dsaProblem.leetcodeUrl}
+    // GeeksforGeeks: ${dsaProblem.gfgUrl}
+    // Codeforces: ${dsaProblem.codeforcesUrl}
+    
+    return null;
+}`,
+      videoUrl: dsaProblem.videoUrl,
+      testCases: [
+        {
+          input: "// Test cases available on the linked platforms",
+          expectedOutput: "// Check LeetCode, GFG, or Codeforces for test cases",
+          explanation: "Use the platform links to access full test suites"
+        }
+      ]
+    };
+    
+    // Update the selected problem and code
+    setSelectedProblem(adaptedProblem);
+    setCode(adaptedProblem.starterCode);
+  };
+
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
       case 'Easy': return 'text-green-500';
@@ -792,6 +1068,18 @@ ${code}
           >
             <Home className="w-4 h-4" />
             <span className="text-sm font-medium">Home</span>
+          </button>
+          
+          <button
+            onClick={() => setShowDSASidebar(!showDSASidebar)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
+              showDSASidebar 
+                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                : 'bg-slate-700 hover:bg-slate-600'
+            }`}
+          >
+            <Brain className="w-4 h-4" />
+            <span className="text-sm font-medium">DSA Patterns</span>
           </button>
           
           <button
@@ -912,6 +1200,46 @@ ${code}
                     </div>
                   </div>
 
+                  {/* Certificate Progress */}
+                  <div className="p-4 border-b border-slate-700">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Trophy className="w-4 h-4 text-yellow-500" />
+                      <span className="text-white font-medium text-sm">Certificate Progress</span>
+                    </div>
+                    <div className="space-y-2">
+                      {[10, 25, 50, 100, 150].map(milestone => {
+                        const completed = completedProblems.size;
+                        const isCompleted = completed >= milestone;
+                        const isNext = completed < milestone;
+                        const progress = Math.min((completed / milestone) * 100, 100);
+                        
+                        if (!isNext && !isCompleted) return null;
+                        if (isCompleted && milestone !== 150 && completed >= milestone + 25) return null;
+                        
+                        return (
+                          <div key={milestone} className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span className={isCompleted ? 'text-green-400' : 'text-gray-400'}>
+                                {milestone} Problems {isCompleted ? '✅' : ''}
+                              </span>
+                              <span className="text-gray-400">
+                                {isCompleted ? 'Completed' : `${milestone - completed} to go`}
+                              </span>
+                            </div>
+                            {isNext && (
+                              <div className="w-full bg-slate-600 rounded-full h-1">
+                                <div 
+                                  className="bg-yellow-500 h-1 rounded-full transition-all duration-500"
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {/* Menu Items */}
                   <div className="py-2">
                     <button 
@@ -994,8 +1322,16 @@ ${code}
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
+        {/* DSA Pattern Sidebar */}
+        {showDSASidebar && (
+          <DSAPatternSidebar 
+            onProblemSelect={handleDSAProblemSelect}
+            currentProblem={currentDSAProblem}
+          />
+        )}
+        
         {/* Left Panel - Problem Description */}
-        <div className="w-1/2 border-r border-slate-700 flex flex-col">
+        <div className={`${showDSASidebar ? 'w-1/3' : 'w-1/2'} border-r border-slate-700 flex flex-col`}>
           {/* Problem Header */}
           <div className="p-4 border-b border-slate-700">
             <div className="flex items-center justify-between mb-2">
@@ -1057,60 +1393,27 @@ ${code}
 
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto p-6">
-            <div className="space-y-6">
-              <div>
-                <p className="text-gray-300 leading-relaxed">{selectedProblem.description}</p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Examples:</h3>
-                {selectedProblem.examples.map((example, idx) => (
-                  <div key={idx} className="mb-4 p-4 bg-slate-800 rounded-lg">
-                    <p className="text-sm mb-2">
-                      <span className="font-semibold text-gray-400">Example {idx + 1}:</span>
-                    </p>
-                    <div className="space-y-1 text-sm font-mono">
-                      <p><span className="text-gray-400">Input:</span> <span className="text-white">{example.input}</span></p>
-                      <p><span className="text-gray-400">Output:</span> <span className="text-white">{example.output}</span></p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Constraints:</h3>
-                <ul className="list-disc list-inside space-y-1 text-gray-300 text-sm">
-                  <li>1 ≤ nums.length ≤ 10⁴</li>
-                  <li>-10⁹ ≤ nums[i] ≤ 10⁹</li>
-                  <li>-10⁹ ≤ target ≤ 10⁹</li>
-                  <li>Only one valid answer exists</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Follow-up:</h3>
-                <p className="text-gray-300 text-sm">Can you come up with an algorithm that is less than O(n²) time complexity?</p>
-              </div>
-
-              {/* Solution Viewer */}
-              <div className="mt-6">
-                <SolutionViewer 
-                  problemId={selectedProblem.id}
-                  language={language}
-                  onUseSolution={(solutionCode) => {
-                    setCode(solutionCode);
-                    if (editorRef.current) {
-                      editorRef.current.setValue(solutionCode);
-                    }
-                  }}
-                />
-              </div>
+            {/* Use the new ProblemDescription component */}
+            <ProblemDescription problem={currentDSAProblem || selectedProblem} />
+            
+            {/* Solution Viewer */}
+            <div className="mt-6">
+              <SolutionViewer 
+                problemId={selectedProblem.id}
+                language={language}
+                onUseSolution={(solutionCode) => {
+                  setCode(solutionCode);
+                  if (editorRef.current) {
+                    editorRef.current.setValue(solutionCode);
+                  }
+                }}
+              />
             </div>
           </div>
         </div>
 
         {/* Right Panel - Code Editor */}
-        <div className="w-1/2 flex flex-col">
+        <div className={`${showDSASidebar ? 'flex-1' : 'w-1/2'} flex flex-col`}>
           {/* Editor Header */}
           <div className="h-12 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4">
             <div className="flex items-center gap-3">
@@ -1133,6 +1436,16 @@ ${code}
               >
                 <Brain className="w-4 h-4" />
                 <span className="hidden sm:inline">Explain</span>
+              </button>
+
+              {/* LeetCode Topmat Button */}
+              <button
+                onClick={() => setShowTopmat(true)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105"
+                title="LeetCode Premium Materials"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">Topmat</span>
               </button>
               
               {/* GitHub Button - More Visible */}
@@ -1733,11 +2046,89 @@ ${code}
         </div>
       )}
 
-      {/* Spotify Music Player with Search */}
-      <SpotifyPlayerFree />
-
       {/* Network Monitor */}
       <NetworkMonitor />
+
+      {/* AI Peer Chat */}
+      <AIPeerChat 
+        currentCode={code}
+        currentProblem={selectedProblem}
+        language={language}
+      />
+
+      {/* AI LeetCode Assistant */}
+      <AILeetCodeAssistant
+        currentProblem={selectedProblem}
+        currentCode={code}
+        language={language}
+        testResults={testResults}
+        onCodeSuggestion={handleCodeSuggestion}
+      />
+
+      {/* LeetCode Topmat */}
+      <LeetCodeTopmat 
+        isOpen={showTopmat}
+        onClose={() => setShowTopmat(false)}
+      />
+
+      {/* Certificate Achievement Modal */}
+      {showCertificateModal && newCertificate && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-xl p-8 max-w-md w-full border border-slate-700 shadow-2xl">
+            <div className="text-center">
+              {/* Celebration Animation */}
+              <div className="relative mb-6">
+                <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                  <Trophy className="w-12 h-12 text-white" />
+                </div>
+                <div className="absolute -top-2 -right-2 text-2xl animate-bounce">🎉</div>
+                <div className="absolute -top-1 -left-3 text-xl animate-bounce" style={{ animationDelay: '0.2s' }}>✨</div>
+                <div className="absolute -bottom-1 -right-1 text-lg animate-bounce" style={{ animationDelay: '0.4s' }}>🏆</div>
+              </div>
+              
+              <h3 className="text-3xl font-bold text-white mb-2">Congratulations!</h3>
+              <p className="text-gray-400 mb-6">You've earned a new certificate!</p>
+              
+              <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg p-6 mb-6">
+                <h4 className="font-bold text-white text-xl mb-2">{newCertificate.challengeName}</h4>
+                <p className="text-gray-400 text-sm mb-3">{newCertificate.achievement?.description}</p>
+                
+                <div className="flex items-center justify-center gap-4 text-sm text-gray-400 mb-3">
+                  <span>🎯 {newCertificate.problemsCompleted || completedProblems.size} Problems</span>
+                  <span>💻 {newCertificate.language}</span>
+                </div>
+                
+                <div className="bg-slate-700 rounded-lg p-3">
+                  <p className="text-xs text-gray-400 mb-1">Verification Code:</p>
+                  <p className="font-mono text-yellow-400 font-bold">{newCertificate.verificationCode}</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => downloadCertificate(newCertificate)}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
+                >
+                  📄 Download
+                </button>
+                <button
+                  onClick={() => shareCertificate(newCertificate)}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition-colors font-medium"
+                >
+                  📤 Share
+                </button>
+              </div>
+              
+              <button
+                onClick={() => setShowCertificateModal(false)}
+                className="w-full mt-3 bg-slate-600 hover:bg-slate-700 text-white py-2 px-4 rounded-lg transition-colors"
+              >
+                Continue Coding
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

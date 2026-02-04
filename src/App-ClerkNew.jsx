@@ -19,7 +19,6 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import ProfilePage from './pages/ProfilePage';
 import LeetCodeEditor from './components/LeetCodeEditor';
-import SpotifyCallback from './pages/SpotifyCallback';
 import './App.css';
 
 // Validate Clerk configuration on app start
@@ -35,7 +34,6 @@ function AppContent() {
           <Route path="/" element={<WelcomeScreenModern />} />
           <Route path="/sign-in" element={<SignInPage />} />
           <Route path="/sign-up" element={<SignUpPage />} />
-          <Route path="/spotify/callback" element={<SpotifyCallback />} />
           
           {/* Protected Routes */}
           <Route 

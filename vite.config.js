@@ -45,6 +45,22 @@ export default defineConfig({
     headers: {
       // Disable CSP for local development
       'Content-Security-Policy': ''
+    },
+    // Proxy API requests to backend
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:3001',
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('Proxy error:', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('Proxying request:', req.method, req.url);
+          });
+        }
+      }
     }
   },
   // Enable faster HMR

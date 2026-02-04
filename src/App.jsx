@@ -7,7 +7,6 @@ import AdvancedWebEditor from './components/AdvancedWebEditor';
 import DSAWithAIPage from './pages/DSAWithAIPage';
 import LeetCodePage from './pages/LeetCodePage';
 import ProfilePage from './pages/ProfilePage';
-import SpotifyCallback from './pages/SpotifyCallback';
 import './App.css';
 
 function App() {
@@ -24,7 +23,6 @@ function App() {
           <Route path="/ai" element={<AIUniversalCreatorModern />} />
           <Route path="/react-ai" element={<ReactCodeAI />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/spotify/callback" element={<SpotifyCallback />} />
         </Routes>
       </div>
     </Router>
