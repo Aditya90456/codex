@@ -91,19 +91,31 @@ function Navbar({ onShowAuth, onBackToWelcome }) {
             />
           </button>
           
-          <nav className="hidden md:flex items-center space-x-6">
-            <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+          <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
+            <button 
+              onClick={() => navigate('/editor')}
+              className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700"
+            >
               Editor
-            </a>
-            <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
+            </button>
+            <button 
+              onClick={() => navigate('/playground')}
+              className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700"
+            >
               Problems
-            </a>
-            <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
-              Playground
-            </a>
-            <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">
-              Community
-            </a>
+            </button>
+            <button 
+              onClick={() => navigate('/resume')}
+              className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700"
+            >
+              Resume AI
+            </button>
+            <button 
+              onClick={() => navigate('/ai')}
+              className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700"
+            >
+              AI Tools
+            </button>
           </nav>
         </div>
 

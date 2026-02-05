@@ -1,0 +1,45 @@
+[
+  {
+    "id": "6fd190dd-d569-44ed-8766-e2af041581aa",
+    "user_name": "Test User",
+    "user_email": "test@example.com",
+    "user_id": "test_user_123",
+    "session_type": "python_1v1",
+    "preferred_date": "2026-02-06",
+    "preferred_time": "09:00",
+    "timezone": "UTC",
+    "topics": [
+      "Python Basics & Syntax",
+      "Functions & Modules"
+    ],
+    "experience_level": "beginner",
+    "specific_goals": "I want to learn Python fundamentals and practice coding problems.",
+    "duration": 60,
+    "status": "pending",
+    "created_at": "2026-02-05T07:43:18.249Z",
+    "scheduled_at": null,
+    "meeting_link": null,
+    "notes": ""
+  },
+  {
+    "id": "54a072c7-b893-464c-937e-f6363f478f14",
+    "user_name": "Aditya Bakshi",
+    "user_email": "adityabakshi1011@gmail.com",
+    "user_id": "user_37jwvNsM6pGnaGEvIXurPTn3OqA",
+    "session_type": "python_1v1",
+    "preferred_date": "2026-02-18",
+    "preferred_time": "12:00",
+    "timezone": "Asia/Calcutta",
+    "topics": [
+      "Variables & Data Types"
+    ],
+    "experience_level": "beginner",
+    "specific_goals": "",
+    "duration": 60,
+    "status": "pending",
+    "created_at": "2026-02-05T07:47:06.201Z",
+    "scheduled_at": null,
+    "meeting_link": null,
+    "notes": ""
+  }
+]

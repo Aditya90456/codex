@@ -34,7 +34,9 @@ import {
   Upload,
   Download,
   Copy,
-  BookOpen
+  BookOpen,
+  Users,
+  X
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import AICodeExplainer from './AI/AICodeExplainer';
@@ -49,8 +51,8 @@ import AIPeerChat from './AIPeerChat';
 import DSACertificateSystem from './DSACertificateSystem';
 import AILeetCodeAssistant from './AILeetCodeAssistant';
 import ProblemDescription from './ProblemDescription';
-import LeetCodeTopmat from './LeetCodeTopmat';
 import { useClerkProgress } from '../hooks/useClerkProgress';
+import SessionBookingModal from './SessionBookingModal';
 
 const LeetCodeEditor = () => {
   const navigate = useNavigate();
@@ -90,14 +92,12 @@ const LeetCodeEditor = () => {
   const [showVideoPlayer, setShowVideoPlayer] = useState(false);
   const [monacoLoaded, setMonacoLoaded] = useState(false);
   const [monacoError, setMonacoError] = useState(false);
+  const [showSessionBooking, setShowSessionBooking] = useState(false);
 
   // Certificate system state
   const [completedProblems, setCompletedProblems] = useState(new Set());
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [newCertificate, setNewCertificate] = useState(null);
-
-  // LeetCode Topmat state
-  const [showTopmat, setShowTopmat] = useState(false);
 
   // Load completed problems from localStorage
   useEffect(() => {
@@ -1218,7 +1218,9 @@ ${code}
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">        
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Editor Content */}
+        <div className="flex-1 flex overflow-hidden">        
         {/* Left Panel - Problem Description */}
         <div className="w-1/2 border-r border-slate-700 flex flex-col">
           {/* Problem Header */}
@@ -1304,8 +1306,8 @@ ${code}
         {/* Right Panel - Code Editor */}
         <div className="w-1/2 flex flex-col">
           {/* Editor Header */}
-          <div className="h-12 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4">
-            <div className="flex items-center gap-3">
+          <div className="h-12 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4 overflow-hidden">
+            <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
@@ -1317,55 +1319,70 @@ ${code}
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Scrollable Button Container */}
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide min-w-0 flex-1 ml-4">
               <button
-                onClick={() => setConsoleTab('explain')}
-                className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105"
-                title="AI Code Explainer"
+                onClick={() => navigate('/resume')}
+                className="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105 whitespace-nowrap flex-shrink-0"
+                title="Generate AI Resume from your coding progress"
               >
-                <Brain className="w-4 h-4" />
-                <span className="hidden sm:inline">Explain</span>
+                <Trophy className="w-3 h-3" />
+                <span className="hidden md:inline">Resume AI</span>
+                <span className="md:hidden">Resume</span>
               </button>
 
-              {/* LeetCode Topmat Button */}
               <button
-                onClick={() => setShowTopmat(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105"
-                title="LeetCode Premium Materials"
+                onClick={() => setConsoleTab('explain')}
+                className="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105 whitespace-nowrap flex-shrink-0"
+                title="AI Code Explainer"
               >
-                <BookOpen className="w-4 h-4" />
-                <span className="hidden sm:inline">Topmat</span>
+                <Brain className="w-3 h-3" />
+                <span className="hidden md:inline">Explain</span>
+                <span className="md:hidden">AI</span>
+              </button>
+
+              {/* 1 v 1 Session Python Button */}
+              <button
+                onClick={() => setShowSessionBooking(true)}
+                className="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105 text-white shadow-lg whitespace-nowrap flex-shrink-0"
+                title="Book 1-on-1 Python Coding Session - Get personalized help with Python problems"
+              >
+                <Users className="w-3 h-3" />
+                <span className="hidden lg:inline">1v1 Python</span>
+                <span className="lg:hidden">1v1 🐍</span>
               </button>
               
               {/* GitHub Button - More Visible */}
               {githubConnected ? (
                 <button
                   onClick={() => setShowSettings(!showSettings)}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-green-600/20 hover:bg-green-600/30 border border-green-500/50 rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center gap-1 px-2 py-1.5 bg-green-600/20 hover:bg-green-600/30 border border-green-500/50 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0"
                   title="GitHub Connected - Click to manage"
                 >
-                  <Github className="w-4 h-4 text-green-400" />
-                  <span className="hidden sm:inline text-green-400">Connected</span>
+                  <Github className="w-3 h-3 text-green-400" />
+                  <span className="hidden md:inline text-green-400">Connected</span>
+                  <span className="md:hidden text-green-400">✓</span>
                 </button>
               ) : (
                 <button
                   onClick={connectGithub}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center gap-1 px-2 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0"
                   title="Connect GitHub to auto-save solutions"
                 >
-                  <Github className="w-4 h-4" />
-                  <span className="hidden sm:inline">GitHub</span>
+                  <Github className="w-3 h-3" />
+                  <span className="hidden md:inline">GitHub</span>
+                  <span className="md:hidden">Git</span>
                 </button>
               )}
               
               <button
                 onClick={() => setShowSettings(!showSettings)}
-                className="p-1.5 hover:bg-slate-700 rounded transition-colors"
+                className="p-1.5 hover:bg-slate-700 rounded transition-colors flex-shrink-0"
                 title="Settings"
               >
-                <Settings className="w-4 h-4" />
+                <Settings className="w-3 h-3" />
               </button>
-              <button className="p-1.5 hover:bg-slate-700 rounded transition-colors">
+              <button className="p-1.5 hover:bg-slate-700 rounded transition-colors flex-shrink-0">
                 <Maximize2 className="w-4 h-4" />
               </button>
             </div>
@@ -1514,37 +1531,38 @@ ${code}
           {/* Bottom Console/Test Results */}
           <div className="h-64 border-t border-slate-700 flex flex-col bg-slate-800">
             {/* Console Tabs */}
-            <div className="flex border-b border-slate-700">
+            <div className="flex border-b border-slate-700 bg-slate-800">
               <button
                 onClick={() => setConsoleTab('testcase')}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                className={`px-4 py-2 text-sm font-medium transition-colors border-r border-slate-700 min-w-0 flex-shrink-0 ${
                   consoleTab === 'testcase'
-                    ? 'text-white bg-slate-900'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'text-white bg-slate-900 border-b-2 border-blue-500'
+                    : 'text-gray-400 hover:text-white hover:bg-slate-700'
                 }`}
               >
                 Testcase
               </button>
               <button
                 onClick={() => setConsoleTab('result')}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                className={`px-4 py-2 text-sm font-medium transition-colors border-r border-slate-700 min-w-0 flex-shrink-0 ${
                   consoleTab === 'result'
-                    ? 'text-white bg-slate-900'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'text-white bg-slate-900 border-b-2 border-blue-500'
+                    : 'text-gray-400 hover:text-white hover:bg-slate-700'
                 }`}
               >
                 Test Result
               </button>
               <button
                 onClick={() => setConsoleTab('explain')}
-                className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 min-w-0 flex-shrink-0 ${
                   consoleTab === 'explain'
-                    ? 'text-white bg-slate-900'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'text-white bg-slate-900 border-b-2 border-blue-500'
+                    : 'text-gray-400 hover:text-white hover:bg-slate-700'
                 }`}
               >
                 <Brain className="w-4 h-4" />
-                AI Explain
+                <span className="hidden sm:inline">AI Explain</span>
+                <span className="sm:hidden">AI</span>
               </button>
             </div>
 
@@ -1837,6 +1855,7 @@ ${code}
           </div>
         </div>
       </div>
+      </div>
 
       {/* Video Player Modal */}
       {showVideoPlayer && selectedProblem.videoUrl && (
@@ -1954,12 +1973,6 @@ ${code}
         onCodeSuggestion={handleCodeSuggestion}
       />
 
-      {/* LeetCode Topmat */}
-      <LeetCodeTopmat 
-        isOpen={showTopmat}
-        onClose={() => setShowTopmat(false)}
-      />
-
       {/* Certificate Achievement Modal */}
       {showCertificateModal && newCertificate && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -2018,6 +2031,12 @@ ${code}
           </div>
         </div>
       )}
+
+      {/* Session Booking Modal */}
+      <SessionBookingModal
+        isOpen={showSessionBooking}
+        onClose={() => setShowSessionBooking(false)}
+      />
     </div>
   );
 };

@@ -1,0 +1,42 @@
+{
+  "professional": {
+    "name": "Professional",
+    "description": "Clean, ATS-friendly format perfect for corporate applications",
+    "styles": {
+      "primaryColor": "#2563eb",
+      "fontFamily": "Arial, sans-serif",
+      "headerStyle": "centered",
+      "sectionDivider": "line"
+    }
+  },
+  "creative": {
+    "name": "Creative",
+    "description": "Modern design with visual elements for creative roles",
+    "styles": {
+      "primaryColor": "#7c3aed",
+      "fontFamily": "Helvetica, sans-serif",
+      "headerStyle": "left-aligned",
+      "sectionDivider": "colored-bar"
+    }
+  },
+  "technical": {
+    "name": "Technical",
+    "description": "Code-focused layout highlighting technical achievements",
+    "styles": {
+      "primaryColor": "#059669",
+      "fontFamily": "Consolas, monospace",
+      "headerStyle": "minimal",
+      "sectionDivider": "dotted"
+    }
+  },
+  "minimal": {
+    "name": "Minimal",
+    "description": "Simple, elegant design focusing on content",
+    "styles": {
+      "primaryColor": "#dc2626",
+      "fontFamily": "Times, serif",
+      "headerStyle": "simple",
+      "sectionDivider": "none"
+    }
+  }
+}

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PDF Download</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #b91c1c;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: none;
+        }
+        .loading.active {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Test PDF Download</h1>
+    <p>Click the button below to test PDF download functionality:</p>
+    
+    <button id="downloadBtn" onclick="downloadPDF()">
+        <span class="loading" id="loading"></span>
+        <span id="btnText">📄 Download PDF</span>
+    </button>
+
+    <div id="result"></div>
+
+    <script>
+        async function downloadPDF() {
+            const btn = document.getElementById('downloadBtn');
+            const loading = document.getElementById('loading');
+            const btnText = document.getElementById('btnText');
+            const result = document.getElementById('result');
+            
+            btn.disabled = true;
+            loading.classList.add('active');
+            btnText.textContent = 'Generating PDF...';
+            
+            try {
+                const testResumeData = {
+                    personalInfo: {
+                        name: "John Doe",
+                        email: "john.doe@example.com",
+                        phone: "+1 (555) 123-4567",
+                        location: "San Francisco, CA",
+                        linkedin: "https://linkedin.com/in/johndoe",
+                        github: "https://github.com/johndoe"
+                    },
+                    summary: "Experienced Full-Stack Developer with a proven track record in algorithmic problem-solving and software development. Built strong technical foundation through solving 150+ coding problems, with current 25-day coding streak demonstrating commitment to continuous learning.",
+                    skills: {
+                        programming: ["JavaScript", "Python", "Java", "TypeScript"],
+                        algorithms: ["Array Algorithms", "String Processing", "Binary Trees & BST", "Dynamic Programming"],
+                        tools: ["React", "Node.js", "MongoDB", "Docker", "AWS", "Git"],
+                        soft: ["Problem Solving", "Analytical Thinking", "Code Review", "Team Collaboration"]
+                    },
+                    experience: [
+                        {
+                            title: "Software Engineer",
+                            company: "Tech Solutions Inc.",
+                            location: "San Francisco, CA",
+                            startDate: "2023-01",
+                            endDate: "2024-12",
+                            current: true,
+                            description: "Full-stack development role focusing on web applications",
+                            responsibilities: [
+                                "Developed and maintained web applications using React and Node.js",
+                                "Implemented efficient algorithms for data processing applications",
+                                "Collaborated with senior developers on code reviews and architectural decisions",
+                                "Achieved 95%+ code coverage with comprehensive unit tests"
+                            ]
+                        }
+                    ],
+                    projects: [
+                        {
+                            name: "Algorithm Visualizer Dashboard",
+                            description: "Interactive web application for visualizing sorting and searching algorithms with real-time performance metrics",
+                            technologies: ["JavaScript", "React", "Node.js", "Canvas API"],
+                            githubUrl: "https://github.com/johndoe/algo-visualizer",
+                            liveUrl: "https://algo-visualizer.com",
+                            highlights: [
+                                "Implemented 12+ sorting algorithms with step-by-step visualization",
+                                "Built responsive dashboard with performance comparison charts",
+                                "Optimized rendering for datasets up to 10,000 elements"
+                            ]
+                        }
+                    ],
+                    achievements: [
+                        "🏆 Solved 150+ algorithmic challenges across all difficulty levels",
+                        "🔥 Maintained 25-day coding streak showing exceptional dedication",
+                        "📊 Reached Level 12 in competitive programming"
+                    ],
+                    stats: {
+                        totalProblems: 150,
+                        streak: 25,
+                        level: 12,
+                        addictionScore: 85
+                    }
+                };
+
+                const response = await fetch('http://localhost:3001/api/resume-creator/export', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        resumeData: testResumeData,
+                        format: 'pdf'
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'John_Doe_Resume.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    result.innerHTML = '<p style="color: green;">✅ PDF downloaded successfully!</p>';
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to export resume');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                result.innerHTML = `<p style="color: red;">❌ Failed to download PDF: ${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                loading.classList.remove('active');
+                btnText.textContent = '📄 Download PDF';
+            }
+        }
+    </script>
+</body>
+</html>

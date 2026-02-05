@@ -433,6 +433,14 @@ function solve() {
             </button>
             
             <button
+              onClick={() => navigate('/resume')}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 rounded-md transition-colors"
+            >
+              <Trophy className="w-4 h-4" />
+              Resume AI
+            </button>
+            
+            <button
               onClick={() => setShowDSASidebar(!showDSASidebar)}
               className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors ${
                 showDSASidebar 
@@ -632,23 +640,23 @@ function solve() {
           {/* Console */}
           <div className="h-48 border-t border-gray-700 flex flex-col bg-gray-800">
             {/* Console Tabs */}
-            <div className="flex border-b border-gray-700">
+            <div className="flex border-b border-gray-700 bg-gray-800">
               <button
                 onClick={() => setConsoleTab('testcase')}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                className={`px-4 py-2 text-sm font-medium transition-colors border-r border-gray-700 min-w-0 flex-shrink-0 ${
                   consoleTab === 'testcase'
                     ? 'text-blue-400 bg-gray-700 border-b-2 border-blue-400'
-                    : 'text-gray-400 hover:text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
                 }`}
               >
                 Testcase
               </button>
               <button
                 onClick={() => setConsoleTab('result')}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                className={`px-4 py-2 text-sm font-medium transition-colors min-w-0 flex-shrink-0 ${
                   consoleTab === 'result'
                     ? 'text-blue-400 bg-gray-700 border-b-2 border-blue-400'
-                    : 'text-gray-400 hover:text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
                 }`}
               >
                 Result

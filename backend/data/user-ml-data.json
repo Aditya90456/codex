@@ -1,0 +1,83 @@
+{
+  "test_user_ml_123": {
+    "userId": "test_user_ml_123",
+    "level": 1,
+    "xp": 50,
+    "streak": 0,
+    "longestStreak": 0,
+    "totalProblems": 4,
+    "problemsByDifficulty": {
+      "Easy": 3,
+      "Medium": 1,
+      "Hard": 0
+    },
+    "solvingPatterns": {
+      "timeOfDay": {
+        "14": 4
+      },
+      "dayOfWeek": {
+        "4": 4
+      },
+      "problemTypes": {
+        "Array": 2,
+        "String": 1,
+        "Math": 1
+      },
+      "languages": {
+        "python": 2,
+        "javascript": 1,
+        "java": 1
+      }
+    },
+    "preferences": {
+      "favoriteTopics": [],
+      "preferredDifficulty": "Easy",
+      "learningGoals": []
+    },
+    "achievements": [],
+    "lastActive": "2026-02-05T09:19:51.900Z",
+    "addictionScore": 7.25,
+    "engagementMetrics": {
+      "dailyGoal": 1,
+      "weeklyGoal": 7,
+      "monthlyGoal": 30,
+      "currentDailyStreak": 0,
+      "currentWeeklyStreak": 0
+    }
+  },
+  "user_37jwvNsM6pGnaGEvIXurPTn3OqA": {
+    "user": {
+      "userId": "user_37jwvNsM6pGnaGEvIXurPTn3OqA",
+      "totalProblems": 75,
+      "streak": 15,
+      "longestStreak": 30,
+      "level": 8,
+      "addictionScore": 75,
+      "problemsByDifficulty": {
+        "Easy": 35,
+        "Medium": 30,
+        "Hard": 10
+      },
+      "solvingPatterns": {
+        "languages": {
+          "JavaScript": 40,
+          "Python": 25,
+          "Java": 10
+        },
+        "problemTypes": {
+          "Array": 20,
+          "String": 15,
+          "Tree": 12,
+          "Dynamic Programming": 8,
+          "Graph": 6
+        }
+      }
+    },
+    "metrics": {
+      "engagementLevel": {
+        "level": "High",
+        "score": 75
+      }
+    }
+  }
+}

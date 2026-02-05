@@ -1,0 +1,250 @@
+{
+  "user_37jwvNsM6pGnaGEvIXurPTn3OqA": [
+    {
+      "personalInfo": {
+        "name": "Aditya Bakshi",
+        "email": "adityabakshi1011@gmail.com",
+        "phone": "+918335873311",
+        "location": "eeeeeeeee",
+        "linkedin": "ww",
+        "github": "aa",
+        "portfolio": ""
+      },
+      "summary": "Entry-Level Full-Stack Developer with a proven track record in algorithmic problem-solving and software development. Built strong technical foundation through solving 75+ coding problems, Passionate about writing clean, efficient code and tackling complex technical challenges. Strong analytical mindset with experience in multiple programming languages and modern development practices.",
+      "skills": {
+        "programming": [
+          "JavaScript",
+          "Python",
+          "Java"
+        ],
+        "algorithms": [
+          "Data Structures & Algorithms",
+          "String Processing",
+          "Binary Trees & BST",
+          "Dynamic Programming",
+          "Graph Algorithms"
+        ],
+        "tools": [
+          "Node.js",
+          "React",
+          "Express",
+          "MongoDB",
+          "Vue.js",
+          "Django",
+          "Flask",
+          "NumPy",
+          "Pandas",
+          "TensorFlow",
+          "Spring Boot",
+          "Maven"
+        ],
+        "soft": [
+          "Problem Solving",
+          "Analytical Thinking",
+          "Code Review",
+          "Team Collaboration",
+          "Continuous Learning"
+        ]
+      },
+      "projects": [
+        {
+          "name": "LeetCode Problem Classifier",
+          "description": "Machine learning system that automatically categorizes coding problems and suggests optimal solution approaches",
+          "technologies": [
+            "Python",
+            "scikit-learn",
+            "Flask",
+            "SQLite",
+            "Pandas"
+          ],
+          "highlights": [
+            "Trained ML model with 95% accuracy on 1000+ problems",
+            "Built REST API serving 100+ requests per minute",
+            "Implemented caching system reducing response time by 60%",
+            "Created automated testing suite with 90% code coverage"
+          ]
+        }
+      ],
+      "achievements": [
+        "� Dedicated Learner: Solved 75+ problems demonstrating strong commitment to skill development",
+        "� Consistent Practice: Current 15-day coding streak",
+        "📈 Growing Skills: Reached Level 8 in problem-solving",
+        "💪 Challenge Accepted: Solved 10+ Hard-level problems",
+        "📈 High Engagement: Showed strong dedication to skill development and consistent practice",
+        "⭐ High Performance: Demonstrated strong coding engagement and learning commitment"
+      ],
+      "experience": [],
+      "certifications": [
+        "LeetCode Problem Solving - Intermediate Level (50+ Problems)",
+        "AWS Cloud Practitioner (In Progress)",
+        "Google IT Support Professional Certificate"
+      ],
+      "stats": {
+        "totalProblems": 75,
+        "streak": 15,
+        "level": 8,
+        "addictionScore": 75
+      },
+      "template": "creative",
+      "generatedAt": "2026-02-05T14:51:28.403Z",
+      "id": "1770303088403"
+    },
+    {
+      "personalInfo": {
+        "name": "Aditya Bakshi",
+        "email": "adityabakshi1011@gmail.com",
+        "phone": "+918335873311",
+        "location": "eeeeeeeee",
+        "linkedin": "ww",
+        "github": "aa",
+        "portfolio": "",
+        "summary": ""
+      },
+      "summary": "",
+      "skills": {
+        "programming": [],
+        "algorithms": [
+          "Array Algorithms",
+          "String Processing",
+          "Binary Trees & BST",
+          "Dynamic Programming",
+          "Graph Algorithms"
+        ],
+        "tools": [],
+        "soft": []
+      },
+      "experience": [],
+      "projects": [],
+      "education": [],
+      "achievements": [],
+      "certifications": [],
+      "stats": {
+        "totalProblems": 75,
+        "streak": 15,
+        "level": 8,
+        "addictionScore": 75
+      },
+      "template": "manual",
+      "generatedAt": "2026-02-05T15:19:09.678Z",
+      "isManual": true,
+      "id": "1770304749678"
+    },
+    {
+      "personalInfo": {
+        "name": "Aditya Bakshi",
+        "email": "adityabakshi1011@gmail.com",
+        "phone": "",
+        "location": "",
+        "linkedin": "",
+        "github": "",
+        "portfolio": "",
+        "summary": ""
+      },
+      "summary": "",
+      "skills": {
+        "programming": [],
+        "algorithms": [
+          "Array Algorithms",
+          "String Processing",
+          "Binary Trees & BST",
+          "Dynamic Programming",
+          "Graph Algorithms"
+        ],
+        "tools": [],
+        "soft": []
+      },
+      "experience": [],
+      "projects": [],
+      "education": [],
+      "achievements": [],
+      "certifications": [],
+      "stats": {
+        "totalProblems": 75,
+        "streak": 15,
+        "level": 8,
+        "addictionScore": 75
+      },
+      "template": "manual",
+      "generatedAt": "2026-02-05T15:20:46.345Z",
+      "isManual": true,
+      "id": "1770304846345"
+    },
+    {
+      "personalInfo": {
+        "name": "Aditya Bakshi",
+        "email": "adityabakshi1011@gmail.com",
+        "phone": "+918335873311",
+        "location": "eeeeeeeee",
+        "linkedin": "ww",
+        "github": "aa",
+        "portfolio": "",
+        "summary": ""
+      },
+      "summary": "",
+      "skills": {
+        "programming": [],
+        "algorithms": [
+          "Array Algorithms",
+          "String Processing",
+          "Binary Trees & BST",
+          "Dynamic Programming",
+          "Graph Algorithms"
+        ],
+        "tools": [],
+        "soft": []
+      },
+      "experience": [],
+      "projects": [],
+      "education": [],
+      "achievements": [],
+      "certifications": [],
+      "stats": {
+        "totalProblems": 75,
+        "streak": 15,
+        "level": 8,
+        "addictionScore": 75
+      },
+      "template": "manual",
+      "generatedAt": "2026-02-05T15:30:06.721Z",
+      "isManual": true,
+      "id": "1770305406721"
+    }
+  ],
+  "test123": [
+    {
+      "personalInfo": {
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "skills": {
+        "programming": [
+          "JavaScript",
+          "Python"
+        ],
+        "algorithms": [],
+        "tools": [
+          "React",
+          "Node.js"
+        ],
+        "soft": [
+          "Problem Solving"
+        ]
+      },
+      "experience": [],
+      "projects": [],
+      "education": [],
+      "achievements": [],
+      "certifications": [],
+      "stats": {
+        "totalProblems": 0,
+        "streak": 0,
+        "level": 0,
+        "addictionScore": 0
+      },
+      "template": "manual",
+      "generatedAt": "2026-02-05T15:16:32.352Z",
+      "isManual": true,
+      "id": "1770304592352"
+    }
+  ]
+}

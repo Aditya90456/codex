@@ -65,6 +65,9 @@ const codeExplainerRoutes = require('./routes/code-explainer');
 const codeCompletionRoutes = require('./routes/code-completion');
 const leetcodeRoutes = require('./routes/leetcode-execute');
 const githubRoutes = require('./routes/github');
+const sessionsRoutes = require('./routes/sessions');
+const leetcodeMLRoutes = require('./routes/leetcode-ml');
+const resumeCreatorRoutes = require('./routes/resume-creator');
 
 // In-memory storage (for simplicity)
 let users = [];
@@ -156,6 +159,9 @@ app.use('/api/ai', codeExplainerRoutes);
 app.use('/api/code-completion', codeCompletionRoutes);
 app.use('/api/leetcode', leetcodeRoutes);
 app.use('/api/github', githubRoutes);
+app.use('/api/sessions', sessionsRoutes);
+app.use('/api/leetcode-ml', leetcodeMLRoutes);
+app.use('/api/resume-creator', resumeCreatorRoutes);
 
 // Mount Certificate routes
 const certificateRoutes = require('./routes/certificates');
@@ -166,6 +172,9 @@ console.log('✅ GitHub integration routes mounted');
 console.log('✅ Code Explainer routes mounted');
 console.log('✅ Code Completion routes mounted');
 console.log('✅ LeetCode Execution routes mounted');
+console.log('✅ 1v1 Sessions routes mounted');
+console.log('✅ LeetCode ML Engine routes mounted');
+console.log('✅ Resume Creator routes mounted');
 
 // API Routes
 

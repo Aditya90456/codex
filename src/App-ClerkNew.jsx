@@ -19,6 +19,7 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import ProfilePage from './pages/ProfilePage';
 import LeetCodeEditor from './components/LeetCodeEditor';
+import MLResumeCreator from './components/MLResumeCreator';
 import './App.css';
 
 // Validate Clerk configuration on app start
@@ -105,6 +106,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <LeetCodeEditor />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/resume" 
+            element={
+              <ProtectedRoute>
+                <MLResumeCreator />
               </ProtectedRoute>
             } 
           />
