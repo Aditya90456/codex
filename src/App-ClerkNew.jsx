@@ -19,7 +19,11 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import ProfilePage from './pages/ProfilePage';
 import LeetCodeEditor from './components/LeetCodeEditor';
+import LearnPage from './pages/LearnPage';
 import MLResumeCreator from './components/MLResumeCreator';
+import DSAArticlesViewer from './components/DSAArticlesViewer';
+import DSAArticlesViewerWithBookmarks from './components/DSAArticlesViewerWithBookmarks';
+import BookmarksDashboard from './components/BookmarksDashboard';
 import './App.css';
 
 // Validate Clerk configuration on app start
@@ -98,6 +102,46 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <LeetCodeEditor />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/learn" 
+            element={
+              <ProtectedRoute>
+                <LearnPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/learn/practice" 
+            element={
+              <ProtectedRoute>
+                <LeetCodeEditor />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/learn/articles" 
+            element={
+              <ProtectedRoute>
+                <DSAArticlesViewerWithBookmarks />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/articles" 
+            element={
+              <ProtectedRoute>
+                <DSAArticlesViewerWithBookmarks />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/bookmarks" 
+            element={
+              <ProtectedRoute>
+                <BookmarksDashboard />
               </ProtectedRoute>
             } 
           />

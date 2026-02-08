@@ -105,6 +105,19 @@ function Navbar({ onShowAuth, onBackToWelcome }) {
               Problems
             </button>
             <button 
+              onClick={() => navigate('/articles')}
+              className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700"
+            >
+              Articles
+            </button>
+            <button 
+              onClick={() => navigate('/bookmarks')}
+              className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700 flex items-center gap-1"
+            >
+              <BookOpen size={14} />
+              Bookmarks
+            </button>
+            <button 
               onClick={() => navigate('/resume')}
               className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700"
             >

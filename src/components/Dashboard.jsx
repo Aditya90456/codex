@@ -180,6 +180,16 @@ const Dashboard = () => {
       stats: '250+ Problems'
     },
     {
+      icon: BookOpen,
+      title: 'My Bookmarks',
+      description: 'Your saved articles and learning resources',
+      path: '/bookmarks',
+      gradient: 'from-yellow-600 to-orange-600',
+      bgGradient: 'from-yellow-600/10 to-orange-600/10',
+      borderColor: 'border-yellow-500/30',
+      stats: 'Quick Access'
+    },
+    {
       icon: Cpu,
       title: 'AI Assistant',
       description: 'Generate code, debug, and get instant help',

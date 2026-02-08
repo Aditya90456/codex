@@ -731,9 +731,17 @@ const WelcomeScreenModern = () => {
                       <p className="text-slate-400 text-sm mb-4">
                         Problem description on left, Monaco code editor on right - just like LeetCode
                       </p>
-                      <div className="flex items-center space-x-2 text-xs text-green-400">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Professional Layout</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-xs text-green-400">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Professional Layout</span>
+                        </div>
+                        <button 
+                          onClick={() => navigate('/leetcode')}
+                          className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-lg text-green-400 text-xs font-medium transition-all duration-200 hover:scale-105"
+                        >
+                          Try Now
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -749,9 +757,17 @@ const WelcomeScreenModern = () => {
                       <p className="text-slate-400 text-sm mb-4">
                         Arrays, Strings, Trees, Graphs, DP and more - all difficulty levels
                       </p>
-                      <div className="flex items-center space-x-2 text-xs text-blue-400">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Curated Collection</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-xs text-blue-400">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Curated Collection</span>
+                        </div>
+                        <button 
+                          onClick={() => navigate('/problems')}
+                          className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-400 text-xs font-medium transition-all duration-200 hover:scale-105"
+                        >
+                          Explore
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -767,10 +783,101 @@ const WelcomeScreenModern = () => {
                       <p className="text-slate-400 text-sm mb-4">
                         Test with custom inputs, submit solutions, see runtime and memory stats
                       </p>
-                      <div className="flex items-center space-x-2 text-xs text-purple-400">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Real-time Feedback</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-xs text-purple-400">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Real-time Feedback</span>
+                        </div>
+                        <button 
+                          onClick={() => navigate('/leetcode')}
+                          className="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-lg text-purple-400 text-xs font-medium transition-all duration-200 hover:scale-105"
+                        >
+                          Test Now
+                        </button>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Feature Grid */}
+                <div className="grid md:grid-cols-4 gap-4 mb-8">
+                  {/* AI Assistant */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-600 to-red-600 rounded-xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-xl p-4 hover:border-orange-500/50 transition-all duration-300 h-full">
+                      <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mb-3">
+                        <Brain className="w-5 h-5 text-white" />
+                      </div>
+                      <h4 className="text-lg font-bold mb-2 text-white">AI Assistant</h4>
+                      <p className="text-slate-400 text-xs mb-3">
+                        Get hints, explanations, and code suggestions
+                      </p>
+                      <button 
+                        onClick={() => navigate('/leetcode')}
+                        className="w-full px-2 py-1 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 rounded text-orange-400 text-xs font-medium transition-all duration-200"
+                      >
+                        Try AI Help
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Whiteboard */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-600 to-cyan-600 rounded-xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-xl p-4 hover:border-teal-500/50 transition-all duration-300 h-full">
+                      <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-lg flex items-center justify-center mb-3">
+                        <Lightbulb className="w-5 h-5 text-white" />
+                      </div>
+                      <h4 className="text-lg font-bold mb-2 text-white">AI Whiteboard</h4>
+                      <p className="text-slate-400 text-xs mb-3">
+                        Visual algorithm explanations and drawings
+                      </p>
+                      <button 
+                        onClick={() => navigate('/leetcode')}
+                        className="w-full px-2 py-1 bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/30 rounded text-teal-400 text-xs font-medium transition-all duration-200"
+                      >
+                        Visualize
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Certificates */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-xl p-4 hover:border-yellow-500/50 transition-all duration-300 h-full">
+                      <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mb-3">
+                        <Award className="w-5 h-5 text-white" />
+                      </div>
+                      <h4 className="text-lg font-bold mb-2 text-white">Certificates</h4>
+                      <p className="text-slate-400 text-xs mb-3">
+                        Earn certificates for completing challenges
+                      </p>
+                      <button 
+                        onClick={() => navigate('/certificates')}
+                        className="w-full px-2 py-1 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/30 rounded text-yellow-400 text-xs font-medium transition-all duration-200"
+                      >
+                        View Certs
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Multi-Language */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-xl p-4 hover:border-indigo-500/50 transition-all duration-300 h-full">
+                      <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center mb-3">
+                        <Code className="w-5 h-5 text-white" />
+                      </div>
+                      <h4 className="text-lg font-bold mb-2 text-white">Multi-Language</h4>
+                      <p className="text-slate-400 text-xs mb-3">
+                        JavaScript, Python, Java, C++, and more
+                      </p>
+                      <button 
+                        onClick={() => navigate('/leetcode')}
+                        className="w-full px-2 py-1 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 rounded text-indigo-400 text-xs font-medium transition-all duration-200"
+                      >
+                        Code Now
+                      </button>
                     </div>
                   </div>
                 </div>

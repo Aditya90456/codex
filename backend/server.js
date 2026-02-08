@@ -175,6 +175,10 @@ app.use('/api/problem-chat', problemChatRoutes);
 const aiVisualizerRoutes = require('./routes/ai-visualizer');
 app.use('/api/ai', aiVisualizerRoutes);
 
+// Mount Bookmarks routes
+const bookmarksRoutes = require('./routes/bookmarks');
+app.use('/api/bookmarks', bookmarksRoutes);
+
 console.log('✅ AI Generator routes mounted');
 console.log('✅ GitHub integration routes mounted');
 console.log('✅ Code Explainer routes mounted');
@@ -184,6 +188,7 @@ console.log('✅ 1v1 Sessions routes mounted');
 console.log('✅ LeetCode ML Engine routes mounted');
 console.log('✅ Resume Creator routes mounted');
 console.log('✅ Problem Chat routes mounted');
+console.log('✅ Bookmarks routes mounted');
 
 // API Routes
 
