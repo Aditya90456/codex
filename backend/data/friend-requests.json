@@ -1,0 +1,61 @@
+{
+  "add": [
+    {
+      "id": "1770365396022",
+      "fromUserId": "user_37jwvNsM6pGnaGEvIXurPTn3OqA",
+      "fromUserName": "Aditya Bakshi",
+      "toUserId": "add",
+      "status": "accepted",
+      "createdAt": "2026-02-06T08:09:56.022Z"
+    }
+  ],
+  "adityabakshi0902@gmail.com": [
+    {
+      "id": "1770365943076",
+      "fromUserId": "user_37jwvNsM6pGnaGEvIXurPTn3OqA",
+      "fromUserEmail": "adityabakshi1011@gmail.com",
+      "fromUserName": "Aditya Bakshi",
+      "toUserEmail": "adityabakshi0902@gmail.com",
+      "status": "rejected",
+      "createdAt": "2026-02-06T08:19:03.076Z"
+    }
+  ],
+  "adityabakshi1011@gmail.com": [
+    {
+      "id": "1770366879369",
+      "fromUserId": "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO",
+      "fromUserEmail": "adityabakshi0902@gmail.com",
+      "fromUserName": "Aditya Bakshi",
+      "toUserEmail": "adityabakshi1011@gmail.com",
+      "status": "rejected",
+      "createdAt": "2026-02-06T08:34:39.369Z"
+    },
+    {
+      "id": "1770369377873",
+      "fromUserId": "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO",
+      "fromUserEmail": "adityabakshi0902@gmail.com",
+      "fromUserName": "Aditya Bakshi",
+      "toUserEmail": "adityabakshi1011@gmail.com",
+      "status": "rejected",
+      "createdAt": "2026-02-06T09:16:17.874Z"
+    },
+    {
+      "id": "1770369632037",
+      "fromUserId": "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO",
+      "fromUserEmail": "adityabakshi0902@gmail.com",
+      "fromUserName": "Aditya Bakshi",
+      "toUserEmail": "adityabakshi1011@gmail.com",
+      "status": "rejected",
+      "createdAt": "2026-02-06T09:20:32.037Z"
+    },
+    {
+      "id": "1770370182147",
+      "fromUserId": "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO",
+      "fromUserEmail": "adityabakshi0902@gmail.com",
+      "fromUserName": "Aditya Bakshi",
+      "toUserEmail": "adityabakshi1011@gmail.com",
+      "status": "accepted",
+      "createdAt": "2026-02-06T09:29:42.147Z"
+    }
+  ]
+}

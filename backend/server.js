@@ -167,6 +167,14 @@ app.use('/api/resume-creator', resumeCreatorRoutes);
 const certificateRoutes = require('./routes/certificates');
 app.use('/api/certificates', certificateRoutes);
 
+// Mount Problem Chat routes
+const problemChatRoutes = require('./routes/problem-chat');
+app.use('/api/problem-chat', problemChatRoutes);
+
+// Mount AI Visualizer routes
+const aiVisualizerRoutes = require('./routes/ai-visualizer');
+app.use('/api/ai', aiVisualizerRoutes);
+
 console.log('✅ AI Generator routes mounted');
 console.log('✅ GitHub integration routes mounted');
 console.log('✅ Code Explainer routes mounted');
@@ -175,6 +183,7 @@ console.log('✅ LeetCode Execution routes mounted');
 console.log('✅ 1v1 Sessions routes mounted');
 console.log('✅ LeetCode ML Engine routes mounted');
 console.log('✅ Resume Creator routes mounted');
+console.log('✅ Problem Chat routes mounted');
 
 // API Routes
 

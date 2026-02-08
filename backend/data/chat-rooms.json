@@ -1,0 +1,42 @@
+{
+  "two-sum_user123_user456": {
+    "id": "two-sum_user123_user456",
+    "problemId": "two-sum",
+    "participants": [
+      "user123",
+      "user456"
+    ],
+    "createdAt": "2026-02-06T08:03:53.744Z",
+    "lastActivity": "2026-02-06T08:13:15.022Z"
+  },
+  "two-sum_user_123_user_456": {
+    "id": "two-sum_user_123_user_456",
+    "problemId": "two-sum",
+    "participants": [
+      "user_123",
+      "user_456"
+    ],
+    "createdAt": "2026-02-06T08:16:16.033Z",
+    "lastActivity": "2026-02-06T08:16:16.087Z"
+  },
+  "1_user_37jwvNsM6pGnaGEvIXurPTn3OqA_user_37jwvNsM6pGnaGEvIXurPTn3OqA": {
+    "id": "1_user_37jwvNsM6pGnaGEvIXurPTn3OqA_user_37jwvNsM6pGnaGEvIXurPTn3OqA",
+    "problemId": 1,
+    "participants": [
+      "user_37jwvNsM6pGnaGEvIXurPTn3OqA",
+      "user_37jwvNsM6pGnaGEvIXurPTn3OqA"
+    ],
+    "createdAt": "2026-02-06T08:25:08.722Z",
+    "lastActivity": "2026-02-06T08:25:30.941Z"
+  },
+  "1_user_37vW7ZMtXpSQ89kfMeJQLS1wLOO_user_37vW7ZMtXpSQ89kfMeJQLS1wLOO": {
+    "id": "1_user_37vW7ZMtXpSQ89kfMeJQLS1wLOO_user_37vW7ZMtXpSQ89kfMeJQLS1wLOO",
+    "problemId": 1,
+    "participants": [
+      "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO",
+      "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO"
+    ],
+    "createdAt": "2026-02-06T09:36:36.605Z",
+    "lastActivity": "2026-02-06T09:36:36.605Z"
+  }
+}

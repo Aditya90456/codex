@@ -36,7 +36,8 @@ import {
   Copy,
   BookOpen,
   Users,
-  X
+  X,
+  Pencil
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import AICodeExplainer from './AI/AICodeExplainer';
@@ -48,6 +49,7 @@ import DryRunAnimationPanel from './DryRunAnimationPanel';
 import SolutionViewer from './SolutionViewer';
 import NetworkMonitor from './NetworkMonitor';
 import AIPeerChat from './AIPeerChat';
+import AIWhiteboardVisualizer from './AIWhiteboardVisualizer';
 import DSACertificateSystem from './DSACertificateSystem';
 import AILeetCodeAssistant from './AILeetCodeAssistant';
 import ProblemDescription from './ProblemDescription';
@@ -87,6 +89,7 @@ const LeetCodeEditor = () => {
   const [compilerErrors, setCompilerErrors] = useState([]);
   const [runtimeErrors, setRuntimeErrors] = useState([]);
   const [outputComparison, setOutputComparison] = useState(null);
+  const [leftPanelTab, setLeftPanelTab] = useState('description'); // 'description' or 'whiteboard'
   const editorRef = useRef(null);
   const userDropdownRef = useRef(null);
   const [showVideoPlayer, setShowVideoPlayer] = useState(false);
@@ -1275,31 +1278,61 @@ ${code}
             </div>
           </div>
 
-          {/* Tabs */}
+          {/* Tabs - Description and Whiteboard */}
           <div className="flex border-b border-slate-700">
-            <div className="px-4 py-2 text-sm font-medium text-white border-b-2 border-white">
+            <button
+              onClick={() => setLeftPanelTab('description')}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                leftPanelTab === 'description'
+                  ? 'text-white border-b-2 border-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
               Description
-            </div>
+            </button>
+            <button
+              onClick={() => setLeftPanelTab('whiteboard')}
+              className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
+                leftPanelTab === 'whiteboard'
+                  ? 'text-white border-b-2 border-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Pencil className="w-4 h-4" />
+              Whiteboard
+            </button>
           </div>
 
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto p-6">
-            {/* Use the new ProblemDescription component */}
-            <ProblemDescription problem={selectedProblem} />
-            
-            {/* Solution Viewer */}
-            <div className="mt-6">
-              <SolutionViewer 
-                problemId={selectedProblem.id}
-                language={language}
-                onUseSolution={(solutionCode) => {
-                  setCode(solutionCode);
-                  if (editorRef.current) {
-                    editorRef.current.setValue(solutionCode);
-                  }
-                }}
-              />
-            </div>
+            {leftPanelTab === 'description' ? (
+              <>
+                {/* Use the new ProblemDescription component */}
+                <ProblemDescription problem={selectedProblem} />
+                
+                {/* Solution Viewer */}
+                <div className="mt-6">
+                  <SolutionViewer 
+                    problemId={selectedProblem.id}
+                    language={language}
+                    onUseSolution={(solutionCode) => {
+                      setCode(solutionCode);
+                      if (editorRef.current) {
+                        editorRef.current.setValue(solutionCode);
+                      }
+                    }}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="h-full -m-6">
+                <AIWhiteboardVisualizer 
+                  problemId={selectedProblem.id}
+                  problemTitle={selectedProblem.title}
+                  code={code}
+                />
+              </div>
+            )}
           </div>
         </div>
 
