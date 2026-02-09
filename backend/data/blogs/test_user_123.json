@@ -1,0 +1,25 @@
+{
+  "blogs": [
+    {
+      "id": "blog_1770646091628_9ead0t9ao",
+      "userId": "test_user_123",
+      "userName": "Test User",
+      "userAvatar": "https://via.placeholder.com/40",
+      "title": "Test Blog Post",
+      "content": "This is a test blog post created by the test script.",
+      "tags": [
+        "test",
+        "javascript"
+      ],
+      "coverImage": "",
+      "likes": [],
+      "dislikes": [],
+      "comments": [],
+      "views": 0,
+      "createdAt": "2026-02-09T14:08:11.628Z",
+      "updatedAt": "2026-02-09T14:08:11.628Z"
+    }
+  ],
+  "followers": [],
+  "following": []
+}
