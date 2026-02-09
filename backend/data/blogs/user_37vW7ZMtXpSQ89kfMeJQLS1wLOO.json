@@ -1,0 +1,24 @@
+{
+  "blogs": [
+    {
+      "id": "blog_1770624292579_3c27nxg7j",
+      "userId": "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO",
+      "userName": "Aditya Bakshi",
+      "userAvatar": "https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18zN2pUZkZ1ZjdJcDJpN1BFSGpxRml3bEp6RHMiLCJyaWQiOiJ1c2VyXzM3dlc3Wk10WHBTUTg5a2ZNZUpRTFMxd0xPTyIsImluaXRpYWxzIjoiQUIifQ",
+      "title": "ss",
+      "content": "ddd",
+      "tags": [],
+      "coverImage": "",
+      "likes": [
+        "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO"
+      ],
+      "dislikes": [],
+      "comments": [],
+      "views": 0,
+      "createdAt": "2026-02-09T08:04:52.579Z",
+      "updatedAt": "2026-02-09T08:04:52.579Z"
+    }
+  ],
+  "followers": [],
+  "following": []
+}

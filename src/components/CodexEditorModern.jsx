@@ -61,6 +61,16 @@ console.log("\\n🎯 Click 'Run Code' to see the magic!");
     { value: 'python', label: 'Python', ext: '.py', icon: '🐍', color: 'from-green-400 to-green-600' },
     { value: 'java', label: 'Java', ext: '.java', icon: '☕', color: 'from-orange-400 to-orange-600' },
     { value: 'cpp', label: 'C++', ext: '.cpp', icon: '⚡', color: 'from-purple-400 to-purple-600' },
+    { value: 'c', label: 'C', ext: '.c', icon: '🔵', color: 'from-blue-500 to-blue-700' },
+    { value: 'csharp', label: 'C#', ext: '.cs', icon: '💜', color: 'from-purple-500 to-purple-700' },
+    { value: 'go', label: 'Go', ext: '.go', icon: '🔷', color: 'from-cyan-400 to-cyan-600' },
+    { value: 'rust', label: 'Rust', ext: '.rs', icon: '🦀', color: 'from-orange-500 to-red-600' },
+    { value: 'ruby', label: 'Ruby', ext: '.rb', icon: '💎', color: 'from-red-500 to-red-700' },
+    { value: 'php', label: 'PHP', ext: '.php', icon: '🐘', color: 'from-indigo-400 to-indigo-600' },
+    { value: 'swift', label: 'Swift', ext: '.swift', icon: '🍎', color: 'from-orange-400 to-red-500' },
+    { value: 'kotlin', label: 'Kotlin', ext: '.kt', icon: '🟣', color: 'from-purple-400 to-pink-500' },
+    { value: 'scala', label: 'Scala', ext: '.scala', icon: '🔴', color: 'from-red-400 to-red-600' },
+    { value: 'r', label: 'R', ext: '.R', icon: '📊', color: 'from-blue-400 to-blue-600' },
     { value: 'html', label: 'HTML', ext: '.html', icon: '🌐', color: 'from-red-400 to-red-600' },
     { value: 'css', label: 'CSS', ext: '.css', icon: '🎨', color: 'from-pink-400 to-pink-600' },
   ];
@@ -119,7 +129,22 @@ console.log("\\n🎯 Click 'Run Code' to see the magic!");
         timestamp: new Date().toLocaleTimeString()
       });
       
-      if (language === 'javascript' || language === 'typescript') {
+      // For HTML/CSS, use client-side execution
+      if (language === 'html' || language === 'css') {
+        outputMessages.push({
+          type: 'info',
+          content: `📝 ${language.toUpperCase()} code validated successfully!`,
+          timestamp: new Date().toLocaleTimeString()
+        });
+        
+        outputMessages.push({
+          type: 'success',
+          content: '✅ Code looks good!',
+          timestamp: new Date().toLocaleTimeString()
+        });
+      } 
+      // For JavaScript/TypeScript, use client-side VM execution
+      else if (language === 'javascript' || language === 'typescript') {
         const logs = [];
         const originalLog = console.log;
         const originalError = console.error;
@@ -200,18 +225,62 @@ console.log("\\n🎯 Click 'Run Code' to see the magic!");
             timestamp: new Date().toLocaleTimeString()
           });
         }
-      } else {
-        outputMessages.push({
-          type: 'info',
-          content: `📝 ${language.toUpperCase()} code validated successfully!`,
-          timestamp: new Date().toLocaleTimeString()
-        });
-        
-        outputMessages.push({
-          type: 'success',
-          content: '✅ Code looks good!',
-          timestamp: new Date().toLocaleTimeString()
-        });
+      }
+      // For all other languages, use backend multi-language API
+      else {
+        try {
+          const response = await fetch('http://localhost:3001/api/execute/execute', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              code,
+              language,
+              input: ''
+            })
+          });
+
+          const result = await response.json();
+          const runtime = Math.round(performance.now() - startTime);
+          setExecutionTime(runtime);
+
+          if (result.success) {
+            if (result.output) {
+              outputMessages.push({
+                type: 'log',
+                content: result.output,
+                timestamp: new Date().toLocaleTimeString()
+              });
+            }
+
+            if (result.error) {
+              outputMessages.push({
+                type: 'error',
+                content: `❌ ${result.error}`,
+                timestamp: new Date().toLocaleTimeString()
+              });
+            } else {
+              outputMessages.push({
+                type: 'success',
+                content: `✅ Execution completed in ${result.runtime || runtime}ms`,
+                timestamp: new Date().toLocaleTimeString()
+              });
+            }
+          } else {
+            outputMessages.push({
+              type: 'error',
+              content: `❌ ${result.error || 'Execution failed'}`,
+              timestamp: new Date().toLocaleTimeString()
+            });
+          }
+        } catch (fetchError) {
+          outputMessages.push({
+            type: 'error',
+            content: `❌ Backend Error: ${fetchError.message}. Make sure backend server is running on port 3001.`,
+            timestamp: new Date().toLocaleTimeString()
+          });
+        }
       }
     } catch (error) {
       outputMessages.push({

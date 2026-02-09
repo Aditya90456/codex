@@ -16,7 +16,8 @@ import {
   Bell,
   Moon,
   Sun,
-  Monitor
+  Monitor,
+  PenSquare
 } from 'lucide-react';
 
 function Navbar({ onShowAuth, onBackToWelcome }) {
@@ -97,6 +98,20 @@ function Navbar({ onShowAuth, onBackToWelcome }) {
               className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700"
             >
               Editor
+            </button>
+            <button 
+              onClick={() => navigate('/web-studio')}
+              className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700 flex items-center gap-1"
+            >
+              <Code size={14} />
+              Web Studio
+            </button>
+            <button 
+              onClick={() => navigate('/blogs')}
+              className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700 flex items-center gap-1"
+            >
+              <PenSquare size={14} />
+              Blogs
             </button>
             <button 
               onClick={() => navigate('/playground')}

@@ -24,6 +24,8 @@ import MLResumeCreator from './components/MLResumeCreator';
 import DSAArticlesViewer from './components/DSAArticlesViewer';
 import DSAArticlesViewerWithBookmarks from './components/DSAArticlesViewerWithBookmarks';
 import BookmarksDashboard from './components/BookmarksDashboard';
+import WebDevStudio from './components/WebDevStudio';
+import BlogPlatform from './components/BlogPlatform';
 import './App.css';
 
 // Validate Clerk configuration on app start
@@ -69,7 +71,23 @@ function AppContent() {
             path="/web" 
             element={
               <ProtectedRoute>
-                <AdvancedWebEditor />
+                <WebDevStudio />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/web-studio" 
+            element={
+              <ProtectedRoute>
+                <WebDevStudio />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/blogs" 
+            element={
+              <ProtectedRoute>
+                <BlogPlatform />
               </ProtectedRoute>
             } 
           />

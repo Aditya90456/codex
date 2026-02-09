@@ -47,7 +47,11 @@ import {
   ChevronUp,
   ChevronDown,
   UserPlus,
-  Loader2
+  Loader2,
+  PenSquare,
+  MessageCircle,
+  ThumbsUp,
+  Eye
 } from 'lucide-react';
 
 const WelcomeScreenModern = () => {
@@ -179,12 +183,29 @@ const WelcomeScreenModern = () => {
       action: () => protectedAction(() => navigate('/ai'))
     },
     {
+      icon: <Globe className="w-6 h-6" />,
+      title: "Web Dev Studio",
+      description: "Build websites with AI assistance - React, Vue, Tailwind & more",
+      color: "from-green-500 to-emerald-500",
+      badge: "✨ AI-Powered",
+      highlight: true,
+      action: () => protectedAction(() => navigate('/web-studio'))
+    },
+    {
       icon: <Terminal className="w-6 h-6" />,
       title: "Multi-Language IDE",
-      description: "Code in 12+ languages with intelligent autocomplete",
+      description: "Code in 15+ languages with intelligent autocomplete",
       color: "from-blue-500 to-cyan-500",
       badge: "Popular",
       action: () => protectedAction(() => navigate('/editor'))
+    },
+    {
+      icon: <BookOpen className="w-6 h-6" />,
+      title: "DSA Learning Hub",
+      description: "Master algorithms with 250+ problems & AI explanations",
+      color: "from-purple-500 to-indigo-500",
+      badge: "Learn",
+      action: () => protectedAction(() => navigate('/playground'))
     },
     {
       icon: <Zap className="w-6 h-6" />,
@@ -195,12 +216,12 @@ const WelcomeScreenModern = () => {
       action: () => protectedAction(() => navigate('/editor'))
     },
     {
-      icon: <Box className="w-6 h-6" />,
-      title: "Web Projects",
-      description: "Build full-stack apps with live preview",
-      color: "from-green-500 to-emerald-500",
-      badge: "New",
-      action: () => protectedAction(() => navigate('/web-editor'))
+      icon: <FileText className="w-6 h-6" />,
+      title: "AI Resume Builder",
+      description: "Create professional resumes with ML-powered suggestions",
+      color: "from-pink-500 to-rose-500",
+      badge: "Career",
+      action: () => protectedAction(() => navigate('/resume'))
     }
   ];
 
@@ -1133,6 +1154,266 @@ const WelcomeScreenModern = () => {
                   <span>React AI Generator</span>
                   <ArrowRight className="w-6 h-6" />
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Blog Platform Section */}
+        <div className="relative py-24 bg-gradient-to-b from-slate-900/0 via-pink-900/5 to-slate-900/0">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-pink-500/10 to-purple-500/10 text-pink-400 border border-pink-500/20 mb-6">
+                <PenSquare className="w-4 h-4 mr-2" />
+                Community Blogging Platform
+              </div>
+              <h2 className="text-5xl font-black mb-6">
+                Share Your
+                <span className="block bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
+                  Coding Journey
+                </span>
+              </h2>
+              <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+                Write technical blogs, share knowledge, and connect with developers worldwide
+              </p>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 rounded-3xl blur-2xl opacity-20"></div>
+              <div className="relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-3xl p-8 hover:border-pink-500/50 transition-all duration-300">
+                
+                {/* Feature Grid */}
+                <div className="grid md:grid-cols-3 gap-6 mb-8">
+                  {/* Create & Share */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-2xl p-6 hover:border-pink-500/50 transition-all duration-300 h-full">
+                      <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl flex items-center justify-center mb-4">
+                        <PenSquare className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 text-white">Create & Share</h3>
+                      <p className="text-slate-400 text-sm mb-4">
+                        Write technical blogs with rich text editor, add cover images, and tag your content
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-xs text-pink-400">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Easy Publishing</span>
+                        </div>
+                        <button 
+                          onClick={() => protectedAction(() => navigate('/blogs'))}
+                          className="px-3 py-1.5 bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/30 rounded-lg text-pink-400 text-xs font-medium transition-all duration-200 hover:scale-105"
+                        >
+                          Write Now
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Social Features */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-2xl p-6 hover:border-purple-500/50 transition-all duration-300 h-full">
+                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mb-4">
+                        <Heart className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 text-white">Social Features</h3>
+                      <p className="text-slate-400 text-sm mb-4">
+                        Like, comment, follow authors, and build your developer community
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-xs text-purple-400">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Engage & Connect</span>
+                        </div>
+                        <button 
+                          onClick={() => protectedAction(() => navigate('/blogs'))}
+                          className="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-lg text-purple-400 text-xs font-medium transition-all duration-200 hover:scale-105"
+                        >
+                          Explore
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Trending & Discovery */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-2xl p-6 hover:border-blue-500/50 transition-all duration-300 h-full">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
+                        <TrendingUp className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 text-white">Trending & Discovery</h3>
+                      <p className="text-slate-400 text-sm mb-4">
+                        Discover trending blogs, search by tags, and get personalized feed
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-xs text-blue-400">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Smart Discovery</span>
+                        </div>
+                        <button 
+                          onClick={() => protectedAction(() => navigate('/blogs'))}
+                          className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-400 text-xs font-medium transition-all duration-200 hover:scale-105"
+                        >
+                          Discover
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Blog Features Grid */}
+                <div className="grid md:grid-cols-4 gap-4 mb-8">
+                  {/* Like/Dislike */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-pink-600 rounded-xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-xl p-4 hover:border-red-500/50 transition-all duration-300 h-full">
+                      <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center mb-3">
+                        <ThumbsUp className="w-5 h-5 text-white" />
+                      </div>
+                      <h4 className="text-lg font-bold mb-2 text-white">Like & React</h4>
+                      <p className="text-slate-400 text-xs mb-3">
+                        Show appreciation with likes and reactions
+                      </p>
+                      <button 
+                        onClick={() => protectedAction(() => navigate('/blogs'))}
+                        className="w-full px-2 py-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded text-red-400 text-xs font-medium transition-all duration-200"
+                      >
+                        Try It
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Comments */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-xl p-4 hover:border-green-500/50 transition-all duration-300 h-full">
+                      <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mb-3">
+                        <MessageCircle className="w-5 h-5 text-white" />
+                      </div>
+                      <h4 className="text-lg font-bold mb-2 text-white">Comments</h4>
+                      <p className="text-slate-400 text-xs mb-3">
+                        Engage in discussions and share insights
+                      </p>
+                      <button 
+                        onClick={() => protectedAction(() => navigate('/blogs'))}
+                        className="w-full px-2 py-1 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded text-green-400 text-xs font-medium transition-all duration-200"
+                      >
+                        Comment
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Follow System */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-600 to-yellow-600 rounded-xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-xl p-4 hover:border-orange-500/50 transition-all duration-300 h-full">
+                      <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-lg flex items-center justify-center mb-3">
+                        <Users className="w-5 h-5 text-white" />
+                      </div>
+                      <h4 className="text-lg font-bold mb-2 text-white">Follow Authors</h4>
+                      <p className="text-slate-400 text-xs mb-3">
+                        Build your network and get personalized feed
+                      </p>
+                      <button 
+                        onClick={() => protectedAction(() => navigate('/blogs'))}
+                        className="w-full px-2 py-1 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 rounded text-orange-400 text-xs font-medium transition-all duration-200"
+                      >
+                        Follow
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Tags & Search */}
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                    <div className="relative bg-slate-900/50 backdrop-blur border border-slate-700/50 rounded-xl p-4 hover:border-indigo-500/50 transition-all duration-300 h-full">
+                      <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center mb-3">
+                        <Search className="w-5 h-5 text-white" />
+                      </div>
+                      <h4 className="text-lg font-bold mb-2 text-white">Tags & Search</h4>
+                      <p className="text-slate-400 text-xs mb-3">
+                        Find content by tags and keywords
+                      </p>
+                      <button 
+                        onClick={() => protectedAction(() => navigate('/blogs'))}
+                        className="w-full px-2 py-1 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 rounded text-indigo-400 text-xs font-medium transition-all duration-200"
+                      >
+                        Search
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Blog Preview */}
+                <div className="relative rounded-2xl overflow-hidden border border-slate-700/50 mb-8">
+                  <div className="bg-slate-900 p-4">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <span className="ml-4 text-sm text-slate-400">Blog Platform</span>
+                    </div>
+                    <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full"></div>
+                        <div>
+                          <div className="h-3 bg-slate-700 rounded w-24 mb-2"></div>
+                          <div className="h-2 bg-slate-700 rounded w-16"></div>
+                        </div>
+                      </div>
+                      <div className="space-y-2 mb-4">
+                        <div className="h-4 bg-pink-500/20 rounded w-3/4"></div>
+                        <div className="h-3 bg-slate-700 rounded w-full"></div>
+                        <div className="h-3 bg-slate-700 rounded w-5/6"></div>
+                      </div>
+                      <div className="flex items-center space-x-4 text-xs text-slate-500">
+                        <div className="flex items-center space-x-1">
+                          <Heart className="w-4 h-4" />
+                          <span>42</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <MessageCircle className="w-4 h-4" />
+                          <span>12</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Eye className="w-4 h-4" />
+                          <span>156</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <div className="text-center">
+                  <button
+                    onClick={() => protectedAction(() => navigate('/blogs'))}
+                    className="inline-flex items-center space-x-3 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 hover:from-pink-700 hover:via-purple-700 hover:to-blue-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-pink-500/25 hover:shadow-2xl hover:shadow-pink-500/40 transform hover:scale-105 relative overflow-hidden group"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                    <PenSquare className="w-6 h-6 relative z-10" />
+                    <span className="relative z-10">Start Blogging</span>
+                    <ArrowRight className="w-6 h-6 relative z-10 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-slate-700/50">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-pink-400 mb-1">1000+</div>
+                    <div className="text-sm text-slate-400">Blogs Published</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-purple-400 mb-1">500+</div>
+                    <div className="text-sm text-slate-400">Active Writers</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-400 mb-1">5K+</div>
+                    <div className="text-sm text-slate-400">Comments</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

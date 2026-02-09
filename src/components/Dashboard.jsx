@@ -161,13 +161,13 @@ const Dashboard = () => {
     },
     {
       icon: Globe,
-      title: 'Web Editor',
-      description: 'Build and preview HTML, CSS, JS in real-time',
-      path: '/web',
+      title: 'Web Dev Studio',
+      description: 'Build websites with AI assistance like Kiro',
+      path: '/web-studio',
       gradient: 'from-green-600 to-emerald-600',
       bgGradient: 'from-green-600/10 to-emerald-600/10',
       borderColor: 'border-green-500/30',
-      stats: 'Live Preview'
+      stats: 'AI-Powered'
     },
     {
       icon: Database,

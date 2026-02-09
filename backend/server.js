@@ -179,6 +179,22 @@ app.use('/api/ai', aiVisualizerRoutes);
 const bookmarksRoutes = require('./routes/bookmarks');
 app.use('/api/bookmarks', bookmarksRoutes);
 
+// Mount Web Assist routes
+const webAssistRoutes = require('./routes/web-assist');
+app.use('/api/ai', webAssistRoutes);
+
+// Mount Web Projects routes
+const webProjectsRoutes = require('./routes/web-projects');
+app.use('/api/web-projects', webProjectsRoutes);
+
+// Mount Multi-Language Execution routes
+const multiLangRoutes = require('./routes/multi-language-execute');
+app.use('/api/execute', multiLangRoutes);
+
+// Mount Blog routes
+const blogRoutes = require('./routes/blogs');
+app.use('/api/blogs', blogRoutes);
+
 console.log('✅ AI Generator routes mounted');
 console.log('✅ GitHub integration routes mounted');
 console.log('✅ Code Explainer routes mounted');
@@ -189,6 +205,10 @@ console.log('✅ LeetCode ML Engine routes mounted');
 console.log('✅ Resume Creator routes mounted');
 console.log('✅ Problem Chat routes mounted');
 console.log('✅ Bookmarks routes mounted');
+console.log('✅ Web Dev AI Assistant routes mounted');
+console.log('✅ Web Projects Management routes mounted');
+console.log('✅ Multi-Language Execution routes mounted (15 languages)');
+console.log('✅ Blog Platform routes mounted');
 
 // API Routes
 
