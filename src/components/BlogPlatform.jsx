@@ -160,16 +160,22 @@ const BlogPlatform = () => {
         })
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       if (data.success) {
         setShowCreateModal(false);
         setBlogForm({ title: '', content: '', tags: [], coverImage: '' });
         loadMyBlogs();
         alert('Blog created successfully!');
+      } else {
+        throw new Error(data.error || 'Failed to create blog');
       }
     } catch (error) {
       console.error('Create blog error:', error);
-      alert('Failed to create blog');
+      alert(`Failed to create blog: ${error.message}. Please ensure the backend server is running.`);
     }
   };
 

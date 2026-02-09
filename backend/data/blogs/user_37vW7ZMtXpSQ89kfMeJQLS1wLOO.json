@@ -10,7 +10,8 @@
       "tags": [],
       "coverImage": "",
       "likes": [
-        "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO"
+        "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO",
+        "user_37jwvNsM6pGnaGEvIXurPTn3OqA"
       ],
       "dislikes": [],
       "comments": [],
@@ -19,6 +20,8 @@
       "updatedAt": "2026-02-09T08:04:52.579Z"
     }
   ],
-  "followers": [],
+  "followers": [
+    "user_37jwvNsM6pGnaGEvIXurPTn3OqA"
+  ],
   "following": []
 }
