@@ -52,6 +52,8 @@ import AIPeerChat from './AIPeerChat';
 import AIWhiteboardVisualizer from './AIWhiteboardVisualizer';
 import DSACertificateSystem from './DSACertificateSystem';
 import AILeetCodeAssistant from './AILeetCodeAssistant';
+import DSALeetCodeAgent from './DSALeetCodeAgent';
+import DSARoadmapTracker from './DSARoadmapTracker';
 import ProblemDescription from './ProblemDescription';
 import { useClerkProgress } from '../hooks/useClerkProgress';
 import SessionBookingModal from './SessionBookingModal';
@@ -96,6 +98,7 @@ const LeetCodeEditor = () => {
   const [monacoLoaded, setMonacoLoaded] = useState(false);
   const [monacoError, setMonacoError] = useState(false);
   const [showSessionBooking, setShowSessionBooking] = useState(false);
+  const [showRoadmapTracker, setShowRoadmapTracker] = useState(false);
 
   // Certificate system state
   const [completedProblems, setCompletedProblems] = useState(new Set());
@@ -888,6 +891,26 @@ ${code}
         // Check for certificate eligibility when problem is solved
         await checkCertificateEligibility(selectedProblem.id, language);
         
+        // Record completion in roadmap tracker
+        if (user?.id) {
+          try {
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+            await fetch(`${backendUrl}/api/roadmap/record-completion`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: user.id,
+                problemId: selectedProblem.id,
+                difficulty: selectedProblem.difficulty,
+                category: selectedProblem.category
+              })
+            });
+            console.log('✅ Roadmap progress updated');
+          } catch (error) {
+            console.log('Failed to update roadmap:', error);
+          }
+        }
+        
         // Sync to GitHub if connected and auto-sync is enabled
         if (githubConnected && autoSyncGithub) {
           await syncToGithub(selectedProblem, code, results);
@@ -980,6 +1003,14 @@ ${code}
           >
             <Home className="w-4 h-4" />
             <span className="text-sm font-medium">Home</span>
+          </button>
+          
+          <button
+            onClick={() => setShowRoadmapTracker(!showRoadmapTracker)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg transition-all transform hover:scale-105"
+          >
+            <Trophy className="w-4 h-4" />
+            <span className="text-sm font-medium">Roadmap</span>
           </button>
           
           <button
@@ -2006,6 +2037,20 @@ ${code}
         onCodeSuggestion={handleCodeSuggestion}
       />
 
+      {/* DSA AI Agent - Advanced Problem Solving Assistant */}
+      <DSALeetCodeAgent
+        problemTitle={selectedProblem?.title || 'No problem selected'}
+        problemDescription={selectedProblem?.description || ''}
+        problemDifficulty={selectedProblem?.difficulty || 'Medium'}
+        problemTags={selectedProblem?.tags || []}
+        userCode={code}
+        onCodeSuggestion={(suggestion) => {
+          if (suggestion) {
+            setCode(suggestion);
+          }
+        }}
+      />
+
       {/* Certificate Achievement Modal */}
       {showCertificateModal && newCertificate && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -2070,6 +2115,25 @@ ${code}
         isOpen={showSessionBooking}
         onClose={() => setShowSessionBooking(false)}
       />
+
+      {/* DSA Roadmap Tracker Modal */}
+      {showRoadmapTracker && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="min-h-screen p-4">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={() => setShowRoadmapTracker(false)}
+                  className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <DSARoadmapTracker />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

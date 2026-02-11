@@ -52,6 +52,7 @@ import { dsaProblems } from '../data/dsaProblems';
 import ProblemDescription from './ProblemDescription';
 import DSAPatternSidebar from './DSAPatternSidebar';
 import AILeetCodeAssistant from './AILeetCodeAssistant';
+import DSALeetCodeAgent from './DSALeetCodeAgent';
 import ProgressTracker from './ProgressTracker';
 import { useClerkProgress } from '../hooks/useClerkProgress';
 
@@ -798,6 +799,24 @@ function solve() {
               }]);
               
               editorRef.current.focus();
+            }
+          }
+        }}
+      />
+
+      {/* DSA AI Agent - Advanced Problem Solving Assistant */}
+      <DSALeetCodeAgent
+        problemTitle={selectedProblem?.title || 'No problem selected'}
+        problemDescription={selectedProblem?.description || ''}
+        problemDifficulty={selectedProblem?.difficulty || 'Medium'}
+        problemTags={selectedProblem?.tags || []}
+        userCode={code}
+        onCodeSuggestion={(suggestion) => {
+          if (suggestion) {
+            setCode(suggestion);
+          }
+        }}
+      />
             }
           }
         }}

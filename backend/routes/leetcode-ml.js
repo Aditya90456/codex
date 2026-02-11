@@ -718,3 +718,185 @@ router.get('/health', (req, res) => {
 });
 
 module.exports = router;
+
+
+// DSA AI Agent endpoint
+router.post('/dsa-agent', async (req, res) => {
+  try {
+    const {
+      userId,
+      problemTitle,
+      problemDescription,
+      problemDifficulty,
+      problemTags,
+      userCode,
+      message,
+      conversationHistory
+    } = req.body;
+
+    // Initialize Gemini AI
+    const { GoogleGenerativeAI } = require('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+    // Build context-aware prompt
+    const systemPrompt = `You are an expert DSA (Data Structures & Algorithms) tutor and LeetCode coach. Your role is to help users solve coding problems through:
+
+1. **Progressive Hints**: Give hints that guide without revealing the solution
+2. **Pattern Recognition**: Identify DSA patterns (Two Pointers, Sliding Window, etc.)
+3. **Complexity Analysis**: Explain time and space complexity
+4. **Code Review**: Analyze user code and suggest improvements
+5. **Concept Explanation**: Teach underlying concepts clearly
+
+**Current Problem:**
+Title: ${problemTitle}
+Difficulty: ${problemDifficulty}
+Tags: ${problemTags?.join(', ') || 'N/A'}
+Description: ${problemDescription}
+
+${userCode ? `**User's Current Code:**\n\`\`\`\n${userCode}\n\`\`\`` : ''}
+
+**Conversation History:**
+${conversationHistory?.map(m => `${m.role}: ${m.content}`).join('\n') || 'No previous messages'}
+
+**User's Question:** ${message}
+
+**Instructions:**
+- Be encouraging and supportive
+- Use emojis sparingly for clarity
+- Provide code snippets when helpful
+- Break down complex concepts
+- Ask clarifying questions if needed
+- Never give the complete solution unless explicitly asked
+- Focus on teaching, not just answering`;
+
+    const result = await model.generateContent(systemPrompt);
+    const response = result.response.text();
+
+    // Extract structured data from response
+    const hints = extractHints(response);
+    const patterns = extractPatterns(response, problemTags);
+    const complexity = extractComplexity(response);
+    const codeSnippet = extractCodeSnippet(response);
+
+    res.json({
+      success: true,
+      response: response,
+      hints: hints,
+      patterns: patterns,
+      complexity: complexity,
+      codeSnippet: codeSnippet,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('DSA Agent error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to process request'
+    });
+  }
+});
+
+// Helper function to extract hints from AI response
+function extractHints(response) {
+  const hints = [];
+  const hintPatterns = [
+    /hint\s*\d*:?\s*(.+?)(?=\n\n|hint|$)/gi,
+    /💡\s*(.+?)(?=\n\n|💡|$)/gi,
+    /consider\s+(.+?)(?=\n\n|consider|$)/gi
+  ];
+
+  hintPatterns.forEach(pattern => {
+    const matches = response.matchAll(pattern);
+    for (const match of matches) {
+      if (match[1] && match[1].trim().length > 10) {
+        hints.push(match[1].trim());
+      }
+    }
+  });
+
+  return hints.slice(0, 5); // Max 5 hints
+}
+
+// Helper function to extract DSA patterns
+function extractPatterns(response, problemTags) {
+  const commonPatterns = [
+    { name: 'Two Pointers', keywords: ['two pointer', 'left', 'right', 'start', 'end'], description: 'Use two pointers moving towards each other or in same direction' },
+    { name: 'Sliding Window', keywords: ['sliding window', 'window', 'subarray', 'substring'], description: 'Maintain a window that slides through the array' },
+    { name: 'Binary Search', keywords: ['binary search', 'sorted', 'log n', 'divide'], description: 'Divide and conquer on sorted data' },
+    { name: 'Dynamic Programming', keywords: ['dp', 'dynamic programming', 'memoization', 'optimal substructure'], description: 'Break down into overlapping subproblems' },
+    { name: 'Backtracking', keywords: ['backtrack', 'recursive', 'permutation', 'combination'], description: 'Explore all possibilities with pruning' },
+    { name: 'BFS/DFS', keywords: ['bfs', 'dfs', 'graph', 'tree', 'traversal'], description: 'Graph or tree traversal algorithms' },
+    { name: 'Greedy', keywords: ['greedy', 'optimal', 'local'], description: 'Make locally optimal choices' },
+    { name: 'Hash Map', keywords: ['hash', 'map', 'dictionary', 'frequency'], description: 'Use hash table for O(1) lookups' },
+    { name: 'Stack/Queue', keywords: ['stack', 'queue', 'lifo', 'fifo'], description: 'Use stack or queue data structure' },
+    { name: 'Heap', keywords: ['heap', 'priority queue', 'top k'], description: 'Use heap for efficient min/max operations' }
+  ];
+
+  const detectedPatterns = [];
+  const responseLower = response.toLowerCase();
+
+  commonPatterns.forEach(pattern => {
+    const matchCount = pattern.keywords.filter(keyword => 
+      responseLower.includes(keyword.toLowerCase())
+    ).length;
+
+    if (matchCount >= 2 || (problemTags && problemTags.some(tag => 
+      pattern.keywords.some(keyword => tag.toLowerCase().includes(keyword))
+    ))) {
+      detectedPatterns.push({
+        name: pattern.name,
+        description: pattern.description,
+        examples: [`${pattern.name} problems on LeetCode`]
+      });
+    }
+  });
+
+  return detectedPatterns.slice(0, 3); // Max 3 patterns
+}
+
+// Helper function to extract complexity analysis
+function extractComplexity(response) {
+  const timeMatch = response.match(/time complexity[:\s]+O\(([^)]+)\)/i);
+  const spaceMatch = response.match(/space complexity[:\s]+O\(([^)]+)\)/i);
+
+  if (timeMatch || spaceMatch) {
+    return {
+      time: timeMatch ? `O(${timeMatch[1]})` : 'Not specified',
+      space: spaceMatch ? `O(${spaceMatch[1]})` : 'Not specified',
+      timeExplanation: extractComplexityExplanation(response, 'time'),
+      spaceExplanation: extractComplexityExplanation(response, 'space'),
+      optimization: extractOptimization(response)
+    };
+  }
+
+  return null;
+}
+
+function extractComplexityExplanation(response, type) {
+  const pattern = new RegExp(`${type} complexity[^.]+\\.([^.]+\\.)`, 'i');
+  const match = response.match(pattern);
+  return match ? match[1].trim() : `${type} complexity analysis`;
+}
+
+function extractOptimization(response) {
+  const optimizationPatterns = [
+    /optimi[zs]e[^.]+\./gi,
+    /can be improved[^.]+\./gi,
+    /better approach[^.]+\./gi
+  ];
+
+  for (const pattern of optimizationPatterns) {
+    const match = response.match(pattern);
+    if (match) return match[0];
+  }
+
+  return null;
+}
+
+// Helper function to extract code snippets
+function extractCodeSnippet(response) {
+  const codeBlockMatch = response.match(/```[\w]*\n([\s\S]+?)```/);
+  return codeBlockMatch ? codeBlockMatch[1].trim() : null;
+}

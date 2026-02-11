@@ -195,6 +195,10 @@ app.use('/api/execute', multiLangRoutes);
 const blogRoutes = require('./routes/blogs');
 app.use('/api/blogs', blogRoutes);
 
+// Mount Roadmap routes
+const roadmapRoutes = require('./routes/roadmap');
+app.use('/api/roadmap', roadmapRoutes);
+
 console.log('✅ AI Generator routes mounted');
 console.log('✅ GitHub integration routes mounted');
 console.log('✅ Code Explainer routes mounted');
@@ -209,6 +213,7 @@ console.log('✅ Web Dev AI Assistant routes mounted');
 console.log('✅ Web Projects Management routes mounted');
 console.log('✅ Multi-Language Execution routes mounted (15 languages)');
 console.log('✅ Blog Platform routes mounted');
+console.log('✅ DSA Roadmap Tracker routes mounted');
 
 // API Routes
 
