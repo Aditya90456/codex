@@ -1,95 +1,44 @@
-# Quick Fix for Vercel Sign-Up Issue ⚡
+# Vercel Deployment - Quick Fix ⚡
 
-## Problem
-Sign-up page not working on Vercel deployment.
-
-## Solution Applied ✅
-
-### 1. Fixed Invalid JSX Syntax
-**Changed in both files:**
-- `src/pages/SignUpPage.jsx`
-- `src/pages/SignInPage.jsx`
-
-**Before (❌ Doesn't work in production):**
-```jsx
-<style jsx>{`
-  .custom-scrollbar::-webkit-scrollbar { ... }
-`}</style>
+## The Error
+```
+"VITE_CLERK_PUBLISHABLE_KEY" references Secret "clerk_publishable_key", which does not exist.
 ```
 
-**After (✅ Works in production):**
-```jsx
-<style dangerouslySetInnerHTML={{__html: `
-  .custom-scrollbar::-webkit-scrollbar { ... }
-`}} />
+## The Fix (2 Minutes)
+
+### 1. Open Vercel Dashboard
+https://vercel.com/dashboard → Your Project → **Settings** → **Environment Variables**
+
+### 2. Add These 3 Variables
+
+Click **Add New** for each:
+
+```
+Name: VITE_CLERK_PUBLISHABLE_KEY
+Value: pk_test_ZW5kbGVzcy1ibG93ZmlzaC01OS5jbGVyay5hY2NvdW50cy5kZXYk
+Environments: ✓ Production ✓ Preview ✓ Development
 ```
 
-## Deploy to Vercel Now
-
-### Option 1: Git Push (Recommended)
-```bash
-git add .
-git commit -m "Fix sign-up page for Vercel production"
-git push origin main
 ```
-Vercel will auto-deploy.
-
-### Option 2: Vercel CLI
-```bash
-npm run build
-vercel --prod
+Name: VITE_API_URL
+Value: https://codex-res1.onrender.com
+Environments: ✓ Production ✓ Preview ✓ Development
 ```
 
-## Set Environment Variables in Vercel
-
-Go to: **Vercel Dashboard → Your Project → Settings → Environment Variables**
-
-Add:
 ```
-VITE_CLERK_PUBLISHABLE_KEY = pk_test_your_actual_clerk_key
+Name: VITE_GEMINI_API_KEY
+Value: AIzaSyDPblUGrO9vgzKfSNP4uDbt6htpr9_zxTc
+Environments: ✓ Production ✓ Preview ✓ Development
 ```
 
-Get your key from: https://dashboard.clerk.com → API Keys
+### 3. Redeploy
+Go to **Deployments** tab → Click **...** on latest → **Redeploy**
 
-## Test After Deployment
+## Done! ✅
 
-1. Visit: `https://your-app.vercel.app/sign-up`
-2. Should see:
-   - ✅ Scrolling hero section
-   - ✅ Progress bar at top
-   - ✅ Clerk sign-up form
-   - ✅ Smooth animations
-
-## If Still Not Working
-
-### Check 1: Clear Cache
-```bash
-# In Vercel dashboard
-Deployments → Latest → Redeploy → Uncheck "Use existing Build Cache"
-```
-
-### Check 2: Verify Build Logs
-Look for errors in Vercel deployment logs.
-
-### Check 3: Test Locally
-```bash
-npm run build
-npm run preview
-# Open: http://localhost:4173/sign-up
-```
-
-## Common Errors & Fixes
-
-**Error: "Clerk is not configured"**
-→ Add `VITE_CLERK_PUBLISHABLE_KEY` in Vercel env vars
-
-**Error: "404 Not Found"**
-→ Already fixed in `vercel.json` with rewrites
-
-**Error: "Styles not loading"**
-→ Already fixed with `dangerouslySetInnerHTML`
+Your deployment should now succeed.
 
 ---
 
-**Status**: ✅ Ready to Deploy
-**Time to Fix**: ~2 minutes
+**Full Guide**: See `VERCEL_CLERK_FIX.md` for detailed instructions.
