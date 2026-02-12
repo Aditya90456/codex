@@ -1,0 +1,23 @@
+{
+  "streak": {
+    "current": 0,
+    "longest": 0,
+    "total": 0
+  },
+  "calendar": {
+    "2026-2-12": 4
+  },
+  "roadmap": [],
+  "tasks": [],
+  "stats": {
+    "totalProblems": 4,
+    "easy": 1,
+    "medium": 3,
+    "hard": 0,
+    "byCategory": {
+      "strings": 3,
+      "binary search": 1
+    }
+  },
+  "lastActivity": "2026-02-12T07:55:26.955Z"
+}

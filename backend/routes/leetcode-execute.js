@@ -308,60 +308,81 @@ async function executeJavaScript(code, input) {
   });
 
   try {
-    // Parse input string to extract values
-    let nums, target;
+    // Parse input - handle different formats
+    let parsedArgs = [];
     
-    // Handle different input formats
-    if (input.includes('], ')) {
-      // Format: "[2,7,11,15], 9"
-      const parts = input.split('], ');
-      nums = JSON.parse(parts[0] + ']');
-      target = parseInt(parts[1].replace(/\D/g, '')); // Extract only digits
-    } else if (input.includes(', target = ')) {
-      // Format: "[2,7,11,15], target = 9"
-      const parts = input.split(', target = ');
-      nums = JSON.parse(parts[0]);
-      target = parseInt(parts[1]);
-    } else {
-      // Try to match pattern: [array], number
-      const arrayTargetMatch = input.match(/\[([^\]]+)\],\s*(?:target\s*=\s*)?(\d+)/);
-      if (arrayTargetMatch) {
-        nums = JSON.parse(`[${arrayTargetMatch[1]}]`);
-        target = parseInt(arrayTargetMatch[2]);
-      } else {
-        // Try to parse as simple array
-        const arrayMatch = input.match(/\[([^\]]+)\]/);
-        if (arrayMatch) {
-          nums = JSON.parse(`[${arrayMatch[1]}]`);
-          target = null;
-        } else {
-          // Fallback: try direct parse
+    try {
+      if (input.startsWith('"') && input.endsWith('"')) {
+        // String input
+        parsedArgs = [input.slice(1, -1)];
+      } else if (input.includes('], ')) {
+        // Array with additional param
+        const parts = input.split('], ');
+        const array = JSON.parse(parts[0] + ']');
+        const secondParam = parseInt(parts[1].replace(/[^\d-]/g, ''));
+        parsedArgs = [array, secondParam];
+      } else if (input.includes(', target = ')) {
+        // Array with target
+        const parts = input.split(', target = ');
+        parsedArgs = [JSON.parse(parts[0]), parseInt(parts[1])];
+      } else if (input.startsWith('[') && input.endsWith(']')) {
+        // Single array
+        parsedArgs = [JSON.parse(input)];
+      } else if (input.includes(',')) {
+        // Multiple comma-separated values
+        const parts = input.split(',').map(p => p.trim());
+        parsedArgs = parts.map(p => {
           try {
-            const parsed = JSON.parse(input);
-            if (Array.isArray(parsed)) {
-              nums = parsed;
-              target = null;
-            } else {
-              nums = parsed.nums || parsed[0];
-              target = parsed.target || parsed[1];
-            }
-          } catch (e) {
-            throw new Error(`Invalid input format: ${input}`);
+            return JSON.parse(p);
+          } catch {
+            return p.replace(/^["']|["']$/g, '');
           }
+        });
+      } else {
+        // Single value
+        try {
+          parsedArgs = [JSON.parse(input)];
+        } catch {
+          parsedArgs = [input.replace(/^["']|["']$/g, '')];
         }
       }
+    } catch (e) {
+      parsedArgs = [input];
     }
 
+    // Generic wrapper that auto-detects function
     const wrappedCode = `
       ${code}
       
-      // Execute the main function
-      const nums = ${JSON.stringify(nums)};
-      ${target !== null ? `const target = ${target};` : ''}
+      // Parse arguments
+      const args = ${JSON.stringify(parsedArgs)};
       
-      const result = typeof solution === 'function' 
-        ? solution(nums${target !== null ? ', target' : ''})
-        : (typeof twoSum === 'function' ? twoSum(nums${target !== null ? ', target' : ''}) : null);
+      // Auto-detect function to call
+      let result = null;
+      
+      // Check for class-based solution
+      if (typeof Solution !== 'undefined') {
+        const sol = new Solution();
+        const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(sol))
+          .filter(name => name !== 'constructor' && typeof sol[name] === 'function');
+        
+        if (methods.length > 0) {
+          const methodName = methods[0];
+          result = sol[methodName](...args);
+        }
+      } else {
+        // Look for standalone functions
+        const functionNames = Object.keys(this).filter(key => 
+          typeof this[key] === 'function' && 
+          !key.startsWith('_') &&
+          key !== 'console'
+        );
+        
+        if (functionNames.length > 0) {
+          const funcName = functionNames[0];
+          result = this[funcName](...args);
+        }
+      }
       
       result;
     `;
@@ -369,11 +390,8 @@ async function executeJavaScript(code, input) {
     const result = vm.run(wrappedCode);
     return result;
   } catch (error) {
-    // Parse real JavaScript errors
     const errorMessage = error.message;
-    const errorStack = error.stack || '';
     
-    // Detect error type
     if (errorMessage.includes('SyntaxError') || errorMessage.includes('Unexpected token')) {
       throw new Error(`Compilation Error: ${errorMessage}\n\nCheck your syntax - missing brackets, semicolons, or invalid JavaScript syntax.`);
     } else if (errorMessage.includes('ReferenceError')) {
@@ -400,51 +418,118 @@ async function executePython(code, input) {
   try {
     const fetch = require('node-fetch');
     
-    // Parse input
-    let nums, target;
-    if (input.includes('], ')) {
-      const parts = input.split('], ');
-      nums = JSON.parse(parts[0] + ']');
-      target = parseInt(parts[1].replace(/\D/g, ''));
-    } else if (input.includes(', target = ')) {
-      const parts = input.split(', target = ');
-      nums = JSON.parse(parts[0]);
-      target = parseInt(parts[1]);
-    } else {
-      const arrayTargetMatch = input.match(/\[([^\]]+)\],\s*(?:target\s*=\s*)?(\d+)/);
-      if (arrayTargetMatch) {
-        nums = JSON.parse(`[${arrayTargetMatch[1]}]`);
-        target = parseInt(arrayTargetMatch[2]);
+    // Parse input - handle different input formats
+    let parsedArgs = [];
+    
+    try {
+      // Try to detect input type and parse accordingly
+      if (input.startsWith('"') && input.endsWith('"')) {
+        // String input like "abcabcbb"
+        parsedArgs = [input.slice(1, -1)];
+      } else if (input.includes('], ')) {
+        // Array with additional param like "[2,7,11,15], 9"
+        const parts = input.split('], ');
+        const array = JSON.parse(parts[0] + ']');
+        const secondParam = parts[1].replace(/[^\d-]/g, '');
+        parsedArgs = [array, parseInt(secondParam)];
+      } else if (input.includes(', target = ')) {
+        // Array with target like "[2,7,11,15], target = 9"
+        const parts = input.split(', target = ');
+        parsedArgs = [JSON.parse(parts[0]), parseInt(parts[1])];
+      } else if (input.startsWith('[') && input.endsWith(']')) {
+        // Single array input
+        parsedArgs = [JSON.parse(input)];
+      } else if (input.includes(',')) {
+        // Multiple comma-separated values
+        const parts = input.split(',').map(p => p.trim());
+        parsedArgs = parts.map(p => {
+          try {
+            return JSON.parse(p);
+          } catch {
+            return p.replace(/^["']|["']$/g, '');
+          }
+        });
       } else {
+        // Single value
         try {
-          const parsed = JSON.parse(`[${input}]`);
-          nums = parsed[0];
-          target = parsed[1];
-        } catch (e) {
-          nums = JSON.parse(input);
-          target = 0;
+          parsedArgs = [JSON.parse(input)];
+        } catch {
+          parsedArgs = [input.replace(/^["']|["']$/g, '')];
         }
       }
+    } catch (e) {
+      console.error('Input parsing error:', e);
+      parsedArgs = [input];
     }
 
+    // Build generic Python wrapper that auto-detects function
     const wrappedCode = `
 import json
+import sys
+import inspect
 
 ${code}
 
-# Execute
-nums = ${JSON.stringify(nums)}
-target = ${target}
+# Parse arguments
+args = ${JSON.stringify(parsedArgs)}
 
-if 'twoSum' in dir():
-    result = twoSum(nums, target)
-elif 'two_sum' in dir():
-    result = two_sum(nums, target)
-elif 'Solution' in dir():
-    result = Solution().twoSum(nums, target)
+# Auto-detect function to call
+result = None
+
+# Check if Solution class exists
+if 'Solution' in dir():
+    sol = Solution()
+    # Get all methods of Solution class
+    methods = [method for method in dir(sol) if not method.startswith('_')]
+    
+    if methods:
+        # Use the first public method found
+        method_name = methods[0]
+        method = getattr(sol, method_name)
+        
+        # Call with appropriate number of arguments
+        try:
+            if len(args) == 1:
+                result = method(args[0])
+            elif len(args) == 2:
+                result = method(args[0], args[1])
+            elif len(args) == 3:
+                result = method(args[0], args[1], args[2])
+            else:
+                result = method(*args)
+        except TypeError as e:
+            # Try unpacking if single arg is a list
+            if len(args) == 1 and isinstance(args[0], list):
+                result = method(*args[0])
+            else:
+                raise e
 else:
-    result = None
+    # Look for standalone functions
+    functions = [name for name in dir() if callable(eval(name)) and not name.startswith('_') and name not in ['json', 'sys', 'inspect']]
+    
+    if functions:
+        # Use the first function found
+        func_name = functions[0]
+        func = eval(func_name)
+        
+        # Call with appropriate number of arguments
+        try:
+            if len(args) == 1:
+                result = func(args[0])
+            elif len(args) == 2:
+                result = func(args[0], args[1])
+            elif len(args) == 3:
+                result = func(args[0], args[1], args[2])
+            else:
+                result = func(*args)
+        except TypeError as e:
+            # Try unpacking if single arg is a list
+            if len(args) == 1 and isinstance(args[0], list):
+                result = func(*args[0])
+            else:
+                raise e
 
+# Output result as JSON
 print(json.dumps(result))
 `;
 
@@ -480,7 +565,7 @@ print(json.dumps(result))
         const varName = match ? match[1] : 'variable';
         throw new Error(`Runtime Error: NameError - '${varName}' is not defined\n\nMake sure all variables are defined before use.`);
       } else if (errorMsg.includes('TypeError')) {
-        throw new Error(`Runtime Error: TypeError\n\n${errorMsg}\n\nCheck your data types.`);
+        throw new Error(`Runtime Error: TypeError\n\n${errorMsg}\n\nCheck your data types and function arguments.`);
       } else if (errorMsg.includes('IndexError')) {
         throw new Error(`Runtime Error: IndexError - list index out of range\n\n${errorMsg}`);
       } else if (errorMsg.includes('KeyError')) {
@@ -522,51 +607,120 @@ async function executeJava(code, input) {
   try {
     const fetch = require('node-fetch');
     
-    // Parse input
-    let nums, target;
-    if (input.includes('], ')) {
-      const parts = input.split('], ');
-      nums = JSON.parse(parts[0] + ']');
-      target = parseInt(parts[1].replace(/\D/g, ''));
-    } else if (input.includes(', target = ')) {
-      const parts = input.split(', target = ');
-      nums = JSON.parse(parts[0]);
-      target = parseInt(parts[1]);
-    } else {
-      const arrayTargetMatch = input.match(/\[([^\]]+)\],\s*(?:target\s*=\s*)?(\d+)/);
-      if (arrayTargetMatch) {
-        nums = JSON.parse(`[${arrayTargetMatch[1]}]`);
-        target = parseInt(arrayTargetMatch[2]);
+    // Parse input - handle different formats
+    let parsedArgs = [];
+    
+    try {
+      if (input.startsWith('"') && input.endsWith('"')) {
+        // String input
+        parsedArgs = [input.slice(1, -1)];
+      } else if (input.includes('], ')) {
+        // Array with additional param
+        const parts = input.split('], ');
+        const array = JSON.parse(parts[0] + ']');
+        const secondParam = parseInt(parts[1].replace(/[^\d-]/g, ''));
+        parsedArgs = [array, secondParam];
+      } else if (input.includes(', target = ')) {
+        // Array with target
+        const parts = input.split(', target = ');
+        parsedArgs = [JSON.parse(parts[0]), parseInt(parts[1])];
+      } else if (input.startsWith('[') && input.endsWith(']')) {
+        // Single array
+        parsedArgs = [JSON.parse(input)];
+      } else if (input.includes(',')) {
+        // Multiple comma-separated values
+        const parts = input.split(',').map(p => p.trim());
+        parsedArgs = parts.map(p => {
+          try {
+            return JSON.parse(p);
+          } catch {
+            return p.replace(/^["']|["']$/g, '');
+          }
+        });
       } else {
+        // Single value
         try {
-          const parsed = JSON.parse(`[${input}]`);
-          nums = parsed[0];
-          target = parsed[1];
-        } catch (e) {
-          nums = JSON.parse(input);
-          target = 0;
+          parsedArgs = [JSON.parse(input)];
+        } catch {
+          parsedArgs = [input.replace(/^["']|["']$/g, '')];
         }
       }
+    } catch (e) {
+      parsedArgs = [input];
     }
 
+    // Build Java code with reflection to auto-detect method
     const wrappedCode = `
 import java.util.*;
+import java.lang.reflect.*;
+import com.google.gson.*;
 
 ${code}
 
 class Main {
     public static void main(String[] args) {
-        Solution solution = new Solution();
-        int[] nums = {${nums.join(', ')}};
-        int target = ${target};
-        int[] result = solution.twoSum(nums, target);
-        
-        System.out.print("[");
-        for (int i = 0; i < result.length; i++) {
-            System.out.print(result[i]);
-            if (i < result.length - 1) System.out.print(",");
+        try {
+            Solution solution = new Solution();
+            Gson gson = new Gson();
+            
+            // Parse arguments from JSON
+            String argsJson = ${JSON.stringify(JSON.stringify(parsedArgs))};
+            JsonArray jsonArgs = JsonParser.parseString(argsJson).getAsJsonArray();
+            
+            // Get all public methods of Solution class
+            Method[] methods = Solution.class.getDeclaredMethods();
+            Method targetMethod = null;
+            
+            for (Method method : methods) {
+                if (Modifier.isPublic(method.getModifiers()) && !method.getName().equals("main")) {
+                    targetMethod = method;
+                    break;
+                }
+            }
+            
+            if (targetMethod == null) {
+                System.out.println("Error: No public method found in Solution class");
+                return;
+            }
+            
+            // Prepare arguments based on method parameters
+            Class<?>[] paramTypes = targetMethod.getParameterTypes();
+            Object[] methodArgs = new Object[paramTypes.length];
+            
+            for (int i = 0; i < paramTypes.length && i < jsonArgs.size(); i++) {
+                JsonElement arg = jsonArgs.get(i);
+                
+                if (paramTypes[i] == int.class) {
+                    methodArgs[i] = arg.getAsInt();
+                } else if (paramTypes[i] == String.class) {
+                    methodArgs[i] = arg.getAsString();
+                } else if (paramTypes[i] == int[].class) {
+                    JsonArray arr = arg.getAsJsonArray();
+                    int[] intArr = new int[arr.size()];
+                    for (int j = 0; j < arr.size(); j++) {
+                        intArr[j] = arr.get(j).getAsInt();
+                    }
+                    methodArgs[i] = intArr;
+                } else if (paramTypes[i] == String[].class) {
+                    JsonArray arr = arg.getAsJsonArray();
+                    String[] strArr = new String[arr.size()];
+                    for (int j = 0; j < arr.size(); j++) {
+                        strArr[j] = arr.get(j).getAsString();
+                    }
+                    methodArgs[i] = strArr;
+                }
+            }
+            
+            // Invoke method
+            Object result = targetMethod.invoke(solution, methodArgs);
+            
+            // Print result as JSON
+            System.out.println(gson.toJson(result));
+            
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
         }
-        System.out.println("]");
     }
 }
 `;
@@ -645,31 +799,109 @@ async function executeCpp(code, input) {
   try {
     const fetch = require('node-fetch');
     
-    // Parse input
-    let nums, target;
-    if (input.includes('], ')) {
-      const parts = input.split('], ');
-      nums = JSON.parse(parts[0] + ']');
-      target = parseInt(parts[1].replace(/\D/g, ''));
-    } else if (input.includes(', target = ')) {
-      const parts = input.split(', target = ');
-      nums = JSON.parse(parts[0]);
-      target = parseInt(parts[1]);
-    } else {
-      const arrayTargetMatch = input.match(/\[([^\]]+)\],\s*(?:target\s*=\s*)?(\d+)/);
-      if (arrayTargetMatch) {
-        nums = JSON.parse(`[${arrayTargetMatch[1]}]`);
-        target = parseInt(arrayTargetMatch[2]);
+    // Parse input - handle different formats
+    let parsedArgs = [];
+    
+    try {
+      if (input.startsWith('"') && input.endsWith('"')) {
+        // String input
+        parsedArgs = [input.slice(1, -1)];
+      } else if (input.includes('], ')) {
+        // Array with additional param
+        const parts = input.split('], ');
+        const array = JSON.parse(parts[0] + ']');
+        const secondParam = parseInt(parts[1].replace(/[^\d-]/g, ''));
+        parsedArgs = [array, secondParam];
+      } else if (input.includes(', target = ')) {
+        // Array with target
+        const parts = input.split(', target = ');
+        parsedArgs = [JSON.parse(parts[0]), parseInt(parts[1])];
+      } else if (input.startsWith('[') && input.endsWith(']')) {
+        // Single array
+        parsedArgs = [JSON.parse(input)];
+      } else if (input.includes(',')) {
+        // Multiple comma-separated values
+        const parts = input.split(',').map(p => p.trim());
+        parsedArgs = parts.map(p => {
+          try {
+            return JSON.parse(p);
+          } catch {
+            return p.replace(/^["']|["']$/g, '');
+          }
+        });
       } else {
+        // Single value
         try {
-          const parsed = JSON.parse(`[${input}]`);
-          nums = parsed[0];
-          target = parsed[1];
-        } catch (e) {
-          nums = JSON.parse(input);
-          target = 0;
+          parsedArgs = [JSON.parse(input)];
+        } catch {
+          parsedArgs = [input.replace(/^["']|["']$/g, '')];
         }
       }
+    } catch (e) {
+      parsedArgs = [input];
+    }
+
+    // Extract method name and return type from user code using regex
+    const methodMatch = code.match(/(vector<int>|vector<string>|int|string|bool|double|float|long|ListNode\*|TreeNode\*)\s+(\w+)\s*\(/);
+    const returnType = methodMatch ? methodMatch[1] : 'auto';
+    const methodName = methodMatch ? methodMatch[2] : 'solve';
+
+    // Build arguments based on parsed input
+    let argsCode = '';
+    let callArgs = '';
+    
+    if (parsedArgs.length === 1 && Array.isArray(parsedArgs[0])) {
+      // Single array argument
+      argsCode = `vector<int> arg1 = {${parsedArgs[0].join(', ')}};`;
+      callArgs = 'arg1';
+    } else if (parsedArgs.length === 2) {
+      // Two arguments (e.g., array and target)
+      if (Array.isArray(parsedArgs[0])) {
+        argsCode = `vector<int> arg1 = {${parsedArgs[0].join(', ')}};\n    int arg2 = ${parsedArgs[1]};`;
+        callArgs = 'arg1, arg2';
+      } else {
+        argsCode = `int arg1 = ${parsedArgs[0]};\n    int arg2 = ${parsedArgs[1]};`;
+        callArgs = 'arg1, arg2';
+      }
+    } else if (parsedArgs.length === 1 && typeof parsedArgs[0] === 'string') {
+      // String argument
+      argsCode = `string arg1 = "${parsedArgs[0]}";`;
+      callArgs = 'arg1';
+    } else {
+      // Default: treat as integers
+      argsCode = parsedArgs.map((arg, i) => `int arg${i+1} = ${arg};`).join('\n    ');
+      callArgs = parsedArgs.map((_, i) => `arg${i+1}`).join(', ');
+    }
+
+    // Determine output code based on return type
+    let outputCode = '';
+    if (returnType.includes('vector')) {
+      // Vector return type
+      outputCode = `
+    // Print vector result
+    cout << "[";
+    if (result.size() > 0) {
+        for (size_t i = 0; i < result.size(); i++) {
+            cout << result[i];
+            if (i < result.size() - 1) cout << ",";
+        }
+    }
+    cout << "]" << endl;`;
+    } else if (returnType === 'bool') {
+      // Boolean return type
+      outputCode = `
+    // Print boolean result
+    cout << (result ? "true" : "false") << endl;`;
+    } else if (returnType === 'string') {
+      // String return type
+      outputCode = `
+    // Print string result
+    cout << "\\"" << result << "\\"" << endl;`;
+    } else {
+      // Numeric return type (int, double, float, long)
+      outputCode = `
+    // Print numeric result
+    cout << result << endl;`;
     }
 
     // Wrap code with main function and all common headers
@@ -691,16 +923,9 @@ ${code}
 
 int main() {
     Solution solution;
-    vector<int> nums = {${nums.join(', ')}};
-    int target = ${target};
-    vector<int> result = solution.twoSum(nums, target);
-    
-    cout << "[";
-    for (int i = 0; i < result.size(); i++) {
-        cout << result[i];
-        if (i < result.size() - 1) cout << ",";
-    }
-    cout << "]" << endl;
+    ${argsCode}
+    auto result = solution.${methodName}(${callArgs});
+    ${outputCode}
     
     return 0;
 }

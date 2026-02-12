@@ -17,7 +17,9 @@ import {
   Moon,
   Sun,
   Monitor,
-  PenSquare
+  PenSquare,
+  LayoutDashboard,
+  Code
 } from 'lucide-react';
 
 function Navbar({ onShowAuth, onBackToWelcome }) {
@@ -93,6 +95,13 @@ function Navbar({ onShowAuth, onBackToWelcome }) {
           </button>
           
           <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700 flex items-center gap-1"
+            >
+              <LayoutDashboard size={14} />
+              Dashboard
+            </button>
             <button 
               onClick={() => navigate('/editor')}
               className="text-gray-300 hover:text-white transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700"

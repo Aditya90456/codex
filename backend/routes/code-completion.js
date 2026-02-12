@@ -44,6 +44,58 @@ const fetch = globalThis.fetch || simpleFetch;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
+// Rate limiting and caching
+const requestCache = new Map(); // Cache for recent requests
+const rateLimiter = {
+  requests: [],
+  maxRequests: 10, // Max 10 requests per minute
+  windowMs: 60000, // 1 minute window
+  
+  canMakeRequest() {
+    const now = Date.now();
+    // Remove old requests outside the window
+    this.requests = this.requests.filter(time => now - time < this.windowMs);
+    
+    if (this.requests.length >= this.maxRequests) {
+      const oldestRequest = this.requests[0];
+      const waitTime = this.windowMs - (now - oldestRequest);
+      console.warn(`⏳ Rate limit reached. Wait ${Math.ceil(waitTime / 1000)}s before next request`);
+      return false;
+    }
+    
+    return true;
+  },
+  
+  recordRequest() {
+    this.requests.push(Date.now());
+  },
+  
+  getWaitTime() {
+    if (this.requests.length === 0) return 0;
+    const now = Date.now();
+    const oldestRequest = this.requests[0];
+    return Math.max(0, this.windowMs - (now - oldestRequest));
+  }
+};
+
+// Cache key generator
+function getCacheKey(code, language, cursorPosition) {
+  const snippet = code.substring(Math.max(0, cursorPosition - 100), cursorPosition);
+  return `${language}:${snippet}`;
+}
+
+// Clean old cache entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  const maxAge = 5 * 60 * 1000; // 5 minutes
+  
+  for (const [key, value] of requestCache.entries()) {
+    if (now - value.timestamp > maxAge) {
+      requestCache.delete(key);
+    }
+  }
+}, 5 * 60 * 1000);
+
 // AI Code Completion endpoint
 router.post('/complete', async (req, res) => {
   try {
@@ -75,6 +127,37 @@ router.post('/complete', async (req, res) => {
     }
 
     console.log(`🤖 Generating code completions for ${language}...`);
+    
+    // Check cache first
+    const cacheKey = getCacheKey(code, language, cursorPosition);
+    const cached = requestCache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < 60000) { // Cache for 1 minute
+      console.log('✅ Using cached completions');
+      return res.json({
+        success: true,
+        suggestions: cached.suggestions,
+        source: 'cache',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Check rate limit
+    if (!rateLimiter.canMakeRequest()) {
+      console.warn('⚠️  Rate limit exceeded, using fallback');
+      const fallbackSuggestions = generateFallbackCompletions(code, language, cursorPosition);
+      return res.json({
+        success: true,
+        suggestions: fallbackSuggestions,
+        source: 'fallback-rate-limit',
+        warning: `Rate limit reached. Please wait ${Math.ceil(rateLimiter.getWaitTime() / 1000)} seconds.`,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Record request for rate limiting
+    rateLimiter.recordRequest();
+    
     const suggestions = await generateCompletionsWithGemini(code, cursorPosition, language, context, maxSuggestions);
 
     // If Gemini returns empty, use fallback
@@ -88,6 +171,12 @@ router.post('/complete', async (req, res) => {
         timestamp: new Date().toISOString()
       });
     }
+    
+    // Cache the result
+    requestCache.set(cacheKey, {
+      suggestions,
+      timestamp: Date.now()
+    });
 
     res.json({
       success: true,
@@ -180,6 +269,20 @@ Your response:`;
     });
 
     if (!response.ok) {
+      const errorData = await response.text();
+      
+      if (response.status === 429) {
+        console.error('❌ Gemini API Rate Limit (429): Too many requests');
+        console.log('💡 Tip: Reduce typing speed or wait a minute before continuing');
+        throw new Error('Rate limit exceeded');
+      } else if (response.status === 403) {
+        console.error('❌ Gemini API Forbidden (403): Check API key permissions');
+        throw new Error('API key invalid or lacks permissions');
+      } else if (response.status === 400) {
+        console.error('❌ Gemini API Bad Request (400):', errorData);
+        throw new Error('Invalid request format');
+      }
+      
       throw new Error(`Gemini API error: ${response.status}`);
     }
 
@@ -202,20 +305,31 @@ Your response:`;
     } catch (parseError) {
       console.warn('JSON parse failed, trying to fix common issues:', parseError.message);
       
-      // Try to fix common JSON issues
+      // Try multiple fix strategies
       try {
-        // Remove trailing commas
-        cleanedText = cleanedText.replace(/,(\s*[}\]])/g, '$1');
-        // Fix unescaped quotes in strings
-        cleanedText = cleanedText.replace(/: "([^"]*)"([^,}\]]*)/g, (match, p1, p2) => {
-          if (p2 && !p2.match(/^\s*[,}\]]/)) {
-            return `: "${p1}\\"${p2}`;
-          }
-          return match;
-        });
-        suggestions = JSON.parse(cleanedText);
+        // Strategy 1: Remove trailing commas
+        let fixed = cleanedText.replace(/,(\s*[}\]])/g, '$1');
+        
+        // Strategy 2: Fix unescaped quotes
+        fixed = fixed.replace(/\\"/g, '"');
+        
+        // Strategy 3: Remove any text before first [ and after last ]
+        const arrayMatch = fixed.match(/\[[\s\S]*\]/);
+        if (arrayMatch) {
+          fixed = arrayMatch[0];
+        }
+        
+        // Strategy 4: Fix incomplete strings
+        fixed = fixed.replace(/"([^"]*?)$/gm, '"$1"');
+        
+        // Strategy 5: Remove any non-JSON characters
+        fixed = fixed.replace(/[^\[\]{},":\w\s.-]/g, '');
+        
+        suggestions = JSON.parse(fixed);
+        console.log('✅ Successfully fixed JSON');
       } catch (fixError) {
         console.warn('Could not fix JSON, returning empty array');
+        console.warn('Original text:', cleanedText.substring(0, 200));
         return [];
       }
     }

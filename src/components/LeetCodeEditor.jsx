@@ -37,7 +37,9 @@ import {
   BookOpen,
   Users,
   X,
-  Pencil
+  Pencil,
+  Calendar,
+  Target
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import AICodeExplainer from './AI/AICodeExplainer';
@@ -46,6 +48,7 @@ import CodeCompletionPanel from './CodeCompletionPanel';
 import VideoPlayer from './VideoPlayer';
 import { useDryRunAnimation } from '../hooks/useDryRunAnimation';
 import DryRunAnimationPanel from './DryRunAnimationPanel';
+import { triggerDashboardUpdate } from '../utils/dashboardUpdater';
 import SolutionViewer from './SolutionViewer';
 import NetworkMonitor from './NetworkMonitor';
 import AIPeerChat from './AIPeerChat';
@@ -54,6 +57,8 @@ import DSACertificateSystem from './DSACertificateSystem';
 import AILeetCodeAssistant from './AILeetCodeAssistant';
 import DSALeetCodeAgent from './DSALeetCodeAgent';
 import DSARoadmapTracker from './DSARoadmapTracker';
+import LeetCodeDailyTask from './LeetCodeDailyTask';
+import MonthlyGoals from './MonthlyGoals';
 import ProblemDescription from './ProblemDescription';
 import { useClerkProgress } from '../hooks/useClerkProgress';
 import SessionBookingModal from './SessionBookingModal';
@@ -99,6 +104,8 @@ const LeetCodeEditor = () => {
   const [monacoError, setMonacoError] = useState(false);
   const [showSessionBooking, setShowSessionBooking] = useState(false);
   const [showRoadmapTracker, setShowRoadmapTracker] = useState(false);
+  const [showDailyTask, setShowDailyTask] = useState(false);
+  const [showMonthlyGoals, setShowMonthlyGoals] = useState(false);
 
   // Certificate system state
   const [completedProblems, setCompletedProblems] = useState(new Set());
@@ -891,6 +898,40 @@ ${code}
         // Check for certificate eligibility when problem is solved
         await checkCertificateEligibility(selectedProblem.id, language);
         
+        // Check if this was today's daily challenge and mark it complete
+        if (user?.id) {
+          try {
+            const today = new Date();
+            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            
+            // Get today's daily challenge ID
+            const dailyChallenges = [1, 13, 45, 24, 31, 26, 16, 3, 5, 11, 21, 29, 34, 38, 42, 2, 12, 17, 23, 30, 36, 40, 43, 4, 8, 18, 25, 32, 9, 33];
+            const todaysChallengeId = dailyChallenges[dayOfYear % dailyChallenges.length];
+            
+            // If user solved today's challenge, mark it complete
+            if (selectedProblem.id === todaysChallengeId) {
+              const saved = localStorage.getItem(`daily_progress_${user.id}`);
+              const currentProgress = saved ? JSON.parse(saved) : {};
+              const todayStr = today.toDateString();
+              
+              // Only update if not already completed today
+              if (currentProgress.lastCompleted !== todayStr) {
+                const newProgress = {
+                  lastCompleted: todayStr,
+                  weekStreak: (currentProgress.weekStreak || 0) + 1,
+                  totalCompleted: (currentProgress.totalCompleted || 0) + 1,
+                  points: (currentProgress.points || 0) + (selectedProblem.difficulty === 'Easy' ? 10 : selectedProblem.difficulty === 'Medium' ? 20 : 25)
+                };
+                
+                localStorage.setItem(`daily_progress_${user.id}`, JSON.stringify(newProgress));
+                console.log('🎯 Daily challenge completed!', newProgress);
+              }
+            }
+          } catch (error) {
+            console.error('Failed to update daily challenge progress:', error);
+          }
+        }
+        
         // Record completion in roadmap tracker
         if (user?.id) {
           try {
@@ -906,6 +947,9 @@ ${code}
               })
             });
             console.log('✅ Roadmap progress updated');
+            
+            // Trigger dashboard update
+            triggerDashboardUpdate();
           } catch (error) {
             console.log('Failed to update roadmap:', error);
           }
@@ -1011,6 +1055,22 @@ ${code}
           >
             <Trophy className="w-4 h-4" />
             <span className="text-sm font-medium">Roadmap</span>
+          </button>
+          
+          <button
+            onClick={() => setShowDailyTask(true)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-lg transition-all transform hover:scale-105"
+          >
+            <Calendar className="w-4 h-4" />
+            <span className="text-sm font-medium">Daily</span>
+          </button>
+          
+          <button
+            onClick={() => setShowMonthlyGoals(true)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg transition-all transform hover:scale-105"
+          >
+            <Target className="w-4 h-4" />
+            <span className="text-sm font-medium">Goals</span>
           </button>
           
           <button
@@ -2133,6 +2193,29 @@ ${code}
             </div>
           </div>
         </div>
+      )}
+
+      {/* Daily Task Modal */}
+      {showDailyTask && (
+        <LeetCodeDailyTask
+          onSelectProblem={(problem) => {
+            // Find the problem in dsaProblems by id
+            const foundProblem = dsaProblems.find(p => p.id === problem.id);
+            if (foundProblem) {
+              setSelectedProblem(foundProblem);
+              setCode(getStarterCodeForLanguage(foundProblem, language));
+            }
+            setShowDailyTask(false);
+          }}
+          onClose={() => setShowDailyTask(false)}
+        />
+      )}
+
+      {/* Monthly Goals Modal */}
+      {showMonthlyGoals && (
+        <MonthlyGoals
+          onClose={() => setShowMonthlyGoals(false)}
+        />
       )}
     </div>
   );

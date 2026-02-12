@@ -1,459 +1,415 @@
-import { useAuthContext } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Code, Database, Cpu, Globe, BookOpen, Zap, 
-  TrendingUp, Award, Target, Flame, ChevronRight,
-  Clock, CheckCircle, Star, Sparkles, ArrowUp, ChevronDown, Loader2
+import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/clerk-react';
+import {
+  Code, Flame, Trophy, Calendar, Target, Award,
+  BarChart3, Clock, CheckCircle, Star, Zap, Crown, Medal,
+  Activity, PieChart, ChevronRight,
+  ArrowUp, ArrowDown, Minus, RefreshCw
 } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useClerkProgress } from '../hooks/useClerkProgress';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const Dashboard = () => {
-  const { userName, user } = useAuthContext();
-  const navigate = useNavigate();
-  const containerRef = useRef(null);
-  const featuresRef = useRef(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const [showScrollHint, setShowScrollHint] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    problemsSolved: 0,
-    streak: 0,
-    totalTime: 0,
-    rank: 'Bronze',
-    points: 0
-  });
+  const { user } = useUser();
+  const { getProgressStats } = useClerkProgress();
+  const [roadmapData, setRoadmapData] = useState(null);
+  const [dailyProgress, setDailyProgress] = useState(null);
+  const [monthlyGoals, setMonthlyGoals] = useState([]);
+  const [certificates, setCertificates] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
-  // Fetch user stats from backend
+  // Auto-refresh every 30 seconds
   useEffect(() => {
-    const fetchUserStats = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        
-        // Get user token from Clerk
-        const token = await user.getToken();
-        
-        // Fetch progress stats
-        const response = await fetch(`${API_URL}/progress/stats`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          
-          if (result.success) {
-            const data = result.data;
-            
-            // Calculate rank based on points
-            const points = data.user.points || 0;
-            let rank = 'Bronze';
-            if (points >= 500) rank = 'Diamond';
-            else if (points >= 300) rank = 'Platinum';
-            else if (points >= 150) rank = 'Gold';
-            else if (points >= 50) rank = 'Silver';
-            
-            setStats({
-              problemsSolved: data.progress.solvedProblems || 0,
-              streak: data.user.streak || 0,
-              totalTime: Math.round((data.progress.totalTimeSpent || 0) / 60), // Convert to hours
-              rank: rank,
-              points: points
-            });
-
-            // Format recent activity
-            if (data.recentActivity && data.recentActivity.length > 0) {
-              const formattedActivity = data.recentActivity.slice(0, 3).map(activity => {
-                const timeAgo = getTimeAgo(new Date(activity.lastAttemptAt));
-                return {
-                  title: activity.status === 'solved' 
-                    ? `Solved ${activity.problemId?.title || 'Problem'}` 
-                    : `Attempted ${activity.problemId?.title || 'Problem'}`,
-                  time: timeAgo,
-                  icon: activity.status === 'solved' ? CheckCircle : BookOpen,
-                  color: activity.status === 'solved' ? 'text-green-400' : 'text-blue-400'
-                };
-              });
-              setRecentActivity(formattedActivity);
-            } else {
-              // Default activity if no data
-              setRecentActivity([
-                { title: 'Start your coding journey!', time: 'Now', icon: Sparkles, color: 'text-purple-400' },
-              ]);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching user stats:', error);
-        // Use default values on error
-        setRecentActivity([
-          { title: 'Welcome to CodexPro!', time: 'Now', icon: Sparkles, color: 'text-purple-400' },
-          { title: 'Explore DSA Problems', time: 'Start now', icon: BookOpen, color: 'text-blue-400' },
-          { title: 'Try AI Assistant', time: 'Available', icon: Sparkles, color: 'text-purple-400' },
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserStats();
+    if (user) {
+      loadAllData();
+      
+      const interval = setInterval(() => {
+        loadAllData(true); // Silent refresh
+      }, 30000); // 30 seconds
+      
+      return () => clearInterval(interval);
+    }
   }, [user]);
 
-  // Helper function to calculate time ago
-  const getTimeAgo = (date) => {
-    const seconds = Math.floor((new Date() - date) / 1000);
-    
-    if (seconds < 60) return 'Just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
-    return `${Math.floor(seconds / 604800)} weeks ago`;
-  };
-
-  // Handle scroll progress
+  // Listen for storage changes (when data is updated in other tabs/components)
   useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current) return;
-      
-      const scrollTop = containerRef.current.scrollTop;
-      const scrollHeight = containerRef.current.scrollHeight - containerRef.current.clientHeight;
-      const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
-      
-      setScrollProgress(progress);
-      setShowScrollTop(scrollTop > 500);
-      setShowScrollHint(scrollTop < 100);
+    const handleStorageChange = (e) => {
+      if (e.key && e.key.includes(user?.id)) {
+        console.log('📊 Dashboard: Detected data change, refreshing...');
+        loadAllData(true);
+      }
     };
 
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScroll);
-      return () => container.removeEventListener('scroll', handleScroll);
-    }
-  }, []);
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom events from same tab
+    const handleCustomUpdate = () => {
+      console.log('📊 Dashboard: Received update event, refreshing...');
+      loadAllData(true);
+    };
+    
+    window.addEventListener('dashboardUpdate', handleCustomUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('dashboardUpdate', handleCustomUpdate);
+    };
+  }, [user]);
 
-  const scrollToTop = () => {
-    containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  const loadAllData = async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
+    
+    try {
+      // Load roadmap data
+      const roadmapRes = await fetch(`${API_URL}/api/roadmap/user/${user.id}`);
+      const roadmapData = await roadmapRes.json();
+      if (roadmapData.success) {
+        setRoadmapData(roadmapData);
+      }
+
+      // Load daily progress
+      const dailySaved = localStorage.getItem(`daily_progress_${user.id}`);
+      if (dailySaved) {
+        setDailyProgress(JSON.parse(dailySaved));
+      }
+
+      // Load monthly goals
+      const monthKey = `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
+      const goalsSaved = localStorage.getItem(`monthly_goals_${user.id}_${monthKey}`);
+      if (goalsSaved) {
+        setMonthlyGoals(JSON.parse(goalsSaved));
+      }
+
+      // Load certificates
+      const certsSaved = localStorage.getItem(`dsa_certificates_${user.id}`);
+      if (certsSaved) {
+        setCertificates(JSON.parse(certsSaved));
+      }
+
+      // Calculate stats
+      const clerkStats = getProgressStats();
+      setStats(clerkStats);
+
+      // Generate recent activity
+      generateRecentActivity();
+      
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
-  const scrollToFeatures = () => {
-    featuresRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleManualRefresh = () => {
+    loadAllData();
   };
 
-  const features = [
-    {
-      icon: Code,
-      title: 'Code Editor',
-      description: 'Advanced Monaco editor with multi-language support',
-      path: '/editor',
-      gradient: 'from-blue-600 to-cyan-600',
-      bgGradient: 'from-blue-600/10 to-cyan-600/10',
-      borderColor: 'border-blue-500/30',
-      stats: '15+ Languages'
-    },
-    {
-      icon: Globe,
-      title: 'Web Dev Studio',
-      description: 'Build websites with AI assistance like Kiro',
-      path: '/web-studio',
-      gradient: 'from-green-600 to-emerald-600',
-      bgGradient: 'from-green-600/10 to-emerald-600/10',
-      borderColor: 'border-green-500/30',
-      stats: 'AI-Powered'
-    },
-    {
-      icon: Database,
-      title: 'DSA Practice',
-      description: '250+ curated problems with detailed solutions',
-      path: '/dsa',
-      gradient: 'from-purple-600 to-pink-600',
-      bgGradient: 'from-purple-600/10 to-pink-600/10',
-      borderColor: 'border-purple-500/30',
-      stats: '250+ Problems'
-    },
-    {
-      icon: BookOpen,
-      title: 'My Bookmarks',
-      description: 'Your saved articles and learning resources',
-      path: '/bookmarks',
-      gradient: 'from-yellow-600 to-orange-600',
-      bgGradient: 'from-yellow-600/10 to-orange-600/10',
-      borderColor: 'border-yellow-500/30',
-      stats: 'Quick Access'
-    },
-    {
-      icon: Cpu,
-      title: 'AI Assistant',
-      description: 'Generate code, debug, and get instant help',
-      path: '/ai',
-      gradient: 'from-orange-600 to-red-600',
-      bgGradient: 'from-orange-600/10 to-red-600/10',
-      borderColor: 'border-orange-500/30',
-      stats: 'AI Powered'
-    }
-  ];
+  const generateRecentActivity = () => {
+    const activities = [
+      { type: 'solved', text: 'Solved Two Sum', time: '2 hours ago', icon: CheckCircle, color: 'text-green-400' },
+      { type: 'streak', text: '7-day streak achieved!', time: '1 day ago', icon: Flame, color: 'text-orange-400' },
+      { type: 'goal', text: 'Monthly goal completed', time: '2 days ago', icon: Target, color: 'text-blue-400' },
+      { type: 'cert', text: 'Earned DSA Beginner certificate', time: '3 days ago', icon: Award, color: 'text-purple-400' }
+    ];
+    setRecentActivity(activities);
+  };
 
-  const recentActivityDefault = [
-    { title: 'Solved Two Sum', time: '2 hours ago', icon: CheckCircle, color: 'text-green-400' },
-    { title: 'Completed React Tutorial', time: '5 hours ago', icon: BookOpen, color: 'text-blue-400' },
-    { title: 'Used AI Assistant', time: '1 day ago', icon: Sparkles, color: 'text-purple-400' },
-  ];
+  const StatCard = ({ icon: Icon, label, value, change, color }) => (
+    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-gray-600 transition-all">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`w-12 h-12 bg-gradient-to-r ${color} rounded-xl flex items-center justify-center`}>
+          <Icon className="w-6 h-6 text-white" />
+        </div>
+        {change && (
+          <div className={`flex items-center gap-1 text-sm ${change > 0 ? 'text-green-400' : change < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+            {change > 0 ? <ArrowUp className="w-4 h-4" /> : change < 0 ? <ArrowDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
+            {Math.abs(change)}%
+          </div>
+        )}
+      </div>
+      <div className="text-3xl font-black text-white mb-1">{value}</div>
+      <div className="text-sm text-gray-400">{label}</div>
+    </div>
+  );
 
-  const displayActivity = recentActivity.length > 0 ? recentActivity : recentActivityDefault;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+        <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Scroll Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-slate-800 z-50">
-        <div 
-          className="h-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 transition-all duration-300"
-          style={{ width: `${scrollProgress}%` }}
-        />
-      </div>
-
-      {/* Scroll to Top Button */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-full shadow-2xl flex items-center justify-center text-white transition-all transform hover:scale-110 animate-in slide-in-from-bottom"
-        >
-          <ArrowUp className="w-6 h-6" />
-        </button>
-      )}
-
-      {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
-
-      <div 
-        ref={containerRef}
-        className="relative h-screen overflow-y-auto scroll-smooth"
-      >
-        <div className="pt-24 pb-16 px-4">
-          <div className="max-w-7xl mx-auto">
-            {/* Hero Header */}
-            <div className="text-center mb-12 animate-fade-in-up">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-full px-6 py-2 mb-6">
-                <Flame className="w-5 h-5 text-orange-400 animate-pulse" />
-                <span className="text-white font-semibold">
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Loading...
-                    </span>
-                  ) : stats.streak > 0 ? (
-                    `${stats.streak} Day Streak!`
-                  ) : (
-                    'Start Your Streak Today!'
-                  )}
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+              Dashboard
+            </h1>
+            <p className="text-gray-400">
+              Welcome back, {user?.firstName || 'Coder'}! 👋
+              {lastUpdated && (
+                <span className="ml-2 text-xs text-gray-500">
+                  • Updated {lastUpdated.toLocaleTimeString()}
                 </span>
-              </div>
-              
-              <h1 className="text-5xl md:text-6xl font-black mb-4">
-                <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Welcome back, {userName}!
-                </span>
-              </h1>
-              <p className="text-xl text-slate-400 mb-8">
-                Your coding journey continues 🚀
-              </p>
-
-              {/* Scroll Down Indicator */}
-              {showScrollHint && (
-                <button
-                  onClick={scrollToFeatures}
-                  className="flex flex-col items-center space-y-2 text-slate-400 hover:text-white transition-colors group mx-auto"
-                >
-                  <span className="text-sm font-medium">Explore Your Tools</span>
-                  <ChevronDown className="w-6 h-6 animate-bounce group-hover:text-blue-400" />
-                </button>
               )}
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur border border-slate-700 rounded-2xl p-6 hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-2">
-                  <Target className="w-8 h-8 text-blue-400" />
-                  {!loading && stats.problemsSolved > 0 && <TrendingUp className="w-5 h-5 text-green-400" />}
-                </div>
-                <div className="text-3xl font-bold text-white mb-1">
-                  {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : stats.problemsSolved}
-                </div>
-                <div className="text-sm text-slate-400">Problems Solved</div>
-              </div>
-
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur border border-slate-700 rounded-2xl p-6 hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-2">
-                  <Flame className="w-8 h-8 text-orange-400" />
-                  {!loading && stats.streak > 0 && <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-full">Hot</span>}
-                </div>
-                <div className="text-3xl font-bold text-white mb-1">
-                  {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : stats.streak}
-                </div>
-                <div className="text-sm text-slate-400">Day Streak</div>
-              </div>
-
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur border border-slate-700 rounded-2xl p-6 hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-2">
-                  <Clock className="w-8 h-8 text-purple-400" />
-                  {!loading && stats.totalTime > 0 && <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full">+{Math.round(stats.totalTime * 0.1)}h</span>}
-                </div>
-                <div className="text-3xl font-bold text-white mb-1">
-                  {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : `${stats.totalTime}h`}
-                </div>
-                <div className="text-sm text-slate-400">Total Time</div>
-              </div>
-
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur border border-slate-700 rounded-2xl p-6 hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-2">
-                  <Award className="w-8 h-8 text-yellow-400" />
-                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                </div>
-                <div className="text-3xl font-bold text-white mb-1">
-                  {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : stats.rank}
-                </div>
-                <div className="text-sm text-slate-400">Current Rank</div>
-              </div>
-            </div>
-
-            <div 
-              ref={featuresRef}
-              className="grid lg:grid-cols-3 gap-8 scroll-mt-24"
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleManualRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl transition-all disabled:opacity-50"
+              title="Refresh dashboard data"
             >
-            {/* Main Features */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">Your Tools</h2>
-                <Zap className="w-6 h-6 text-yellow-400 animate-pulse" />
-              </div>
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className="text-sm">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+            </button>
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl px-4 py-2 flex items-center gap-2">
+              <Flame className="w-5 h-5" />
+              <span className="font-bold">{roadmapData?.streak?.current || 0} Day Streak</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            icon={Code}
+            label="Problems Solved"
+            value={stats?.totalProblems || 0}
+            change={12}
+            color="from-blue-500 to-cyan-500"
+          />
+          <StatCard
+            icon={Trophy}
+            label="Certificates Earned"
+            value={certificates.length}
+            change={0}
+            color="from-yellow-500 to-orange-500"
+          />
+          <StatCard
+            icon={Target}
+            label="Goals Completed"
+            value={monthlyGoals.filter(g => g.progress >= g.target).length}
+            change={8}
+            color="from-green-500 to-emerald-500"
+          />
+          <StatCard
+            icon={Flame}
+            label="Current Streak"
+            value={roadmapData?.streak?.current || 0}
+            change={5}
+            color="from-orange-500 to-red-500"
+          />
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Progress & Activity */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Progress Overview */}
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <BarChart3 className="w-6 h-6 text-blue-400" />
+                Progress Overview
+              </h2>
               
-              <div className="grid md:grid-cols-2 gap-6">
-                {features.map((feature, index) => {
-                  const Icon = feature.icon;
+              <div className="space-y-4">
+                {/* Difficulty Breakdown */}
+                {[
+                  { label: 'Easy', count: roadmapData?.stats?.easy || 0, total: 50, color: 'from-green-500 to-emerald-500' },
+                  { label: 'Medium', count: roadmapData?.stats?.medium || 0, total: 75, color: 'from-yellow-500 to-orange-500' },
+                  { label: 'Hard', count: roadmapData?.stats?.hard || 0, total: 25, color: 'from-red-500 to-pink-500' }
+                ].map(item => (
+                  <div key={item.label}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-300 font-medium">{item.label}</span>
+                      <span className="text-white font-bold">{item.count} / {item.total}</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-3">
+                      <div
+                        className={`h-full bg-gradient-to-r ${item.color} rounded-full transition-all`}
+                        style={{ width: `${(item.count / item.total) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <Activity className="w-6 h-6 text-purple-400" />
+                Recent Activity
+              </h2>
+              
+              <div className="space-y-3">
+                {recentActivity.map((activity, index) => {
+                  const Icon = activity.icon;
                   return (
-                    <div
-                      key={index}
-                      className={`group relative bg-gradient-to-br ${feature.bgGradient} backdrop-blur border ${feature.borderColor} rounded-2xl p-6 hover:scale-105 transition-all cursor-pointer overflow-hidden animate-fade-in-up`}
-                      style={{ animationDelay: `${0.2 + index * 0.1}s` }}
-                      onClick={() => navigate(feature.path)}
-                    >
-                      {/* Gradient Overlay */}
-                      <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-10 transition-opacity`}></div>
-                      
-                      <div className="relative">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className={`p-3 bg-gradient-to-br ${feature.gradient} rounded-xl`}>
-                            <Icon className="w-6 h-6 text-white" />
-                          </div>
-                          <span className="text-xs text-slate-400 font-semibold">{feature.stats}</span>
-                        </div>
-                        
-                        <h3 className="text-xl font-bold text-white mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-white group-hover:to-slate-300 transition-all">
-                          {feature.title}
-                        </h3>
-                        
-                        <p className="text-slate-400 text-sm mb-4">
-                          {feature.description}
-                        </p>
-                        
-                        <div className="flex items-center text-sm font-semibold text-white group-hover:gap-2 transition-all">
-                          <span>Launch</span>
-                          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </div>
+                    <div key={index} className="flex items-center gap-4 p-3 bg-gray-900/50 rounded-lg hover:bg-gray-900/70 transition-all">
+                      <div className={`w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center ${activity.color}`}>
+                        <Icon className="w-5 h-5" />
                       </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{activity.text}</p>
+                        <p className="text-sm text-gray-400">{activity.time}</p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-gray-600" />
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Sidebar */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Recent Activity */}
-              <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-blue-400" />
-                  Recent Activity
-                </h3>
-                {loading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+            {/* Category Progress */}
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <PieChart className="w-6 h-6 text-green-400" />
+                Category Progress
+              </h2>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {Object.entries(roadmapData?.stats?.byCategory || {}).slice(0, 6).map(([category, count]) => (
+                  <div key={category} className="bg-gray-900/50 rounded-lg p-4">
+                    <div className="text-2xl font-black text-blue-400 mb-1">{count}</div>
+                    <div className="text-sm text-gray-400">{category}</div>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {displayActivity.map((activity, index) => {
-                      const Icon = activity.icon;
-                      return (
-                        <div key={index} className="flex items-start gap-3 p-3 bg-slate-900/50 rounded-lg hover:bg-slate-900 transition-colors">
-                          <Icon className={`w-5 h-5 ${activity.color} flex-shrink-0 mt-0.5`} />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-semibold text-white truncate">{activity.title}</div>
-                            <div className="text-xs text-slate-400">{activity.time}</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-6 animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
-                <h3 className="text-lg font-bold text-white mb-4">Quick Start</h3>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => navigate('/dsa')}
-                    className="w-full bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-4 py-3 text-left transition-all group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-white font-semibold">Practice DSA</span>
-                      <ChevronRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </button>
-                  
-                  <button
-                    onClick={() => navigate('/ai')}
-                    className="w-full bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-4 py-3 text-left transition-all group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-white font-semibold">Ask AI</span>
-                      <ChevronRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
+          </div>
+
+          {/* Right Column - Goals & Achievements */}
+          <div className="space-y-6">
+            {/* Daily Challenge */}
+            <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-2 border-blue-500/30 rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Calendar className="w-6 h-6 text-blue-400" />
+                <h3 className="font-bold text-lg">Daily Challenge</h3>
+              </div>
+              {dailyProgress?.todayCompleted ? (
+                <div className="text-center py-4">
+                  <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-2" />
+                  <p className="text-green-400 font-semibold">Completed Today!</p>
+                  <p className="text-sm text-gray-400 mt-1">+{dailyProgress?.points || 0} points</p>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <Clock className="w-12 h-12 text-yellow-400 mx-auto mb-2" />
+                  <p className="text-yellow-400 font-semibold">Pending</p>
+                  <p className="text-sm text-gray-400 mt-1">Complete today's challenge</p>
+                </div>
+              )}
+            </div>
+
+            {/* Monthly Goals */}
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  <Target className="w-5 h-5 text-green-400" />
+                  Monthly Goals
+                </h3>
+                <span className="text-sm text-gray-400">
+                  {monthlyGoals.filter(g => g.progress >= g.target).length}/{monthlyGoals.length}
+                </span>
+              </div>
+              
+              <div className="space-y-3">
+                {monthlyGoals.slice(0, 3).map(goal => (
+                  <div key={goal.id} className="bg-gray-900/50 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-white font-medium">{goal.title}</span>
+                      <span className="text-xs text-gray-400">{Math.round((goal.progress / goal.target) * 100)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div
+                        className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
+                        style={{ width: `${Math.min((goal.progress / goal.target) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Achievements */}
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <h3 className="font-bold text-lg flex items-center gap-2 mb-4">
+                <Award className="w-5 h-5 text-yellow-400" />
+                Achievements
+              </h3>
+              
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { icon: Medal, label: 'First Solve', unlocked: true },
+                  { icon: Flame, label: '7-Day Streak', unlocked: true },
+                  { icon: Crown, label: '50 Problems', unlocked: false },
+                  { icon: Star, label: 'All Easy', unlocked: false },
+                  { icon: Zap, label: 'Speed Demon', unlocked: false },
+                  { icon: Trophy, label: 'Master', unlocked: false }
+                ].map((achievement, index) => {
+                  const Icon = achievement.icon;
+                  return (
+                    <div
+                      key={index}
+                      className={`aspect-square rounded-lg flex flex-col items-center justify-center p-2 ${
+                        achievement.unlocked
+                          ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30'
+                          : 'bg-gray-900/50 border border-gray-700/50 opacity-50'
+                      }`}
+                    >
+                      <Icon className={`w-6 h-6 mb-1 ${achievement.unlocked ? 'text-yellow-400' : 'text-gray-600'}`} />
+                      <span className="text-xs text-center text-gray-400">{achievement.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+              <h3 className="font-bold text-lg mb-4">Quick Stats</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Total Submissions</span>
+                  <span className="font-bold text-white">{stats?.totalSubmissions || 0}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Acceptance Rate</span>
+                  <span className="font-bold text-green-400">
+                    {stats?.totalSubmissions > 0 ? Math.round((stats?.totalProblems / stats?.totalSubmissions) * 100) : 0}%
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Longest Streak</span>
+                  <span className="font-bold text-orange-400">{roadmapData?.streak?.longest || 0} days</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Total Points</span>
+                  <span className="font-bold text-purple-400">{dailyProgress?.points || 0}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in-up {
-          animation: fade-in-up 0.6s ease-out forwards;
-        }
-      `}} />
     </div>
   );
 };
