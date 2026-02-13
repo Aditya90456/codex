@@ -26,6 +26,8 @@ import DSAArticlesViewerWithBookmarks from './components/DSAArticlesViewerWithBo
 import BookmarksDashboard from './components/BookmarksDashboard';
 import WebDevStudio from './components/WebDevStudio';
 import BlogPlatform from './components/BlogPlatform';
+import SharedCodeViewer from './components/SharedCodeViewer';
+import StudyGroups from './components/StudyGroups';
 import './App.css';
 
 // Validate Clerk configuration on app start
@@ -178,6 +180,18 @@ function AppContent() {
                 <MLResumeCreator />
               </ProtectedRoute>
             } 
+          />
+          <Route 
+            path="/study-groups" 
+            element={
+              <ProtectedRoute>
+                <StudyGroups />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/share/:shareId" 
+            element={<SharedCodeViewer />} 
           />
         </Routes>
       </div>

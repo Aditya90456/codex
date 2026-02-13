@@ -199,6 +199,14 @@ app.use('/api/blogs', blogRoutes);
 const roadmapRoutes = require('./routes/roadmap');
 app.use('/api/roadmap', roadmapRoutes);
 
+// Mount Code Share routes
+const codeShareRoutes = require('./routes/code-share');
+app.use('/api/code', codeShareRoutes);
+
+// Mount Study Groups routes
+const studyGroupsRoutes = require('./routes/study-groups');
+app.use('/api/study-groups', studyGroupsRoutes);
+
 console.log('✅ AI Generator routes mounted');
 console.log('✅ GitHub integration routes mounted');
 console.log('✅ Code Explainer routes mounted');
@@ -214,6 +222,8 @@ console.log('✅ Web Projects Management routes mounted');
 console.log('✅ Multi-Language Execution routes mounted (15 languages)');
 console.log('✅ Blog Platform routes mounted');
 console.log('✅ DSA Roadmap Tracker routes mounted');
+console.log('✅ Code Share routes mounted');
+console.log('✅ Study Groups routes mounted');
 
 // API Routes
 

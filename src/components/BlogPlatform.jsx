@@ -404,7 +404,7 @@ const BlogPlatform = () => {
             <div className="flex items-center gap-4">
               <PenSquare className="w-8 h-8 text-blue-400" />
               <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Blog Platform
+                Playground Blog
               </h1>
             </div>
 
@@ -600,12 +600,22 @@ const BlogPlatform = () => {
 
               {/* Content */}
               <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-300">Content</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-300">
+                  Content
+                  <span className="ml-2 text-xs text-gray-400">
+                    ({blogForm.content.length} / 2500 characters)
+                  </span>
+                </label>
                 <textarea
                   value={blogForm.content}
-                  onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
-                  placeholder="Write your blog content..."
+                  onChange={(e) => {
+                    if (e.target.value.length <= 2500) {
+                      setBlogForm({ ...blogForm, content: e.target.value });
+                    }
+                  }}
+                  placeholder="Write your blog content... (max 2500 characters)"
                   rows="12"
+                  maxLength={2500}
                   className="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 />
               </div>
@@ -668,6 +678,25 @@ const BlogDetailModal = ({ blog, user, onClose, onLike, onDislike }) => {
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState(blog.comments || []);
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+  // Mark blog as read when modal opens
+  useEffect(() => {
+    const markAsRead = async () => {
+      if (!user) return;
+      
+      try {
+        await fetch(`${API_URL}/api/blogs/${blog.id}/read`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id })
+        });
+      } catch (error) {
+        console.error('Mark as read error:', error);
+      }
+    };
+
+    markAsRead();
+  }, [blog.id, user, API_URL]);
 
   const addComment = async () => {
     if (!user || !comment.trim()) return;

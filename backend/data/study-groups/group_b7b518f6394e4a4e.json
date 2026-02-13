@@ -1,0 +1,32 @@
+{
+  "id": "b7b518f6394e4a4e",
+  "name": "data ",
+  "description": "",
+  "category": "DSA",
+  "isPrivate": false,
+  "maxMembers": 50,
+  "inviteCode": null,
+  "creatorId": "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO",
+  "creatorName": "Aditya",
+  "tags": [],
+  "members": [
+    {
+      "userId": "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO",
+      "userName": "Aditya",
+      "role": "admin",
+      "joinedAt": "2026-02-12T15:23:51.778Z",
+      "problemsSolved": 0,
+      "contributions": 0
+    }
+  ],
+  "challenges": [],
+  "messages": [],
+  "stats": {
+    "totalProblems": 0,
+    "totalMembers": 1,
+    "activeMembers": 1,
+    "averageProgress": 0
+  },
+  "createdAt": "2026-02-12T15:23:51.778Z",
+  "updatedAt": "2026-02-12T15:23:51.778Z"
+}

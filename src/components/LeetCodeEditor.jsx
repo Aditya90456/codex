@@ -39,7 +39,8 @@ import {
   X,
   Pencil,
   Calendar,
-  Target
+  Target,
+  Share2
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import AICodeExplainer from './AI/AICodeExplainer';
@@ -54,14 +55,13 @@ import NetworkMonitor from './NetworkMonitor';
 import AIPeerChat from './AIPeerChat';
 import AIWhiteboardVisualizer from './AIWhiteboardVisualizer';
 import DSACertificateSystem from './DSACertificateSystem';
-import AILeetCodeAssistant from './AILeetCodeAssistant';
-import DSALeetCodeAgent from './DSALeetCodeAgent';
 import DSARoadmapTracker from './DSARoadmapTracker';
 import LeetCodeDailyTask from './LeetCodeDailyTask';
 import MonthlyGoals from './MonthlyGoals';
 import ProblemDescription from './ProblemDescription';
 import { useClerkProgress } from '../hooks/useClerkProgress';
 import SessionBookingModal from './SessionBookingModal';
+import CodeShareModal from './CodeShareModal';
 
 const LeetCodeEditor = () => {
   const navigate = useNavigate();
@@ -106,6 +106,7 @@ const LeetCodeEditor = () => {
   const [showRoadmapTracker, setShowRoadmapTracker] = useState(false);
   const [showDailyTask, setShowDailyTask] = useState(false);
   const [showMonthlyGoals, setShowMonthlyGoals] = useState(false);
+  const [showCodeShareModal, setShowCodeShareModal] = useState(false);
 
   // Certificate system state
   const [completedProblems, setCompletedProblems] = useState(new Set());
@@ -256,31 +257,6 @@ const LeetCodeEditor = () => {
     } else {
       navigator.clipboard.writeText(`${shareText}\n\nVerify: ${shareUrl}`);
       alert('Certificate link copied to clipboard!');
-    }
-  };
-
-  // Handle code suggestions from AI assistant
-  const handleCodeSuggestion = (suggestion) => {
-    if (editorRef.current && suggestion.code) {
-      const position = editorRef.current.getPosition();
-      const model = editorRef.current.getModel();
-      
-      if (position && model) {
-        // Insert suggestion at cursor or replace selection
-        const range = editorRef.current.getSelection() || {
-          startLineNumber: position.lineNumber,
-          startColumn: position.column,
-          endLineNumber: position.lineNumber,
-          endColumn: position.column
-        };
-        
-        editorRef.current.executeEdits('ai-suggestion', [{
-          range: range,
-          text: suggestion.code
-        }]);
-        
-        editorRef.current.focus();
-      }
     }
   };
 
@@ -1071,6 +1047,14 @@ ${code}
           >
             <Target className="w-4 h-4" />
             <span className="text-sm font-medium">Goals</span>
+          </button>
+          
+          <button
+            onClick={() => setShowCodeShareModal(true)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-lg transition-all transform hover:scale-105"
+          >
+            <Share2 className="w-4 h-4" />
+            <span className="text-sm font-medium">Share</span>
           </button>
           
           <button
@@ -2088,29 +2072,6 @@ ${code}
         language={language}
       />
 
-      {/* AI LeetCode Assistant */}
-      <AILeetCodeAssistant
-        currentProblem={selectedProblem}
-        currentCode={code}
-        language={language}
-        testResults={testResults}
-        onCodeSuggestion={handleCodeSuggestion}
-      />
-
-      {/* DSA AI Agent - Advanced Problem Solving Assistant */}
-      <DSALeetCodeAgent
-        problemTitle={selectedProblem?.title || 'No problem selected'}
-        problemDescription={selectedProblem?.description || ''}
-        problemDifficulty={selectedProblem?.difficulty || 'Medium'}
-        problemTags={selectedProblem?.tags || []}
-        userCode={code}
-        onCodeSuggestion={(suggestion) => {
-          if (suggestion) {
-            setCode(suggestion);
-          }
-        }}
-      />
-
       {/* Certificate Achievement Modal */}
       {showCertificateModal && newCertificate && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -2217,6 +2178,16 @@ ${code}
           onClose={() => setShowMonthlyGoals(false)}
         />
       )}
+
+      {/* Code Share Modal */}
+      <CodeShareModal
+        isOpen={showCodeShareModal}
+        onClose={() => setShowCodeShareModal(false)}
+        code={code}
+        language={language}
+        problemId={selectedProblem?.id}
+        problemTitle={selectedProblem?.title}
+      />
     </div>
   );
 };

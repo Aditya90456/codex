@@ -68,6 +68,14 @@ const WelcomeScreenModern = () => {
     rank: 'Bronze',
     loading: true
   });
+  const [userActivity, setUserActivity] = useState({
+    blogs: 0,
+    studyGroups: 0,
+    dsaProgress: 0,
+    blogsRead: 0,
+    blogsLiked: 0,
+    loading: true
+  });
 
   useEffect(() => {
     setIsVisible(true);
@@ -123,6 +131,51 @@ const WelcomeScreenModern = () => {
     };
 
     fetchUserStats();
+  }, [user, isLoaded]);
+
+  // Fetch user activity (blogs, study groups, DSA progress)
+  useEffect(() => {
+    const fetchUserActivity = async () => {
+      if (!user || !isLoaded) {
+        setUserActivity(prev => ({ ...prev, loading: false }));
+        return;
+      }
+
+      try {
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+        
+        // Fetch actual counts from backend
+        const [blogsRes, readRes, likedRes, groupsRes] = await Promise.all([
+          fetch(`${BACKEND_URL}/api/blogs/all?userId=${user.id}`).catch(() => null),
+          fetch(`${BACKEND_URL}/api/blogs/user/${user.id}/read`).catch(() => null),
+          fetch(`${BACKEND_URL}/api/blogs/user/${user.id}/liked`).catch(() => null),
+          fetch(`${BACKEND_URL}/api/study-groups/my-groups?userId=${user.id}`).catch(() => null)
+        ]);
+
+        const blogsData = blogsRes?.ok ? await blogsRes.json() : { blogs: [] };
+        const readData = readRes?.ok ? await readRes.json() : { count: 0 };
+        const likedData = likedRes?.ok ? await likedRes.json() : { count: 0 };
+        const groupsData = groupsRes?.ok ? await groupsRes.json() : { groups: [] };
+        
+        // Calculate DSA progress (out of 150 problems)
+        const solvedProblems = user?.publicMetadata?.solvedProblems || 0;
+        const dsaProgress = Math.min(Math.round((solvedProblems / 150) * 100), 100);
+        
+        setUserActivity({
+          blogs: blogsData.blogs?.length || blogsData.total || 0,
+          blogsRead: readData.count || 0,
+          blogsLiked: likedData.count || 0,
+          studyGroups: groupsData.groups?.length || 0,
+          dsaProgress: dsaProgress,
+          loading: false
+        });
+      } catch (error) {
+        console.error('Error fetching user activity:', error);
+        setUserActivity(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchUserActivity();
   }, [user, isLoaded]);
 
   // Safe navigation with authentication check
@@ -334,6 +387,38 @@ const WelcomeScreenModern = () => {
                 </div>
               </div>
               
+              {/* Navigation Links */}
+              <div className="hidden md:flex items-center space-x-6">
+                <button
+                  onClick={() => protectedAction(() => navigate('/editor'))}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-600/10 to-amber-600/10 hover:from-orange-600/20 hover:to-amber-600/20 border border-orange-500/20 hover:border-orange-500/40 rounded-xl transition-all duration-200 transform hover:scale-105 text-orange-400 hover:text-orange-300"
+                >
+                  <Code className="w-4 h-4" />
+                  <span className="font-medium">Playground</span>
+                </button>
+                <button
+                  onClick={() => protectedAction(() => navigate('/blogs'))}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-pink-600/10 to-purple-600/10 hover:from-pink-600/20 hover:to-purple-600/20 border border-pink-500/20 hover:border-pink-500/40 rounded-xl transition-all duration-200 transform hover:scale-105 text-pink-400 hover:text-pink-300"
+                >
+                  <PenSquare className="w-4 h-4" />
+                  <span className="font-medium">Blog</span>
+                </button>
+                <button
+                  onClick={() => protectedAction(() => navigate('/study-groups'))}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600/10 to-purple-600/10 hover:from-blue-600/20 hover:to-purple-600/20 border border-blue-500/20 hover:border-blue-500/40 rounded-xl transition-all duration-200 transform hover:scale-105 text-blue-400 hover:text-blue-300"
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="font-medium">Study Groups</span>
+                </button>
+                <button
+                  onClick={() => protectedAction(() => navigate('/leetcode'))}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600/10 to-emerald-600/10 hover:from-green-600/20 hover:to-emerald-600/20 border border-green-500/20 hover:border-green-500/40 rounded-xl transition-all duration-200 transform hover:scale-105 text-green-400 hover:text-green-300"
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  <span className="font-medium">DSA Progress</span>
+                </button>
+              </div>
+              
               {/* Right Actions */}
               <div className="flex items-center space-x-4">
                 <AuthButton />
@@ -366,28 +451,68 @@ const WelcomeScreenModern = () => {
                       Continue your coding journey. Your workspace is ready.
                     </p>
 
+                    {/* DSA Progress Bar */}
+                    <div className="mb-6 p-4 bg-gradient-to-r from-slate-800/50 to-slate-800/30 rounded-2xl border border-slate-700/50 backdrop-blur">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-slate-300">DSA Progress</span>
+                        <span className="text-sm font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                          {userActivity.dsaProgress}%
+                        </span>
+                      </div>
+                      <div className="w-full h-3 bg-slate-700/50 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-1000 ease-out"
+                          style={{ width: `${userActivity.dsaProgress}%` }}
+                        ></div>
+                      </div>
+                      <div className="mt-2 text-xs text-slate-400">
+                        {user?.publicMetadata?.solvedProblems || 0} / 150 problems solved
+                      </div>
+                    </div>
+
                     {/* User Quick Stats */}
-                    <div className="grid grid-cols-3 gap-4 mb-10 p-6 bg-gradient-to-r from-slate-800/50 to-slate-800/30 rounded-2xl border border-slate-700/50 backdrop-blur">
+                    <div className="grid grid-cols-3 gap-4 mb-6 p-6 bg-gradient-to-r from-slate-800/50 to-slate-800/30 rounded-2xl border border-slate-700/50 backdrop-blur">
                       <div className="text-center">
-                        <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                          {user?.publicMetadata?.solvedProblems || 0}
+                        <div className="text-3xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+                          {userActivity.blogs}
                         </div>
-                        <div className="text-sm text-slate-400 mt-1">Solved</div>
+                        <div className="text-sm text-slate-400 mt-1">Blogs Written</div>
                       </div>
                       <div className="text-center border-x border-slate-700">
-                        <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                          {user?.publicMetadata?.rating || 1200}
+                        <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                          {userActivity.studyGroups}
                         </div>
-                        <div className="text-sm text-slate-400 mt-1">Rating</div>
+                        <div className="text-sm text-slate-400 mt-1">Groups</div>
                       </div>
                       <div className="text-center">
                         <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                          {user?.publicMetadata?.streak || 5}
+                          {user?.publicMetadata?.streak || 0}
                         </div>
                         <div className="text-sm text-slate-400 mt-1">Day Streak</div>
                       </div>
                     </div>
 
+                    {/* Blog Activity Stats */}
+                    <div className="grid grid-cols-2 gap-4 mb-10 p-6 bg-gradient-to-r from-slate-800/50 to-slate-800/30 rounded-2xl border border-slate-700/50 backdrop-blur">
+                      <div className="text-center">
+                        <div className="flex items-center justify-center space-x-2 mb-2">
+                          <Eye className="w-5 h-5 text-orange-400" />
+                          <div className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
+                            {userActivity.blogsRead}
+                          </div>
+                        </div>
+                        <div className="text-sm text-slate-400">Blogs Read</div>
+                      </div>
+                      <div className="text-center border-l border-slate-700">
+                        <div className="flex items-center justify-center space-x-2 mb-2">
+                          <Heart className="w-5 h-5 text-red-400" />
+                          <div className="text-2xl font-bold bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
+                            {userActivity.blogsLiked}
+                          </div>
+                        </div>
+                        <div className="text-sm text-slate-400">Blogs Liked</div>
+                      </div>
+                    </div>
                     {/* Action Buttons */}
                     <div className="grid grid-cols-2 gap-4">
                       <button

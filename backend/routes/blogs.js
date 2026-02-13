@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
+const { incrementUserStat, decrementUserStat } = require('../utils/clerk-sync');
 
 const DATA_DIR = path.join(__dirname, '../data/blogs');
 
@@ -85,6 +86,9 @@ router.post('/create', async (req, res) => {
     userData.blogs.unshift(newBlog);
 
     await writeUserData(userId, userData);
+
+    // Sync to Clerk metadata
+    await incrementUserStat(userId, 'blogsWritten');
 
     res.json({
       success: true,
@@ -252,6 +256,9 @@ router.delete('/:blogId', async (req, res) => {
     userData.blogs.splice(blogIndex, 1);
     await writeUserData(userId, userData);
 
+    // Sync to Clerk metadata
+    await decrementUserStat(userId, 'blogsWritten');
+
     res.json({
       success: true,
       message: 'Blog deleted successfully'
@@ -296,7 +303,9 @@ router.post('/:blogId/like', async (req, res) => {
 
     // Toggle like
     const likeIndex = userData.blogs[blogIndex].likes.indexOf(userId);
-    if (likeIndex > -1) {
+    const wasLiked = likeIndex > -1;
+    
+    if (wasLiked) {
       userData.blogs[blogIndex].likes.splice(likeIndex, 1);
     } else {
       userData.blogs[blogIndex].likes.push(userId);
@@ -304,11 +313,18 @@ router.post('/:blogId/like', async (req, res) => {
 
     await writeUserData(blog.userId, userData);
 
+    // Sync to Clerk metadata for the user who liked
+    if (wasLiked) {
+      await decrementUserStat(userId, 'blogsLiked');
+    } else {
+      await incrementUserStat(userId, 'blogsLiked');
+    }
+
     res.json({
       success: true,
       likes: userData.blogs[blogIndex].likes.length,
       dislikes: userData.blogs[blogIndex].dislikes.length,
-      isLiked: likeIndex === -1
+      isLiked: !wasLiked
     });
   } catch (error) {
     console.error('Like blog error:', error);
@@ -553,11 +569,96 @@ router.get('/user/:userId/profile', async (req, res) => {
         followersCount: userData.followers ? userData.followers.length : 0,
         followingCount: userData.following ? userData.following.length : 0,
         followers: userData.followers || [],
-        following: userData.following || []
+        following: userData.following || [],
+        readBlogs: userData.readBlogs || []
       }
     });
   } catch (error) {
     console.error('Get profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Mark blog as read
+router.post('/:blogId/read', async (req, res) => {
+  try {
+    const { blogId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'userId is required'
+      });
+    }
+
+    const userData = await readUserData(userId);
+    userData.readBlogs = userData.readBlogs || [];
+
+    // Add to read list if not already there
+    const wasAlreadyRead = userData.readBlogs.includes(blogId);
+    if (!wasAlreadyRead) {
+      userData.readBlogs.push(blogId);
+      await writeUserData(userId, userData);
+      
+      // Sync to Clerk metadata
+      await incrementUserStat(userId, 'blogsRead');
+    }
+
+    res.json({
+      success: true,
+      readCount: userData.readBlogs.length
+    });
+  } catch (error) {
+    console.error('Mark blog as read error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get user's read blogs
+router.get('/user/:userId/read', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const userData = await readUserData(userId);
+    const readBlogIds = userData.readBlogs || [];
+
+    const allBlogs = await readAllBlogs();
+    const readBlogs = allBlogs.filter(blog => readBlogIds.includes(blog.id));
+
+    res.json({
+      success: true,
+      blogs: readBlogs,
+      count: readBlogs.length
+    });
+  } catch (error) {
+    console.error('Get read blogs error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get user's liked blogs
+router.get('/user/:userId/liked', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const allBlogs = await readAllBlogs();
+    const likedBlogs = allBlogs.filter(blog => blog.likes && blog.likes.includes(userId));
+
+    res.json({
+      success: true,
+      blogs: likedBlogs,
+      count: likedBlogs.length
+    });
+  } catch (error) {
+    console.error('Get liked blogs error:', error);
     res.status(500).json({
       success: false,
       error: error.message
