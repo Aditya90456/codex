@@ -1,66 +1,125 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs').promises;
+const path = require('path');
+
+// Data directory
+const DATA_DIR = path.join(__dirname, '../data');
+const CERTIFICATES_FILE = path.join(DATA_DIR, 'certificates.json');
+const USER_PROGRESS_FILE = path.join(DATA_DIR, 'user-progress.json');
 
 // In-memory storage for certificates (in production, use a database)
 let certificates = [];
 let userProgress = {};
 
+// Load data from files
+async function loadData() {
+  try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    
+    try {
+      const certData = await fs.readFile(CERTIFICATES_FILE, 'utf8');
+      certificates = JSON.parse(certData);
+    } catch (err) {
+      certificates = [];
+    }
+    
+    try {
+      const progressData = await fs.readFile(USER_PROGRESS_FILE, 'utf8');
+      userProgress = JSON.parse(progressData);
+    } catch (err) {
+      userProgress = {};
+    }
+  } catch (error) {
+    console.error('Error loading certificate data:', error);
+  }
+}
+
+// Save data to files
+async function saveData() {
+  try {
+    await fs.writeFile(CERTIFICATES_FILE, JSON.stringify(certificates, null, 2));
+    await fs.writeFile(USER_PROGRESS_FILE, JSON.stringify(userProgress, null, 2));
+  } catch (error) {
+    console.error('Error saving certificate data:', error);
+  }
+}
+
+// Initialize data
+loadData();
+
 // Generate certificate
 router.post('/generate', async (req, res) => {
   try {
     const { 
+      userId,
       userName, 
       userEmail, 
+      title,
+      description,
+      type,
       challengeType, 
       challengeName, 
       completionTime, 
       score,
+      completedProjects,
+      totalPoints,
       language,
       difficulty 
     } = req.body;
 
-    if (!userName || !challengeType || !challengeName) {
+    if (!userId || !title) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: userName, challengeType, challengeName'
+        error: 'Missing required fields: userId, title'
       });
     }
 
-    const certificateId = uuidv4();
+    const certificateId = 'CERT-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9).toUpperCase();
     const certificate = {
       id: certificateId,
+      userId,
       userName,
       userEmail,
-      challengeType, // 'leetcode', 'dsa', 'coding-challenge'
+      title,
+      description,
+      type: type || challengeType || 'web-development',
       challengeName,
       completionTime,
       score: score || 100,
+      completedProjects,
+      totalPoints,
       language: language || 'JavaScript',
       difficulty: difficulty || 'Medium',
-      completedAt: new Date().toISOString(),
+      completedDate: new Date().toISOString(),
+      earnedDate: new Date().toISOString(),
+      certificateId,
       verificationCode: Math.random().toString(36).substring(2, 15).toUpperCase()
     };
 
     certificates.push(certificate);
 
     // Update user progress
-    if (!userProgress[userName]) {
-      userProgress[userName] = {
+    if (!userProgress[userId]) {
+      userProgress[userId] = {
         totalChallenges: 0,
         challengesByType: {},
         certificates: []
       };
     }
 
-    userProgress[userName].totalChallenges++;
-    userProgress[userName].challengesByType[challengeType] = 
-      (userProgress[userName].challengesByType[challengeType] || 0) + 1;
-    userProgress[userName].certificates.push(certificateId);
+    userProgress[userId].totalChallenges++;
+    userProgress[userId].challengesByType[certificate.type] = 
+      (userProgress[userId].challengesByType[certificate.type] || 0) + 1;
+    userProgress[userId].certificates.push(certificateId);
+
+    await saveData();
 
     res.json({
       success: true,
       certificate,
+      certificateId,
       downloadUrl: `/api/certificates/download/${certificateId}`,
       verifyUrl: `/api/certificates/verify/${certificate.verificationCode}`
     });
@@ -158,11 +217,133 @@ router.get('/download/:id', (req, res) => {
   }
 });
 
-// Get user progress
-router.get('/user/:userName', (req, res) => {
+// Get user certificates (Clerk userId)
+router.get('/user/:userId', (req, res) => {
   try {
-    const { userName } = req.params;
-    const progress = userProgress[userName];
+    const { userId } = req.params;
+    
+    // Get all certificates for this user
+    const userCertificates = certificates.filter(cert => cert.userId === userId);
+
+    res.json({
+      success: true,
+      certificates: userCertificates,
+      totalEarned: userCertificates.length
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get available certificates for user
+router.get('/available/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Mock available certificates - in production, calculate based on user progress
+    const available = [
+      {
+        id: 'web-dev-bootcamp',
+        title: 'Web Development Bootcamp',
+        description: 'Complete 10+ real-world web development projects',
+        type: 'web-development',
+        progress: 60,
+        requirements: [
+          { text: 'Complete 10 assignments', completed: true },
+          { text: 'Score 70%+ average', completed: true },
+          { text: 'Build 5 projects', completed: false }
+        ]
+      },
+      {
+        id: 'dsa-mastery',
+        title: 'DSA Mastery',
+        description: 'Master data structures and algorithms',
+        type: 'dsa',
+        progress: 40,
+        requirements: [
+          { text: 'Solve 100+ problems', completed: false },
+          { text: 'Cover all patterns', completed: false },
+          { text: 'Score 80%+ average', completed: true }
+        ]
+      },
+      {
+        id: 'full-stack-dev',
+        title: 'Full Stack Developer',
+        description: 'Build complete full-stack applications',
+        type: 'full-stack',
+        progress: 30,
+        requirements: [
+          { text: 'Complete frontend track', completed: true },
+          { text: 'Complete backend track', completed: false },
+          { text: 'Build 3 full-stack projects', completed: false }
+        ]
+      }
+    ];
+
+    res.json({
+      success: true,
+      available
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Share certificate
+router.post('/share', async (req, res) => {
+  try {
+    const { userId, certificateData } = req.body;
+
+    if (!userId || !certificateData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+
+    // Generate shareable certificate if not exists
+    let certificate = certificates.find(c => 
+      c.userId === userId && c.title === certificateData.title
+    );
+
+    if (!certificate) {
+      const certificateId = 'CERT-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+      certificate = {
+        ...certificateData,
+        id: certificateId,
+        userId,
+        certificateId,
+        earnedDate: new Date().toISOString()
+      };
+      certificates.push(certificate);
+      await saveData();
+    }
+
+    res.json({
+      success: true,
+      certificateId: certificate.certificateId,
+      shareUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/certificate/${certificate.certificateId}`
+    });
+  } catch (error) {
+    console.error('Share certificate error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get user progress
+router.get('/progress/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+    const progress = userProgress[userId];
 
     if (!progress) {
       return res.json({

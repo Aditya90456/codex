@@ -19,7 +19,6 @@ Topmate is perfect for selling digital products because:
 
 **What's Included:**
 - 🎯 Access to all 10+ assignments
-- 📚 Step-by-step video tutorials (record screen while solving)
 - 💻 Starter code templates
 - ✅ Automated testing & feedback
 - 🏆 Certificate of completion

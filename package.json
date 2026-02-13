@@ -21,6 +21,8 @@
     "express-rate-limit": "^8.2.1",
     "framer-motion": "^12.26.2",
     "helmet": "^8.1.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.1.0",
     "lucide-react": "^0.562.0",
     "node-fetch": "^3.3.2",
     "rate-limiter-flexible": "^9.0.1",

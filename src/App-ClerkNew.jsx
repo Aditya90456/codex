@@ -29,6 +29,7 @@ import WebPlayground from './components/WebPlaygroundAwesome';
 import BlogPlatform from './components/BlogPlatform';
 import SharedCodeViewer from './components/SharedCodeViewer';
 import StudyGroups from './components/StudyGroups';
+import CertificatesDashboard from './components/CertificatesDashboard';
 import './App.css';
 
 // Validate Clerk configuration on app start
@@ -203,6 +204,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <StudyGroups />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/certificates" 
+            element={
+              <ProtectedRoute>
+                <CertificatesDashboard />
               </ProtectedRoute>
             } 
           />
