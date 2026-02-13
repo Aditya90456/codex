@@ -76,6 +76,10 @@ const WelcomeScreenModern = () => {
     blogsLiked: 0,
     loading: true
   });
+  const [platformStats, setPlatformStats] = useState({
+    totalUsers: 0,
+    loading: true
+  });
 
   useEffect(() => {
     setIsVisible(true);
@@ -177,6 +181,33 @@ const WelcomeScreenModern = () => {
 
     fetchUserActivity();
   }, [user, isLoaded]);
+
+  // Fetch platform statistics
+  useEffect(() => {
+    const fetchPlatformStats = async () => {
+      try {
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+        const response = await fetch(`${BACKEND_URL}/api/stats/platform`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Platform stats received:', data);
+          setPlatformStats({
+            totalUsers: data.stats?.totalUsers || 0,
+            loading: false
+          });
+        } else {
+          console.error('Failed to fetch platform stats:', response.status);
+          setPlatformStats({ totalUsers: 0, loading: false });
+        }
+      } catch (error) {
+        console.error('Error fetching platform stats:', error);
+        setPlatformStats({ totalUsers: 0, loading: false });
+      }
+    };
+
+    fetchPlatformStats();
+  }, []);
 
   // Safe navigation with authentication check
   const safeNavigate = (path) => {
@@ -493,7 +524,7 @@ const WelcomeScreenModern = () => {
                     </div>
 
                     {/* Blog Activity Stats */}
-                    <div className="grid grid-cols-2 gap-4 mb-10 p-6 bg-gradient-to-r from-slate-800/50 to-slate-800/30 rounded-2xl border border-slate-700/50 backdrop-blur">
+                    <div className="grid grid-cols-2 gap-4 mb-6 p-6 bg-gradient-to-r from-slate-800/50 to-slate-800/30 rounded-2xl border border-slate-700/50 backdrop-blur">
                       <div className="text-center">
                         <div className="flex items-center justify-center space-x-2 mb-2">
                           <Eye className="w-5 h-5 text-orange-400" />
@@ -513,6 +544,20 @@ const WelcomeScreenModern = () => {
                         <div className="text-sm text-slate-400">Blogs Liked</div>
                       </div>
                     </div>
+
+                    {/* Platform Stats */}
+                    <div className="mb-10 p-6 bg-gradient-to-r from-indigo-900/20 to-purple-900/20 rounded-2xl border border-indigo-500/30 backdrop-blur">
+                      <div className="flex items-center justify-center space-x-3">
+                        <Users className="w-6 h-6 text-indigo-400" />
+                        <div className="text-center">
+                          <div className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                            {platformStats.totalUsers.toLocaleString()}
+                          </div>
+                          <div className="text-sm text-slate-400 mt-1">Developers Joined</div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Action Buttons */}
                     <div className="grid grid-cols-2 gap-4">
                       <button

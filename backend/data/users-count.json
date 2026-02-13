@@ -1,0 +1,18 @@
+{
+  "totalUsers": 2,
+  "users": [
+    {
+      "userId": "user_37vW7ZMtXpSQ89kfMeJQLS1wLOO",
+      "userName": "Aditya",
+      "email": "adityabakshi0902@gmail.com",
+      "registeredAt": "2026-02-13T08:05:19.540Z"
+    },
+    {
+      "userId": "user_37jwvNsM6pGnaGEvIXurPTn3OqA",
+      "userName": "Aditya",
+      "email": "adityabakshi1011@gmail.com",
+      "registeredAt": "2026-02-13T08:46:13.691Z"
+    }
+  ],
+  "lastUpdated": "2026-02-13T08:46:13.691Z"
+}

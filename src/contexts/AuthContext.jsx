@@ -30,6 +30,31 @@ export const AuthProvider = ({ children }) => {
     }
   }, [userLoaded, authLoaded]);
 
+  // Register user for stats tracking when they sign in
+  useEffect(() => {
+    const registerUser = async () => {
+      if (user && isSignedIn) {
+        try {
+          const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+          await fetch(`${BACKEND_URL}/api/stats/register-user`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.id,
+              userName: user.firstName || user.username || 'User',
+              email: user.primaryEmailAddress?.emailAddress || ''
+            })
+          });
+          console.log('✅ User registered for stats tracking');
+        } catch (error) {
+          console.error('Failed to register user for stats:', error);
+        }
+      }
+    };
+
+    registerUser();
+  }, [user, isSignedIn]);
+
   const value = {
     user,
     isSignedIn: !!isSignedIn,

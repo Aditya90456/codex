@@ -207,6 +207,10 @@ app.use('/api/code', codeShareRoutes);
 const studyGroupsRoutes = require('./routes/study-groups');
 app.use('/api/study-groups', studyGroupsRoutes);
 
+// Mount Stats routes
+const statsRoutes = require('./routes/stats');
+app.use('/api/stats', statsRoutes);
+
 console.log('✅ AI Generator routes mounted');
 console.log('✅ GitHub integration routes mounted');
 console.log('✅ Code Explainer routes mounted');
