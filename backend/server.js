@@ -211,6 +211,10 @@ app.use('/api/study-groups', studyGroupsRoutes);
 const statsRoutes = require('./routes/stats');
 app.use('/api/stats', statsRoutes);
 
+// Mount Web Playground routes
+const webPlaygroundRoutes = require('./routes/web-playground');
+app.use('/api/web-playground', webPlaygroundRoutes);
+
 console.log('✅ AI Generator routes mounted');
 console.log('✅ GitHub integration routes mounted');
 console.log('✅ Code Explainer routes mounted');

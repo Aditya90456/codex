@@ -267,6 +267,15 @@ const WelcomeScreenModern = () => {
       action: () => protectedAction(() => navigate('/ai'))
     },
     {
+      icon: <Trophy className="w-6 h-6" />,
+      title: "Web Playground",
+      description: "Master web dev with industry projects & automated testing",
+      color: "from-orange-500 to-red-500",
+      badge: "🎯 Practice",
+      highlight: true,
+      action: () => protectedAction(() => navigate('/web-playground'))
+    },
+    {
       icon: <Globe className="w-6 h-6" />,
       title: "Web Dev Studio",
       description: "Build websites with AI assistance - React, Vue, Tailwind & more",

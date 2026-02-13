@@ -24,7 +24,8 @@ import MLResumeCreator from './components/MLResumeCreator';
 import DSAArticlesViewer from './components/DSAArticlesViewer';
 import DSAArticlesViewerWithBookmarks from './components/DSAArticlesViewerWithBookmarks';
 import BookmarksDashboard from './components/BookmarksDashboard';
-import WebDevStudio from './components/WebDevStudio';
+import WebDevStudio from './components/WebDevStudioAwesome';
+import WebPlayground from './components/WebPlaygroundAwesome';
 import BlogPlatform from './components/BlogPlatform';
 import SharedCodeViewer from './components/SharedCodeViewer';
 import StudyGroups from './components/StudyGroups';
@@ -82,6 +83,22 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <WebDevStudio />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/playground" 
+            element={
+              <ProtectedRoute>
+                <WebPlayground />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/web-playground" 
+            element={
+              <ProtectedRoute>
+                <WebPlayground />
               </ProtectedRoute>
             } 
           />
