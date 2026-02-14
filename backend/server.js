@@ -215,6 +215,10 @@ app.use('/api/stats', statsRoutes);
 const webPlaygroundRoutes = require('./routes/web-playground');
 app.use('/api/web-playground', webPlaygroundRoutes);
 
+// Mount Full Stack Playground routes
+const fullstackRoutes = require('./routes/fullstack');
+app.use('/api/fullstack', fullstackRoutes);
+
 console.log('✅ AI Generator routes mounted');
 console.log('✅ GitHub integration routes mounted');
 console.log('✅ Code Explainer routes mounted');
@@ -223,6 +227,7 @@ console.log('✅ LeetCode Execution routes mounted');
 console.log('✅ 1v1 Sessions routes mounted');
 console.log('✅ LeetCode ML Engine routes mounted');
 console.log('✅ Resume Creator routes mounted');
+console.log('✅ Full Stack Playground routes mounted');
 console.log('✅ Problem Chat routes mounted');
 console.log('✅ Bookmarks routes mounted');
 console.log('✅ Web Dev AI Assistant routes mounted');

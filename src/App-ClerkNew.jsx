@@ -2,6 +2,7 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { clerkConfig, validateClerkConfig } from './lib/clerk';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import AuthButton from './components/Auth/AuthButton';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import LoadingScreen from './components/Auth/LoadingScreen';
@@ -19,6 +20,8 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import ProfilePage from './pages/ProfilePage';
 import LeetCodeEditor from './components/LeetCodeEditor';
+import LeetCodeCompanyEditor from './components/LeetCodeCompanyEditor';
+import LeetCodePlaygroundRed from './components/LeetCodePlaygroundRed';
 import LearnPage from './pages/LearnPage';
 import MLResumeCreator from './components/MLResumeCreator';
 import DSAArticlesViewer from './components/DSAArticlesViewer';
@@ -26,6 +29,8 @@ import DSAArticlesViewerWithBookmarks from './components/DSAArticlesViewerWithBo
 import BookmarksDashboard from './components/BookmarksDashboard';
 import WebDevStudio from './components/WebDevStudioAwesome';
 import WebPlayground from './components/WebPlaygroundAwesome';
+import FullStackPlayground from './components/FullStackPlayground';
+import LLDProblemsViewer from './components/LLDProblemsViewer';
 import BlogPlatform from './components/BlogPlatform';
 import SharedCodeViewer from './components/SharedCodeViewer';
 import StudyGroups from './components/StudyGroups';
@@ -88,7 +93,7 @@ function AppContent() {
             } 
           />
           <Route 
-            path="/playground" 
+            path="/web-playground" 
             element={
               <ProtectedRoute>
                 <WebPlayground />
@@ -96,10 +101,18 @@ function AppContent() {
             } 
           />
           <Route 
-            path="/web-playground" 
+            path="/fullstack" 
             element={
               <ProtectedRoute>
-                <WebPlayground />
+                <FullStackPlayground />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/fullstack-playground" 
+            element={
+              <ProtectedRoute>
+                <FullStackPlayground />
               </ProtectedRoute>
             } 
           />
@@ -140,6 +153,62 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <LeetCodeEditor />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/leetcode-companies" 
+            element={
+              <ProtectedRoute>
+                <LeetCodeCompanyEditor />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/company-practice" 
+            element={
+              <ProtectedRoute>
+                <LeetCodeCompanyEditor />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/playground" 
+            element={
+              <ProtectedRoute>
+                <LeetCodePlaygroundRed />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/code-arena" 
+            element={
+              <ProtectedRoute>
+                <LeetCodePlaygroundRed />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/practice" 
+            element={
+              <ProtectedRoute>
+                <LeetCodePlaygroundRed />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/lld" 
+            element={
+              <ProtectedRoute>
+                <LLDProblemsViewer />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/system-design" 
+            element={
+              <ProtectedRoute>
+                <LLDProblemsViewer />
               </ProtectedRoute>
             } 
           />
@@ -240,9 +309,11 @@ function App() {
       afterSignInUrl={clerkConfig.routing.afterSignInUrl}
       afterSignUpUrl={clerkConfig.routing.afterSignUpUrl}
     >
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
     </ClerkProvider>
   );
 }

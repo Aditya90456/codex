@@ -1,29 +1,40 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
+import { useTheme } from '../contexts/ThemeContext';
 import {
   Calendar, CheckCircle, Clock, Target, Flame, Trophy,
   Star, TrendingUp, Zap, Award, ChevronRight, X, Play,
-  BookOpen, Code, Brain, Sparkles, Gift, Crown
+  BookOpen, Code, Brain, Sparkles, Gift, Crown, Timer,
+  Coffee, Rocket, Medal, Activity, BarChart3, Users,
+  Lightbulb, Heart, Shield, Gem, Coins, Gamepad2
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const LeetCodeDailyTask = ({ onSelectProblem, onClose }) => {
   const { user } = useUser();
+  const { theme } = useTheme();
   const [dailyChallenge, setDailyChallenge] = useState(null);
   const [weeklyGoals, setWeeklyGoals] = useState([]);
   const [userProgress, setUserProgress] = useState({
     todayCompleted: false,
     weekStreak: 0,
     totalCompleted: 0,
-    points: 0
+    points: 0,
+    level: 1,
+    xp: 0,
+    nextLevelXp: 100
   });
+  const [achievements, setAchievements] = useState([]);
+  const [dailyRewards, setDailyRewards] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadDailyChallenge();
     loadWeeklyGoals();
     loadUserProgress();
+    loadAchievements();
+    loadDailyRewards();
   }, [user]);
 
   const loadDailyChallenge = () => {
@@ -429,16 +440,97 @@ const LeetCodeDailyTask = ({ onSelectProblem, onClose }) => {
         const data = JSON.parse(saved);
         const today = new Date().toDateString();
         
+        // Calculate level and XP
+        const totalXp = data.points || 0;
+        const level = Math.floor(totalXp / 100) + 1;
+        const currentLevelXp = totalXp % 100;
+        const nextLevelXp = 100;
+        
         setUserProgress({
           todayCompleted: data.lastCompleted === today,
           weekStreak: data.weekStreak || 0,
           totalCompleted: data.totalCompleted || 0,
-          points: data.points || 0
+          points: data.points || 0,
+          level,
+          xp: currentLevelXp,
+          nextLevelXp
         });
       }
     } catch (error) {
       console.error('Load progress error:', error);
     }
+  };
+
+  const loadAchievements = () => {
+    const recentAchievements = [
+      {
+        id: 1,
+        title: 'First Steps',
+        description: 'Completed your first daily challenge',
+        icon: Trophy,
+        color: 'from-yellow-500 to-orange-500',
+        unlocked: true,
+        date: '2 days ago'
+      },
+      {
+        id: 2,
+        title: 'Streak Master',
+        description: 'Maintained a 7-day coding streak',
+        icon: Flame,
+        color: 'from-orange-500 to-red-500',
+        unlocked: userProgress.weekStreak >= 7,
+        date: userProgress.weekStreak >= 7 ? '1 day ago' : null
+      },
+      {
+        id: 3,
+        title: 'Problem Solver',
+        description: 'Solved 25 problems total',
+        icon: Brain,
+        color: 'from-purple-500 to-pink-500',
+        unlocked: userProgress.totalCompleted >= 25,
+        date: userProgress.totalCompleted >= 25 ? '3 days ago' : null
+      },
+      {
+        id: 4,
+        title: 'Speed Demon',
+        description: 'Complete a problem in under 10 minutes',
+        icon: Zap,
+        color: 'from-blue-500 to-cyan-500',
+        unlocked: false,
+        date: null
+      }
+    ];
+    setAchievements(recentAchievements);
+  };
+
+  const loadDailyRewards = () => {
+    const rewards = [
+      {
+        id: 1,
+        type: 'xp',
+        amount: 50,
+        description: 'Daily Challenge XP',
+        icon: Star,
+        claimed: userProgress.todayCompleted
+      },
+      {
+        id: 2,
+        type: 'coins',
+        amount: 10,
+        description: 'Daily Login Bonus',
+        icon: Coins,
+        claimed: true
+      },
+      {
+        id: 3,
+        type: 'streak',
+        amount: userProgress.weekStreak,
+        description: 'Streak Multiplier',
+        icon: Flame,
+        claimed: userProgress.weekStreak > 0
+      }
+    ];
+    setDailyRewards(rewards);
   };
 
   const handleStartChallenge = () => {
@@ -467,13 +559,13 @@ const LeetCodeDailyTask = ({ onSelectProblem, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border-2 border-gray-700/50 shadow-2xl">
+      <div className={`bg-gradient-to-br ${theme.background} rounded-3xl w-full max-w-6xl max-h-[90vh] overflow-y-auto border-2 ${theme.border} shadow-2xl`}>
         {/* Glow effect */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl blur-xl opacity-20"></div>
+        <div className={`absolute -inset-1 bg-gradient-to-r ${theme.primary} rounded-3xl blur-xl opacity-20`}></div>
         
         <div className="relative">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 rounded-t-3xl">
+          <div className={`bg-gradient-to-r ${theme.primary} p-6 rounded-t-3xl`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
@@ -497,23 +589,27 @@ const LeetCodeDailyTask = ({ onSelectProblem, onClose }) => {
           </div>
 
           {/* User Stats */}
-          <div className="grid grid-cols-4 gap-4 p-6 border-b border-gray-700/50">
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4 text-center">
+          <div className={`grid grid-cols-5 gap-4 p-6 border-b ${theme.border}`}>
+            <div className={`bg-gradient-to-br ${theme.card} border-2 ${theme.border} rounded-xl p-4 text-center`}>
               <div className="text-3xl font-black text-orange-400 flex items-center justify-center gap-2">
                 <Flame className="w-8 h-8" />
                 {userProgress.weekStreak}
               </div>
-              <div className="text-sm text-gray-400 mt-1">Day Streak</div>
+              <div className={`text-sm ${theme.textSecondary} mt-1`}>Day Streak</div>
             </div>
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4 text-center">
+            <div className={`bg-gradient-to-br ${theme.card} border-2 ${theme.border} rounded-xl p-4 text-center`}>
               <div className="text-3xl font-black text-blue-400">{userProgress.totalCompleted}</div>
-              <div className="text-sm text-gray-400 mt-1">Completed</div>
+              <div className={`text-sm ${theme.textSecondary} mt-1`}>Completed</div>
             </div>
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4 text-center">
+            <div className={`bg-gradient-to-br ${theme.card} border-2 ${theme.border} rounded-xl p-4 text-center`}>
               <div className="text-3xl font-black text-purple-400">{userProgress.points}</div>
-              <div className="text-sm text-gray-400 mt-1">Points</div>
+              <div className={`text-sm ${theme.textSecondary} mt-1`}>Points</div>
             </div>
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4 text-center">
+            <div className={`bg-gradient-to-br ${theme.card} border-2 ${theme.border} rounded-xl p-4 text-center`}>
+              <div className="text-3xl font-black text-green-400">Lv.{userProgress.level}</div>
+              <div className={`text-sm ${theme.textSecondary} mt-1`}>Level</div>
+            </div>
+            <div className={`bg-gradient-to-br ${theme.card} border-2 ${theme.border} rounded-xl p-4 text-center`}>
               {userProgress.todayCompleted ? (
                 <>
                   <CheckCircle className="w-8 h-8 text-green-400 mx-auto" />
@@ -531,7 +627,7 @@ const LeetCodeDailyTask = ({ onSelectProblem, onClose }) => {
           {/* Main Content */}
           <div className="p-6 space-y-6">
             {/* Today's Challenge */}
-            <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-2 border-blue-500/30 rounded-2xl p-6">
+            <div className={`bg-gradient-to-br ${theme.card} border-2 border-blue-500/30 rounded-2xl p-6`}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
@@ -546,10 +642,10 @@ const LeetCodeDailyTask = ({ onSelectProblem, onClose }) => {
                       {dailyChallenge.points} pts
                     </span>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">{dailyChallenge.title}</h3>
-                  <p className="text-gray-300 mb-4">{dailyChallenge.description}</p>
+                  <h3 className={`text-2xl font-bold ${theme.text} mb-2`}>{dailyChallenge.title}</h3>
+                  <p className={`${theme.textSecondary} mb-4`}>{dailyChallenge.description}</p>
                   
-                  <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
+                  <div className={`flex items-center gap-4 text-sm ${theme.textSecondary} mb-4`}>
                     <span className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
                       {dailyChallenge.estimatedTime}
@@ -561,7 +657,7 @@ const LeetCodeDailyTask = ({ onSelectProblem, onClose }) => {
                   </div>
 
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="text-sm text-gray-400">Asked by:</span>
+                    <span className={`text-sm ${theme.textSecondary}`}>Asked by:</span>
                     {dailyChallenge.companies.slice(0, 3).map((company, index) => (
                       <span key={index} className="px-2 py-1 bg-gray-700/50 rounded text-xs text-gray-300">
                         {company}
@@ -581,7 +677,7 @@ const LeetCodeDailyTask = ({ onSelectProblem, onClose }) => {
                 className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold transition-all transform hover:scale-105 ${
                   userProgress.todayCompleted
                     ? 'bg-green-600 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                    : `bg-gradient-to-r ${theme.primary} hover:opacity-90`
                 } text-white shadow-lg`}
               >
                 {userProgress.todayCompleted ? (
@@ -599,9 +695,33 @@ const LeetCodeDailyTask = ({ onSelectProblem, onClose }) => {
               </button>
             </div>
 
+            {/* Level Progress */}
+            <div className={`bg-gradient-to-br ${theme.card} border-2 ${theme.border} rounded-xl p-6`}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={`text-lg font-bold ${theme.text} flex items-center gap-2`}>
+                  <Activity className="w-5 h-5 text-green-400" />
+                  Level Progress
+                </h3>
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-green-400" />
+                  <span className={`font-bold ${theme.text}`}>Level {userProgress.level}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className={theme.textSecondary}>XP Progress</span>
+                <span className={theme.text}>{userProgress.xp} / {userProgress.nextLevelXp}</span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-500 rounded-full"
+                  style={{ width: `${(userProgress.xp / userProgress.nextLevelXp) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
             {/* Weekly Goals */}
             <div>
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className={`text-xl font-bold ${theme.text} mb-4 flex items-center gap-2`}>
                 <Target className="w-6 h-6 text-blue-400" />
                 Weekly Goals
               </h3>
@@ -610,18 +730,18 @@ const LeetCodeDailyTask = ({ onSelectProblem, onClose }) => {
                   const Icon = goal.icon;
                   const progress = (goal.progress / goal.target) * 100;
                   return (
-                    <div key={goal.id} className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4">
+                    <div key={goal.id} className={`bg-gradient-to-br ${theme.card} border-2 ${theme.border} rounded-xl p-4`}>
                       <div className="flex items-center justify-between mb-3">
                         <div className={`w-10 h-10 bg-gradient-to-r ${goal.color} rounded-lg flex items-center justify-center`}>
                           <Icon className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-sm text-gray-400 flex items-center gap-1">
+                        <span className={`text-sm ${theme.textSecondary} flex items-center gap-1`}>
                           <Gift className="w-4 h-4" />
                           {goal.points} pts
                         </span>
                       </div>
-                      <h4 className="font-semibold text-white mb-2">{goal.title}</h4>
-                      <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
+                      <h4 className={`font-semibold ${theme.text} mb-2`}>{goal.title}</h4>
+                      <div className={`flex items-center justify-between text-sm ${theme.textSecondary} mb-2`}>
                         <span>{goal.progress} / {goal.target}</span>
                         <span>{Math.round(progress)}%</span>
                       </div>
@@ -637,20 +757,62 @@ const LeetCodeDailyTask = ({ onSelectProblem, onClose }) => {
               </div>
             </div>
 
-            {/* Rewards */}
-            <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border border-yellow-500/30 rounded-xl p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center">
-                  <Crown className="w-8 h-8 text-white" />
+            {/* Recent Achievements */}
+            <div>
+              <h3 className={`text-xl font-bold ${theme.text} mb-4 flex items-center gap-2`}>
+                <Medal className="w-6 h-6 text-yellow-400" />
+                Recent Achievements
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                {achievements.slice(0, 4).map(achievement => {
+                  const Icon = achievement.icon;
+                  return (
+                    <div key={achievement.id} className={`bg-gradient-to-br ${theme.card} border-2 ${
+                      achievement.unlocked ? 'border-yellow-500/50' : theme.border
+                    } rounded-xl p-4 ${achievement.unlocked ? 'opacity-100' : 'opacity-50'}`}>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`w-10 h-10 bg-gradient-to-r ${achievement.color} rounded-lg flex items-center justify-center`}>
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className={`font-semibold ${theme.text} text-sm`}>{achievement.title}</h4>
+                          {achievement.unlocked && achievement.date && (
+                            <p className="text-xs text-green-400">{achievement.date}</p>
+                          )}
+                        </div>
+                        {achievement.unlocked && <CheckCircle className="w-5 h-5 text-green-400" />}
+                      </div>
+                      <p className={`text-xs ${theme.textSecondary}`}>{achievement.description}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Daily Rewards */}
+            <div className={`bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border border-yellow-500/30 rounded-xl p-6`}>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className={`font-bold ${theme.text} flex items-center gap-2`}>
+                  <Gift className="w-5 h-5 text-yellow-400" />
+                  Daily Rewards
+                </h4>
+                <div className="flex items-center gap-2">
+                  {dailyRewards.map(reward => {
+                    const Icon = reward.icon;
+                    return (
+                      <div key={reward.id} className={`flex items-center gap-1 px-2 py-1 rounded-lg ${
+                        reward.claimed ? 'bg-green-500/20 text-green-400' : 'bg-gray-700/50 text-gray-400'
+                      }`}>
+                        <Icon className="w-4 h-4" />
+                        <span className="text-sm">+{reward.amount}</span>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-white mb-1">Complete 7 Daily Challenges</h4>
-                  <p className="text-sm text-gray-300">Unlock exclusive badge and 500 bonus points!</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-black text-yellow-400">4/7</div>
-                  <div className="text-xs text-gray-400">This week</div>
-                </div>
+              </div>
+              <div className="text-center">
+                <p className={`text-sm ${theme.textSecondary} mb-2`}>Complete today's challenge to claim all rewards!</p>
+                <div className="text-2xl font-black text-yellow-400">+{dailyChallenge.points + 60} Total XP</div>
               </div>
             </div>
           </div>

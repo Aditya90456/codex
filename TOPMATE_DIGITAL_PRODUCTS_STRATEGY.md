@@ -133,6 +133,42 @@ Perfect for: Job seekers, freshers, experienced
 Get interview calls 3x faster!
 ```
 
+### 4.1. **Premium Theme Pack** - ₹499 ($6)
+
+**What's Included:**
+- 🎨 10 exclusive premium themes
+- 🌟 Seasonal themes (Winter, Summer, Spring, Autumn)
+- 💻 Brand-inspired themes (GitHub, VSCode, Sublime)
+- ✨ Animated backgrounds
+- 🔤 Custom font options
+- 🎯 Priority support
+
+**Topmate Product Description:**
+```
+🎨 Premium Theme Collection - Transform Your Coding Experience
+
+10 Exclusive Themes:
+✅ Neon Cyberpunk
+✅ Retro Synthwave
+✅ Minimal White
+✅ GitHub Dark Pro
+✅ VSCode Blue
+✅ Sublime Orange
+✅ Winter Frost
+✅ Summer Sunset
+✅ Spring Garden
+✅ Autumn Leaves
+
+Features:
+• Animated gradient backgrounds
+• Custom typography options
+• Export/Import themes
+• Lifetime updates
+
+Perfect for: Developers who want unique style
+Make your IDE truly yours!
+```
+
 ### 5. **Web Projects Template Pack** - ₹799 ($10)
 
 **What's Included:**

@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
+import { useTheme } from '../contexts/ThemeContext';
 import {
   Target, Plus, X, CheckCircle, Circle, Edit, Trash2, Calendar,
   TrendingUp, Award, Star, Flame, Code, BookOpen, Trophy, Crown,
   ChevronLeft, ChevronRight, Sparkles, Zap, Brain, Clock, Flag,
-  BarChart3, PieChart, Activity, Gift, Medal, Rocket
+  BarChart3, PieChart, Activity, Gift, Medal, Rocket, Users,
+  Coffee, Heart, Shield, Gem, Gamepad2, Timer, Lightbulb
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const MonthlyGoals = ({ onClose }) => {
   const { user } = useUser();
+  const { theme } = useTheme();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [goals, setGoals] = useState([]);
   const [showAddGoal, setShowAddGoal] = useState(false);
@@ -33,6 +36,7 @@ const MonthlyGoals = ({ onClose }) => {
     categoriesCompleted: {},
     daysActive: 0
   });
+  const [monthlyRewards, setMonthlyRewards] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const goalTypes = [
@@ -48,6 +52,7 @@ const MonthlyGoals = ({ onClose }) => {
   useEffect(() => {
     loadGoals();
     loadMonthlyStats();
+    loadMonthlyRewards();
   }, [user, currentMonth]);
 
   const loadGoals = async () => {
@@ -146,6 +151,52 @@ const MonthlyGoals = ({ onClose }) => {
       
       return { ...goal, progress: Math.min(progress, goal.target) };
     }));
+  };
+
+  const loadMonthlyRewards = () => {
+    const rewards = [
+      {
+        id: 1,
+        title: 'Monthly Champion',
+        description: 'Complete all monthly goals',
+        requirement: 'Complete 100% of goals',
+        reward: '1000 XP + Exclusive Badge',
+        icon: Crown,
+        color: 'from-yellow-500 to-orange-500',
+        unlocked: calculateMonthProgress() === 100
+      },
+      {
+        id: 2,
+        title: 'Consistency Master',
+        description: 'Code for 20+ days this month',
+        requirement: '20 active days',
+        reward: '500 XP + Streak Multiplier',
+        icon: Calendar,
+        color: 'from-blue-500 to-purple-500',
+        unlocked: monthlyStats.daysActive >= 20
+      },
+      {
+        id: 3,
+        title: 'Problem Crusher',
+        description: 'Solve 50+ problems this month',
+        requirement: '50 problems solved',
+        reward: '750 XP + Special Title',
+        icon: Zap,
+        color: 'from-green-500 to-emerald-500',
+        unlocked: monthlyStats.totalProblems >= 50
+      },
+      {
+        id: 4,
+        title: 'Streak Legend',
+        description: 'Maintain 15+ day streak',
+        requirement: '15 day streak',
+        reward: '300 XP + Flame Badge',
+        icon: Flame,
+        color: 'from-orange-500 to-red-500',
+        unlocked: monthlyStats.currentStreak >= 15
+      }
+    ];
+    setMonthlyRewards(rewards);
   };
 
   const saveGoals = (goalsToSave) => {
