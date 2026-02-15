@@ -1,10 +1,11 @@
 import { useAuthContext } from '../../contexts/AuthContext';
-import { Link } from 'react-router-dom';
-import { SignUpButton } from '@clerk/clerk-react';
+import { useLocation } from 'react-router-dom';
+import { SignInButton, SignUpButton } from '@clerk/clerk-react';
 import { Lock, LogIn, UserPlus } from 'lucide-react';
 
 const ProtectedRoute = ({ children, fallback = null }) => {
   const { isSignedIn, isLoaded } = useAuthContext();
+  const location = useLocation();
 
   if (!isLoaded) {
     return (
@@ -34,14 +35,22 @@ const ProtectedRoute = ({ children, fallback = null }) => {
           </div>
           
           <div className="space-y-3">
-            <Link to="/sign-in">
+            <SignInButton 
+              mode="redirect" 
+              redirectUrl={location.pathname}
+              fallbackRedirectUrl={location.pathname}
+            >
               <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
                 <LogIn size={20} />
                 Sign In
               </button>
-            </Link>
+            </SignInButton>
             
-            <SignUpButton mode="redirect">
+            <SignUpButton 
+              mode="redirect"
+              redirectUrl={location.pathname}
+              fallbackRedirectUrl={location.pathname}
+            >
               <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg border border-gray-600 transition-colors">
                 <UserPlus size={20} />
                 Create Account

@@ -193,7 +193,9 @@ app.use('/api/execute', multiLangRoutes);
 
 // Mount Blog routes
 const blogRoutes = require('./routes/blogs');
+const feedbackRoutes = require('./routes/feedback');
 app.use('/api/blogs', blogRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // Mount Roadmap routes
 const roadmapRoutes = require('./routes/roadmap');

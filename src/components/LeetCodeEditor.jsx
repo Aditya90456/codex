@@ -53,10 +53,12 @@ import {
   VolumeX,
   AlertCircle,
   Layers,
-  Loader2
+  Loader2,
+  MessageCircle
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import { companyWiseProblems, timerPresets } from '../data/companyWiseProblems';
+import { lldProblems } from '../data/lldProblems';
 import AICodeExplainer from './AI/AICodeExplainer';
 import { useCodeCompletion } from '../hooks/useCodeCompletion';
 import CodeCompletionPanel from './CodeCompletionPanel';
@@ -148,6 +150,15 @@ const LeetCodeEditor = () => {
   const [showSolutionViewer, setShowSolutionViewer] = useState(false);
   const [isLeftPanelMinimized, setIsLeftPanelMinimized] = useState(false);
   const [isConsoleMinimized, setIsConsoleMinimized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Loading effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Certificate system state
   const [completedProblems, setCompletedProblems] = useState(new Set());
@@ -214,6 +225,9 @@ const LeetCodeEditor = () => {
   const getCurrentProblems = () => {
     if (problemSource === 'company') {
       return companyWiseProblems[selectedCompany]?.problems || [];
+    }
+    if (problemSource === 'lld') {
+      return [...lldProblems.easy, ...lldProblems.medium, ...lldProblems.hard];
     }
     return dsaProblems;
   };
@@ -1137,7 +1151,42 @@ ${code}
   };
 
   return (
-    <div className={`h-screen bg-gradient-to-br ${theme.background} ${theme.text} flex flex-col overflow-hidden`}>
+    <>
+      {/* Loading Screen */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 z-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="relative mb-8">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-3xl opacity-50 animate-pulse"></div>
+              <div className="relative w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto">
+                <Code2 className="w-12 h-12 text-white animate-bounce" />
+              </div>
+            </div>
+            
+            <h1 className="text-5xl font-black mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-pulse">
+              Playground Sheet
+            </h1>
+            
+            <div className="space-y-2 mb-8">
+              <p className="text-xl text-gray-300 font-semibold animate-fade-in">
+                Loading your coding arena...
+              </p>
+              <p className="text-sm text-gray-400 animate-fade-in-delay">
+                Preparing DSA problems, LLD challenges, and AI tools
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
+              <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce delay-100"></div>
+              <div className="w-3 h-3 bg-pink-500 rounded-full animate-bounce delay-200"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className={`h-screen bg-gradient-to-br ${theme.background} ${theme.text} flex flex-col overflow-hidden`}>
       {/* Animated Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse"></div>
@@ -1204,7 +1253,13 @@ ${code}
             <button
               onClick={() => {
                 setProblemSource('lld');
-                navigate('/lld');
+                // Load first LLD problem when switching
+                const allLldProblems = [...lldProblems.easy, ...lldProblems.medium, ...lldProblems.hard];
+                const firstLLDProblem = allLldProblems[0];
+                if (firstLLDProblem) {
+                  setSelectedProblem(firstLLDProblem);
+                  setCode(firstLLDProblem.starterCode || '');
+                }
               }}
               className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                 problemSource === 'lld' 
@@ -1555,11 +1610,16 @@ ${code}
               <h3 className="font-semibold">
                 {problemSource === 'company' 
                   ? `${companyWiseProblems[selectedCompany]?.name} Problems` 
+                  : problemSource === 'lld'
+                  ? 'LLD Problems'
                   : 'DSA Problems'
                 }
               </h3>
               {problemSource === 'company' && (
                 <span className="text-2xl">{companyWiseProblems[selectedCompany]?.logo}</span>
+              )}
+              {problemSource === 'lld' && (
+                <Layers className="w-5 h-5 text-cyan-400" />
               )}
             </div>
             
@@ -2392,6 +2452,7 @@ ${code}
 
     <audio ref={audioRef} src="/timer-alert.mp3" preload="auto" />
   </div>
+  </>
   );
 }; 
 export default LeetCodeEditor;
