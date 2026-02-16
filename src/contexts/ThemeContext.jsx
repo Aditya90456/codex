@@ -14,6 +14,7 @@ export const useTheme = () => {
 export const themes = {
   default: {
     name: 'Default Dark',
+    category: 'Professional',
     primary: 'from-blue-600 to-purple-600',
     secondary: 'from-purple-600 to-pink-600',
     accent: 'from-cyan-500 to-blue-500',
@@ -22,10 +23,12 @@ export const themes = {
     text: 'text-white',
     textSecondary: 'text-gray-400',
     border: 'border-gray-700',
-    editorTheme: 'vs-dark'
+    editorTheme: 'vs-dark',
+    pattern: 'none'
   },
   ocean: {
     name: 'Ocean Blue',
+    category: 'Nature',
     primary: 'from-blue-500 to-cyan-500',
     secondary: 'from-cyan-500 to-teal-500',
     accent: 'from-blue-400 to-cyan-400',
@@ -34,10 +37,12 @@ export const themes = {
     text: 'text-white',
     textSecondary: 'text-blue-200',
     border: 'border-blue-700',
-    editorTheme: 'vs-dark'
+    editorTheme: 'vs-dark',
+    pattern: 'waves'
   },
   sunset: {
     name: 'Sunset Orange',
+    category: 'Nature',
     primary: 'from-orange-500 to-red-500',
     secondary: 'from-red-500 to-pink-500',
     accent: 'from-yellow-500 to-orange-500',
@@ -46,10 +51,12 @@ export const themes = {
     text: 'text-white',
     textSecondary: 'text-orange-200',
     border: 'border-orange-700',
-    editorTheme: 'vs-dark'
+    editorTheme: 'vs-dark',
+    pattern: 'gradient'
   },
   forest: {
     name: 'Forest Green',
+    category: 'Nature',
     primary: 'from-green-500 to-emerald-500',
     secondary: 'from-emerald-500 to-teal-500',
     accent: 'from-lime-500 to-green-500',
@@ -58,10 +65,12 @@ export const themes = {
     text: 'text-white',
     textSecondary: 'text-green-200',
     border: 'border-green-700',
-    editorTheme: 'vs-dark'
+    editorTheme: 'vs-dark',
+    pattern: 'dots'
   },
   purple: {
     name: 'Purple Haze',
+    category: 'Creative',
     primary: 'from-purple-500 to-violet-500',
     secondary: 'from-violet-500 to-fuchsia-500',
     accent: 'from-purple-400 to-pink-400',
@@ -70,10 +79,12 @@ export const themes = {
     text: 'text-white',
     textSecondary: 'text-purple-200',
     border: 'border-purple-700',
-    editorTheme: 'vs-dark'
+    editorTheme: 'vs-dark',
+    pattern: 'none'
   },
   cyberpunk: {
     name: 'Cyberpunk',
+    category: 'Gaming',
     primary: 'from-pink-500 to-cyan-500',
     secondary: 'from-cyan-500 to-purple-500',
     accent: 'from-yellow-400 to-pink-500',
@@ -82,10 +93,13 @@ export const themes = {
     text: 'text-white',
     textSecondary: 'text-cyan-300',
     border: 'border-pink-500',
-    editorTheme: 'vs-dark'
+    editorTheme: 'vs-dark',
+    pattern: 'grid',
+    glow: true
   },
   light: {
     name: 'Light Mode',
+    category: 'Professional',
     primary: 'from-blue-600 to-indigo-600',
     secondary: 'from-indigo-600 to-purple-600',
     accent: 'from-cyan-600 to-blue-600',
@@ -94,10 +108,12 @@ export const themes = {
     text: 'text-gray-900',
     textSecondary: 'text-gray-600',
     border: 'border-gray-300',
-    editorTheme: 'vs'
+    editorTheme: 'vs',
+    pattern: 'none'
   },
   dracula: {
     name: 'Dracula',
+    category: 'Popular',
     primary: 'from-purple-600 to-pink-600',
     secondary: 'from-pink-600 to-red-600',
     accent: 'from-cyan-500 to-purple-500',
@@ -106,10 +122,12 @@ export const themes = {
     text: 'text-[#f8f8f2]',
     textSecondary: 'text-[#6272a4]',
     border: 'border-[#44475a]',
-    editorTheme: 'vs-dark'
+    editorTheme: 'vs-dark',
+    pattern: 'none'
   },
   monokai: {
     name: 'Monokai',
+    category: 'Popular',
     primary: 'from-green-500 to-lime-500',
     secondary: 'from-yellow-500 to-orange-500',
     accent: 'from-pink-500 to-purple-500',
@@ -118,7 +136,138 @@ export const themes = {
     text: 'text-[#f8f8f2]',
     textSecondary: 'text-[#75715e]',
     border: 'border-[#3e3d32]',
-    editorTheme: 'vs-dark'
+    editorTheme: 'vs-dark',
+    pattern: 'none'
+  },
+  github: {
+    name: 'GitHub Dark',
+    category: 'Popular',
+    primary: 'from-blue-500 to-blue-600',
+    secondary: 'from-gray-600 to-gray-700',
+    accent: 'from-green-500 to-green-600',
+    background: 'from-[#0d1117] via-[#161b22] to-[#0d1117]',
+    card: 'from-[#21262d] to-[#161b22]',
+    text: 'text-[#f0f6fc]',
+    textSecondary: 'text-[#7d8590]',
+    border: 'border-[#30363d]',
+    editorTheme: 'vs-dark',
+    pattern: 'none'
+  },
+  vscode: {
+    name: 'VS Code Dark',
+    category: 'Popular',
+    primary: 'from-blue-500 to-blue-600',
+    secondary: 'from-purple-500 to-purple-600',
+    accent: 'from-orange-500 to-orange-600',
+    background: 'from-[#1e1e1e] via-[#252526] to-[#1e1e1e]',
+    card: 'from-[#2d2d30] to-[#252526]',
+    text: 'text-[#cccccc]',
+    textSecondary: 'text-[#969696]',
+    border: 'border-[#3e3e42]',
+    editorTheme: 'vs-dark',
+    pattern: 'none'
+  },
+  neon: {
+    name: 'Neon Nights',
+    category: 'Gaming',
+    primary: 'from-pink-400 to-purple-500',
+    secondary: 'from-purple-500 to-blue-500',
+    accent: 'from-cyan-400 to-pink-400',
+    background: 'from-black via-gray-900 to-black',
+    card: 'from-gray-900 to-black',
+    text: 'text-white',
+    textSecondary: 'text-pink-300',
+    border: 'border-pink-500',
+    editorTheme: 'vs-dark',
+    pattern: 'grid',
+    glow: true,
+    animation: 'pulse'
+  },
+  matrix: {
+    name: 'Matrix',
+    category: 'Gaming',
+    primary: 'from-green-400 to-green-500',
+    secondary: 'from-green-500 to-green-600',
+    accent: 'from-lime-400 to-green-400',
+    background: 'from-black via-green-950 to-black',
+    card: 'from-gray-900 to-green-950',
+    text: 'text-green-400',
+    textSecondary: 'text-green-600',
+    border: 'border-green-500',
+    editorTheme: 'vs-dark',
+    pattern: 'matrix',
+    glow: true
+  },
+  retro: {
+    name: 'Retro Wave',
+    category: 'Retro',
+    primary: 'from-pink-500 to-purple-600',
+    secondary: 'from-purple-600 to-blue-600',
+    accent: 'from-cyan-400 to-pink-500',
+    background: 'from-purple-900 via-pink-900 to-purple-900',
+    card: 'from-purple-800 to-pink-800',
+    text: 'text-white',
+    textSecondary: 'text-pink-200',
+    border: 'border-pink-400',
+    editorTheme: 'vs-dark',
+    pattern: 'retro-grid',
+    glow: true
+  },
+  terminal: {
+    name: 'Terminal Green',
+    category: 'Retro',
+    primary: 'from-green-500 to-green-600',
+    secondary: 'from-green-600 to-green-700',
+    accent: 'from-lime-400 to-green-500',
+    background: 'from-black via-gray-900 to-black',
+    card: 'from-gray-900 to-black',
+    text: 'text-green-400',
+    textSecondary: 'text-green-600',
+    border: 'border-green-500',
+    editorTheme: 'vs-dark',
+    pattern: 'scanlines'
+  },
+  minimal: {
+    name: 'Minimal White',
+    category: 'Professional',
+    primary: 'from-gray-800 to-gray-900',
+    secondary: 'from-gray-700 to-gray-800',
+    accent: 'from-blue-500 to-blue-600',
+    background: 'from-white via-gray-50 to-white',
+    card: 'from-gray-50 to-white',
+    text: 'text-gray-900',
+    textSecondary: 'text-gray-600',
+    border: 'border-gray-200',
+    editorTheme: 'vs',
+    pattern: 'none'
+  },
+  nord: {
+    name: 'Nord',
+    category: 'Popular',
+    primary: 'from-blue-400 to-blue-500',
+    secondary: 'from-indigo-400 to-indigo-500',
+    accent: 'from-cyan-400 to-blue-400',
+    background: 'from-[#2e3440] via-[#3b4252] to-[#2e3440]',
+    card: 'from-[#434c5e] to-[#3b4252]',
+    text: 'text-[#eceff4]',
+    textSecondary: 'text-[#d8dee9]',
+    border: 'border-[#4c566a]',
+    editorTheme: 'vs-dark',
+    pattern: 'none'
+  },
+  solarized: {
+    name: 'Solarized Dark',
+    category: 'Popular',
+    primary: 'from-blue-500 to-cyan-500',
+    secondary: 'from-cyan-500 to-green-500',
+    accent: 'from-yellow-500 to-orange-500',
+    background: 'from-[#002b36] via-[#073642] to-[#002b36]',
+    card: 'from-[#073642] to-[#002b36]',
+    text: 'text-[#839496]',
+    textSecondary: 'text-[#586e75]',
+    border: 'border-[#073642]',
+    editorTheme: 'vs-dark',
+    pattern: 'none'
   }
 };
 

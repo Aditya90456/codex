@@ -8,7 +8,8 @@ import {
   Clock, Trophy, Star, CheckCircle, XCircle, Zap, Brain,
   Layers, Filter, Search, Timer, Pause, RotateCcw, Volume2, VolumeX,
   Youtube, Github, Download, Share2, MessageCircle, Lightbulb,
-  Award, BarChart3, Users, Pencil, Building2, Map, X
+  Award, BarChart3, Users, Pencil, Building2, Map, X, Eye, Activity,
+  Palette
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import { companyWiseProblems } from '../data/companyWiseProblems';
@@ -18,13 +19,18 @@ import SolutionViewer from './SolutionViewer';
 import AIPeerChat from './AIPeerChat';
 import AIWhiteboardVisualizer from './AIWhiteboardVisualizer';
 import RealTimeDryRun from './RealTimeDryRun';
+import SmartDryRunDetector from './SmartDryRunDetector';
+import SmartDebugNotification from './SmartDebugNotification';
 import SessionBookingModal from './SessionBookingModal';
 import CodeShareModal from './CodeShareModal';
 import PracticeScheduler from './PracticeSchedulerRedesigned';
 import DSARoadmapTracker from './DSARoadmapTracker';
 import LeetCodeDailyTask from './LeetCodeDailyTask';
 import MonthlyGoals from './MonthlyGoals';
+import ThemeCustomizer from './ThemeCustomizer';
 import { useClerkProgress } from '../hooks/useClerkProgress';
+import useSmartDebugger from '../hooks/useSmartDebugger';
+import { useTheme } from '../contexts/ThemeContext';
 
 // Configure Monaco loader to use CDN
 loader.config({
@@ -36,6 +42,7 @@ loader.config({
 const LeetCodeEditorRedesigned = () => {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { theme, fontSize: themeFontSize, fontFamily } = useTheme();
   
   // Clerk-based progress tracking
   const { 
@@ -55,6 +62,25 @@ const LeetCodeEditorRedesigned = () => {
   const [language, setLanguage] = useState('javascript');
   const [fontSize, setFontSize] = useState(14);
   
+  // Smart Debugger Integration
+  const {
+    shouldShowDebugger,
+    debuggerVisible,
+    analysisResult,
+    updateCode,
+    showDebugger,
+    hideDebugger,
+    toggleDebugger,
+    getConfidence,
+    getRecommendations
+  } = useSmartDebugger(code, {
+    autoDetectEnabled: true,
+    detectionThreshold: 30, // Lower threshold for redesigned editor
+    debounceDelay: 600,
+    enableVoiceNotifications: true,
+    language: language
+  });
+  
   // UI states
   const [showProblemList, setShowProblemList] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -62,6 +88,11 @@ const LeetCodeEditorRedesigned = () => {
   const [isConsoleMinimized, setIsConsoleMinimized] = useState(false);
   const [consoleTab, setConsoleTab] = useState('testcase');
   const [leftPanelTab, setLeftPanelTab] = useState('description');
+  
+  // Smart Debug states
+  const [showSmartDebugNotification, setShowSmartDebugNotification] = useState(false);
+  const [notificationDismissed, setNotificationDismissed] = useState(false);
+  const [smartDebugMode, setSmartDebugMode] = useState('auto'); // auto, manual, off
   
   // Execution states
   const [isRunning, setIsRunning] = useState(false);
@@ -95,6 +126,7 @@ const LeetCodeEditorRedesigned = () => {
   const [showSolutionViewer, setShowSolutionViewer] = useState(false);
   const [showAIPeerChat, setShowAIPeerChat] = useState(false);
   const [showGithubModal, setShowGithubModal] = useState(false);
+  const [showThemeCustomizer, setShowThemeCustomizer] = useState(false);
   
   // GitHub states
   const [githubConnected, setGithubConnected] = useState(false);
@@ -141,6 +173,44 @@ const LeetCodeEditorRedesigned = () => {
     }
     return () => clearInterval(timerRef.current);
   }, [isTimerRunning, timeLeft]);
+
+  // Smart Debugger Auto-Detection Effects
+  useEffect(() => {
+    if (shouldShowDebugger && !debuggerVisible && !notificationDismissed) {
+      setShowSmartDebugNotification(true);
+      
+      // Auto-switch to smart debug tab if confidence is very high
+      if (getConfidence() >= 70) {
+        setTimeout(() => {
+          setLeftPanelTab('smart-debug');
+          setShowSmartDebugNotification(false);
+        }, 2000);
+      }
+    }
+  }, [shouldShowDebugger, debuggerVisible, notificationDismissed, getConfidence]);
+
+  // Handle notification acceptance
+  const handleAcceptSmartDebug = () => {
+    setLeftPanelTab('smart-debug');
+    setShowSmartDebugNotification(false);
+    showDebugger();
+  };
+
+  // Handle notification dismissal
+  const handleDismissSmartDebug = () => {
+    setShowSmartDebugNotification(false);
+    setNotificationDismissed(true);
+    hideDebugger();
+  };
+
+  // Reset smart debug state when problem changes
+  useEffect(() => {
+    setNotificationDismissed(false);
+    setShowSmartDebugNotification(false);
+    if (leftPanelTab === 'smart-debug' && !shouldShowDebugger) {
+      setLeftPanelTab('description');
+    }
+  }, [selectedProblem.id, shouldShowDebugger]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -338,23 +408,23 @@ const LeetCodeEditorRedesigned = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white flex flex-col overflow-hidden">
+    <div className={`h-screen bg-gradient-to-br ${theme.background} ${theme.text} flex flex-col overflow-hidden`}>
       {/* Modern Header */}
-      <header className="h-14 bg-slate-900/50 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 shadow-2xl">
+      <header className={`h-14 bg-gradient-to-r ${theme.card} backdrop-blur-xl border-b ${theme.border} flex items-center justify-between px-4 shadow-2xl`}>
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover:from-blue-500/20 hover:to-purple-500/20 rounded-lg border border-blue-500/20 transition-all"
+            className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.primary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
           >
             <Home className="w-4 h-4 text-blue-400" />
             <span className="text-sm font-medium">Home</span>
           </button>
           
-          <div className="h-6 w-px bg-white/10" />
+          <div className={`h-6 w-px ${theme.border}`} />
           
           <button
             onClick={() => setShowProblemList(!showProblemList)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-all"
+            className={`flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg border ${theme.border} transition-all`}
           >
             <Layers className="w-4 h-4 text-purple-400" />
             <span className="text-sm font-medium">Problems</span>
@@ -363,10 +433,29 @@ const LeetCodeEditorRedesigned = () => {
 
           <button
             onClick={() => navigate('/roadmap')}
-            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:from-purple-500/20 hover:to-pink-500/20 rounded-lg border border-purple-500/20 transition-all"
+            className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.secondary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
           >
             <Target className="w-4 h-4 text-purple-400" />
             <span className="text-sm">Roadmap</span>
+          </button>
+
+          <button
+            onClick={() => setShowPracticeScheduler(true)}
+            className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.accent} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+          >
+            <Calendar className="w-4 h-4 text-cyan-400" />
+            <span className="text-sm">Schedule</span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {/* Theme Button */}
+          <button
+            onClick={() => setShowThemeCustomizer(true)}
+            className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.primary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+          >
+            <Palette className="w-4 h-4" />
+            <span className="text-sm font-medium">Themes</span>
           </button>
 
           <button
@@ -413,7 +502,7 @@ const LeetCodeEditorRedesigned = () => {
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="px-3 py-1.5 bg-slate-800/50 rounded-lg border border-white/10 text-sm focus:outline-none focus:border-blue-500/50"
+            className={`px-3 py-1.5 bg-gradient-to-r ${theme.card} rounded-lg border ${theme.border} text-sm focus:outline-none focus:border-blue-500/50`}
           >
             {languages.map(lang => (
               <option key={lang.value} value={lang.value}>{lang.label}</option>
@@ -432,12 +521,12 @@ const LeetCodeEditorRedesigned = () => {
       </header>
 
       {/* Beautiful Progress Bar */}
-      <div className="bg-slate-900/30 border-b border-white/5 px-4 py-3">
+      <div className={`bg-gradient-to-r ${theme.card} border-b ${theme.border} px-4 py-3`}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
             <Trophy className="w-5 h-5 text-yellow-400" />
-            <span className="text-sm font-semibold text-white">Your Progress</span>
-            <span className="text-xs text-gray-400">
+            <span className={`text-sm font-semibold ${theme.text}`}>Your Progress</span>
+            <span className={`text-xs ${theme.textSecondary}`}>
               {progress.completedProblems.length} problems solved
             </span>
           </div>
@@ -508,7 +597,7 @@ const LeetCodeEditorRedesigned = () => {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Problem Description */}
-        <div className={`${isLeftPanelMinimized ? 'w-12' : 'w-[45%]'} bg-slate-900/30 backdrop-blur-sm border-r border-white/5 flex flex-col transition-all duration-300`}>
+        <div className={`${isLeftPanelMinimized ? 'w-12' : 'w-[45%]'} bg-gradient-to-b ${theme.card} backdrop-blur-sm border-r ${theme.border} flex flex-col transition-all duration-300`}>
           {isLeftPanelMinimized ? (
             <button
               onClick={() => setIsLeftPanelMinimized(false)}
@@ -518,30 +607,50 @@ const LeetCodeEditorRedesigned = () => {
             </button>
           ) : (
             <>
-              <div className="flex items-center justify-between p-4 border-b border-white/5">
+              <div className={`flex items-center justify-between p-4 border-b ${theme.border}`}>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setLeftPanelTab('description')}
                     className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                      leftPanelTab === 'description' ? 'bg-blue-500/20 text-blue-300' : 'text-gray-400 hover:text-white'
+                      leftPanelTab === 'description' ? `bg-gradient-to-r ${theme.primary} bg-opacity-20 text-blue-300` : `${theme.textSecondary} hover:${theme.text}`
                     }`}
                   >
                     <BookOpen className="w-4 h-4 inline mr-1" />
                     Description
                   </button>
+                  
+                  <button
+                    onClick={() => setLeftPanelTab('smart-debug')}
+                    className={`px-3 py-1.5 rounded-lg text-sm transition-all relative ${
+                      leftPanelTab === 'smart-debug' ? `bg-gradient-to-r ${theme.accent} bg-opacity-20 text-emerald-300` : `${theme.textSecondary} hover:${theme.text}`
+                    }`}
+                  >
+                    <Activity className="w-4 h-4 inline mr-1" />
+                    Smart Debug
+                    {/* Confidence indicator */}
+                    {analysisResult && getConfidence() > 40 && (
+                      <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
+                        getConfidence() >= 80 ? 'bg-red-400 animate-pulse' :
+                        getConfidence() >= 60 ? 'bg-yellow-400' :
+                        'bg-emerald-400'
+                      }`} />
+                    )}
+                  </button>
+                  
                   <button
                     onClick={() => setLeftPanelTab('whiteboard')}
                     className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                      leftPanelTab === 'whiteboard' ? 'bg-purple-500/20 text-purple-300' : 'text-gray-400 hover:text-white'
+                      leftPanelTab === 'whiteboard' ? `bg-gradient-to-r ${theme.secondary} bg-opacity-20 text-purple-300` : `${theme.textSecondary} hover:${theme.text}`
                     }`}
                   >
                     <Brain className="w-4 h-4 inline mr-1" />
                     Whiteboard
                   </button>
+                  
                   <button
                     onClick={() => setLeftPanelTab('dryrun')}
                     className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                      leftPanelTab === 'dryrun' ? 'bg-green-500/20 text-green-300' : 'text-gray-400 hover:text-white'
+                      leftPanelTab === 'dryrun' ? 'bg-green-500/20 text-green-300' : `${theme.textSecondary} hover:${theme.text}`
                     }`}
                   >
                     <Zap className="w-4 h-4 inline mr-1" />
@@ -690,6 +799,18 @@ const LeetCodeEditorRedesigned = () => {
                   />
                 )}
 
+                {leftPanelTab === 'smart-debug' && (
+                  <SmartDryRunDetector 
+                    code={code}
+                    language={language}
+                    onCodeChange={setCode}
+                    analysisResult={analysisResult}
+                    confidence={getConfidence()}
+                    recommendations={getRecommendations()}
+                    problem={selectedProblem}
+                  />
+                )}
+
                 {leftPanelTab === 'dryrun' && (
                   <RealTimeDryRun 
                     code={code}
@@ -705,14 +826,40 @@ const LeetCodeEditorRedesigned = () => {
         {/* Right Panel - Code Editor */}
         <div className="flex-1 flex flex-col">
           {/* Editor Header */}
-          <div className="h-12 bg-slate-900/50 border-b border-white/5 flex items-center justify-between px-4">
+          <div className={`h-12 bg-gradient-to-r ${theme.card} border-b ${theme.border} flex items-center justify-between px-4`}>
             <div className="flex items-center gap-2">
               <Code2 className="w-4 h-4 text-purple-400" />
-              <span className="text-sm font-medium">Code Editor</span>
+              <span className={`text-sm font-medium ${theme.text}`}>Code Editor</span>
             </div>
             <div className="flex items-center gap-2">
-              <button className="text-xs text-gray-400 hover:text-white transition-all">
-                Font: {fontSize}px
+              {/* Smart Debugger Toggle */}
+              {analysisResult && getConfidence() > 30 && (
+                <button
+                  onClick={() => {
+                    if (leftPanelTab === 'smart-debug') {
+                      setLeftPanelTab('description');
+                    } else {
+                      setLeftPanelTab('smart-debug');
+                    }
+                  }}
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-all ${
+                    leftPanelTab === 'smart-debug' 
+                      ? `bg-gradient-to-r ${theme.accent} bg-opacity-20 text-emerald-300 border ${theme.border}` 
+                      : `bg-gradient-to-r ${theme.card} ${theme.textSecondary} hover:text-emerald-300 border ${theme.border}`
+                  }`}
+                >
+                  <Activity className="w-3 h-3" />
+                  Smart Debug ({getConfidence()}%)
+                </button>
+              )}
+              <button 
+                onClick={() => setShowThemeCustomizer(true)}
+                className={`text-xs ${theme.textSecondary} hover:${theme.text} transition-all px-2 py-1 rounded border ${theme.border}`}
+              >
+                🎨 Theme
+              </button>
+              <button className={`text-xs ${theme.textSecondary} hover:${theme.text} transition-all`}>
+                Font: {themeFontSize === 'small' ? '12' : themeFontSize === 'large' ? '16' : themeFontSize === 'xlarge' ? '18' : '14'}px
               </button>
             </div>
           </div>
@@ -727,7 +874,11 @@ const LeetCodeEditorRedesigned = () => {
                   <p className="text-gray-400 mb-4">Monaco Editor failed to load. Using fallback.</p>
                   <textarea
                     value={code}
-                    onChange={(e) => setCode(e.target.value)}
+                    onChange={(e) => {
+                      const newCode = e.target.value;
+                      setCode(newCode);
+                      updateCode(newCode);
+                    }}
                     className="w-full h-96 bg-slate-800 text-white p-4 rounded-lg border border-white/10 font-mono text-sm focus:outline-none focus:border-blue-500/50"
                     placeholder="Write your code here..."
                   />
@@ -738,18 +889,21 @@ const LeetCodeEditorRedesigned = () => {
                 height="100%"
                 language={language}
                 value={code}
-                onChange={setCode}
-                theme="vs-dark"
+                onChange={(newCode) => {
+                  setCode(newCode);
+                  updateCode(newCode);
+                }}
+                theme={theme.editorTheme || 'vs-dark'}
                 loading={
-                  <div className="h-full flex items-center justify-center bg-slate-900/50">
+                  <div className={`h-full flex items-center justify-center bg-gradient-to-br ${theme.background}`}>
                     <div className="text-center">
                       <Zap className="w-8 h-8 text-blue-400 mx-auto mb-2 animate-pulse" />
-                      <p className="text-gray-400">Loading editor...</p>
+                      <p className={theme.textSecondary}>Loading editor...</p>
                     </div>
                   </div>
                 }
                 options={{
-                  fontSize,
+                  fontSize: themeFontSize === 'small' ? 12 : themeFontSize === 'large' ? 16 : themeFontSize === 'xlarge' ? 18 : 14,
                   minimap: { enabled: false },
                   scrollBeyondLastLine: false,
                   lineNumbers: 'on',
@@ -757,8 +911,10 @@ const LeetCodeEditorRedesigned = () => {
                   cursorBlinking: 'smooth',
                   cursorSmoothCaretAnimation: 'on',
                   smoothScrolling: true,
-                  fontFamily: "'Fira Code', 'Cascadia Code', Consolas, monospace",
-                  fontLigatures: true,
+                  fontFamily: fontFamily === 'mono' ? "'Fira Code', 'Cascadia Code', Consolas, monospace" : 
+                             fontFamily === 'sans' ? "'Inter', 'Segoe UI', sans-serif" : 
+                             "'Times New Roman', serif",
+                  fontLigatures: fontFamily === 'mono',
                   padding: { top: 16, bottom: 16 },
                   automaticLayout: true
                 }}
@@ -772,7 +928,7 @@ const LeetCodeEditorRedesigned = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="h-14 bg-slate-900/50 border-t border-white/5 flex items-center justify-between px-4">
+          <div className={`h-14 bg-gradient-to-r ${theme.card} border-t ${theme.border} flex items-center justify-between px-4`}>
             <div className="flex items-center gap-2">
               <button
                 onClick={(e) => {
@@ -795,7 +951,7 @@ const LeetCodeEditorRedesigned = () => {
                 }}
                 type="button"
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                className={`flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${theme.primary} hover:opacity-80 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95`}
               >
                 {isSubmitting ? <Zap className="w-4 h-4 animate-pulse" /> : <Send className="w-4 h-4" />}
                 Submit
@@ -810,7 +966,7 @@ const LeetCodeEditorRedesigned = () => {
                   downloadSolution();
                 }}
                 type="button"
-                className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 hover:bg-slate-800 rounded-lg border border-white/10 transition-all text-sm active:scale-95"
+                className={`flex items-center gap-2 px-3 py-2 bg-gradient-to-r ${theme.card} hover:opacity-80 rounded-lg border ${theme.border} transition-all text-sm active:scale-95`}
               >
                 <Download className="w-4 h-4" />
                 Download
@@ -822,7 +978,7 @@ const LeetCodeEditorRedesigned = () => {
                   setShowCodeShareModal(true);
                 }}
                 type="button"
-                className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 hover:bg-slate-800 rounded-lg border border-white/10 transition-all text-sm active:scale-95"
+                className={`flex items-center gap-2 px-3 py-2 bg-gradient-to-r ${theme.card} hover:opacity-80 rounded-lg border ${theme.border} transition-all text-sm active:scale-95`}
               >
                 <Share2 className="w-4 h-4" />
                 Share
@@ -834,7 +990,7 @@ const LeetCodeEditorRedesigned = () => {
                   setShowAISuggestions(!showAISuggestions);
                 }}
                 type="button"
-                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-pink-500/10 to-purple-500/10 hover:from-pink-500/20 hover:to-purple-500/20 rounded-lg border border-pink-500/30 transition-all text-sm active:scale-95"
+                className={`flex items-center gap-2 px-3 py-2 bg-gradient-to-r ${theme.secondary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all text-sm active:scale-95`}
               >
                 <Brain className="w-4 h-4" />
                 AI Explain
@@ -843,7 +999,7 @@ const LeetCodeEditorRedesigned = () => {
           </div>
 
           {/* Console */}
-          <div className={`${isConsoleMinimized ? 'h-10' : 'h-64'} bg-slate-900/30 border-t border-white/5 flex flex-col transition-all duration-300`}>
+          <div className={`${isConsoleMinimized ? 'h-10' : 'h-64'} bg-gradient-to-r ${theme.card} border-t ${theme.border} flex flex-col transition-all duration-300`}>
             {isConsoleMinimized ? (
               <button
                 onClick={() => setIsConsoleMinimized(false)}
@@ -1216,6 +1372,25 @@ const LeetCodeEditorRedesigned = () => {
           </div>
         </div>
       )}
+
+      {/* Smart Debug Notification */}
+      <SmartDebugNotification
+        show={showSmartDebugNotification}
+        confidence={getConfidence()}
+        reasons={getRecommendations()}
+        onAccept={handleAcceptSmartDebug}
+        onDismiss={handleDismissSmartDebug}
+        onViewDetails={() => {
+          setLeftPanelTab('smart-debug');
+          setShowSmartDebugNotification(false);
+        }}
+      />
+
+      {/* Theme Customizer */}
+      <ThemeCustomizer
+        isOpen={showThemeCustomizer}
+        onClose={() => setShowThemeCustomizer(false)}
+      />
     </div>
   );
 };

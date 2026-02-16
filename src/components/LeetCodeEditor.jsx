@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useUser, UserButton, useClerk } from '@clerk/clerk-react';
 import { useTheme } from '../contexts/ThemeContext';
 import Editor from '@monaco-editor/react';
+import SmartDryRunDetector from './SmartDryRunDetector';
+import SmartDebugNotification from './SmartDebugNotification';
+import useSmartDebugger from '../hooks/useSmartDebugger';
 import { 
   Play, 
   Send, 
@@ -119,6 +122,52 @@ const LeetCodeEditor = () => {
     return initialCode || '';
   });
   const [language, setLanguage] = useState('javascript');
+  
+  // Smart Debugger Integration
+  const {
+    shouldShowDebugger,
+    debuggerVisible,
+    analysisResult,
+    updateCode,
+    showDebugger,
+    hideDebugger,
+    toggleDebugger,
+    getConfidence,
+    getRecommendations
+  } = useSmartDebugger(code, {
+    autoDetectEnabled: true,
+    detectionThreshold: 35, // Lower threshold for coding problems
+    debounceDelay: 800,
+    enableVoiceNotifications: false,
+    language: language
+  });
+
+  // Auto-switch to smart debug tab when high confidence is detected
+  useEffect(() => {
+    if (shouldShowDebugger && getConfidence() >= 70 && leftPanelTab === 'description') {
+      // Only auto-switch if user is on description tab and hasn't manually switched
+      const timer = setTimeout(() => {
+        setLeftPanelTab('smart-debug');
+        
+        // Optional: Show a subtle notification
+        console.log('🧠 Smart Debugger: High complexity detected, switching to Smart Debug tab');
+      }, 2000); // Wait 2 seconds before auto-switching
+      
+      return () => clearTimeout(timer);
+    }
+  }, [shouldShowDebugger, getConfidence, leftPanelTab]);
+
+  // Show smart debug notification for high confidence detections
+  useEffect(() => {
+    if (shouldShowDebugger && getConfidence() >= 60 && !notificationDismissed && leftPanelTab !== 'smart-debug') {
+      const timer = setTimeout(() => {
+        setShowSmartDebugNotification(true);
+      }, 3000); // Show notification after 3 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [shouldShowDebugger, getConfidence, notificationDismissed, leftPanelTab]);
+  
   const [fontSize, setFontSize] = useState(14);
   const [showSettings, setShowSettings] = useState(false);
   const [consoleTab, setConsoleTab] = useState('testcase');
@@ -135,7 +184,7 @@ const LeetCodeEditor = () => {
   const [compilerErrors, setCompilerErrors] = useState([]);
   const [runtimeErrors, setRuntimeErrors] = useState([]);
   const [outputComparison, setOutputComparison] = useState(null);
-  const [leftPanelTab, setLeftPanelTab] = useState('description'); // 'description', 'whiteboard', or 'dryrun'
+  const [leftPanelTab, setLeftPanelTab] = useState('description'); // 'description', 'whiteboard', 'dryrun', or 'smart-debug'
   const editorRef = useRef(null);
   const timerRef = useRef(null);
   const audioRef = useRef(null);
@@ -146,6 +195,8 @@ const LeetCodeEditor = () => {
   const [showSessionBooking, setShowSessionBooking] = useState(false);
   const [showRoadmapTracker, setShowRoadmapTracker] = useState(false);
   const [showDailyTask, setShowDailyTask] = useState(false);
+  const [showSmartDebugNotification, setShowSmartDebugNotification] = useState(false);
+  const [notificationDismissed, setNotificationDismissed] = useState(false);
   const [showMonthlyGoals, setShowMonthlyGoals] = useState(false);
   const [showCodeShareModal, setShowCodeShareModal] = useState(false);
   const [showPracticeScheduler, setShowPracticeScheduler] = useState(false);
@@ -543,6 +594,9 @@ const LeetCodeEditor = () => {
     // Ensure value is always a string
     const newCode = typeof value === 'string' ? value : '';
     setCode(newCode);
+    
+    // Update smart debugger with new code
+    updateCode(newCode);
     
     // Get cursor position from Monaco editor for AI completions
     if (editorRef.current) {
@@ -1834,7 +1888,7 @@ ${code}
             )}
           </div>
 
-          {/* Tabs - Description, Whiteboard, and Dry Run - Modern Design */}
+          {/* Tabs - Description, Smart Debug, Dry Run, and Whiteboard - Modern Design */}
           <div className="flex border-b border-slate-700 bg-gradient-to-r from-slate-800/50 to-slate-800/30">
             <button
               onClick={() => setLeftPanelTab('description')}
@@ -1852,6 +1906,32 @@ ${code}
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600"></div>
               )}
             </button>
+            
+            <button
+              onClick={() => setLeftPanelTab('smart-debug')}
+              className={`px-6 py-3 text-sm font-semibold transition-all duration-200 relative ${
+                leftPanelTab === 'smart-debug'
+                  ? 'text-green-400'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Brain className="w-4 h-4" />
+                <span>Smart Debug</span>
+                {/* Confidence indicator */}
+                {analysisResult && getConfidence() > 40 && (
+                  <div className={`w-2 h-2 rounded-full ${
+                    getConfidence() >= 80 ? 'bg-red-400 animate-pulse' :
+                    getConfidence() >= 60 ? 'bg-yellow-400' :
+                    'bg-green-400'
+                  }`} />
+                )}
+              </div>
+              {leftPanelTab === 'smart-debug' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-600"></div>
+              )}
+            </button>
+            
             <button
               onClick={() => setLeftPanelTab('dryrun')}
               className={`px-6 py-3 text-sm font-semibold transition-all duration-200 relative ${
@@ -1868,6 +1948,7 @@ ${code}
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-500 to-orange-600"></div>
               )}
             </button>
+            
             <button
               onClick={() => setLeftPanelTab('whiteboard')}
               className={`px-6 py-3 text-sm font-semibold transition-all duration-200 relative ${
@@ -1890,6 +1971,12 @@ ${code}
           <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-900/50 to-slate-800/30">
             {leftPanelTab === 'description' ? (
               <ProblemDescription problem={selectedProblem} />
+            ) : leftPanelTab === 'smart-debug' ? (
+              <SmartDryRunDetector 
+                code={code}
+                language={language}
+                onCodeChange={handleEditorChange}
+              />
             ) : leftPanelTab === 'dryrun' ? (
               <RealTimeDryRun 
                 code={code}
