@@ -22,7 +22,8 @@ import {
   PenSquare,
   LayoutDashboard,
   Code,
-  Palette
+  Palette,
+  Map
 } from 'lucide-react';
 
 function Navbar({ onShowAuth, onBackToWelcome }) {
@@ -119,6 +120,13 @@ function Navbar({ onShowAuth, onBackToWelcome }) {
             >
               <Code size={14} />
               Playground
+            </button>
+            <button 
+              onClick={() => navigate('/roadmap')}
+              className={`${theme.textSecondary} hover:${theme.text} transition-colors text-sm px-2 py-1 rounded hover:bg-gray-700 flex items-center gap-1`}
+            >
+              <Map size={14} />
+              DSA Roadmap
             </button>
             <button 
               onClick={() => navigate('/web-studio')}

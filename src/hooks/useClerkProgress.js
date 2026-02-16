@@ -39,8 +39,14 @@ export const useClerkProgress = () => {
     try {
       setLoading(true);
       
-      // Get progress from Clerk user's public metadata
-      const clerkProgress = user.publicMetadata?.progress || {};
+      // Try to get progress from Clerk user's unsafe metadata (user-writable)
+      const clerkProgress = user.unsafeMetadata?.progress || user.publicMetadata?.progress || {};
+      
+      console.log('📥 Loading progress from Clerk:', {
+        userId: user.id,
+        hasProgress: !!clerkProgress.completedProblems,
+        completedCount: clerkProgress.completedProblems?.length || 0
+      });
       
       // Merge with default progress structure
       const loadedProgress = {
@@ -52,7 +58,7 @@ export const useClerkProgress = () => {
       };
       
       setProgress(loadedProgress);
-      console.log('✅ Progress loaded from Clerk:', loadedProgress);
+      console.log('✅ Progress loaded from Clerk successfully!');
     } catch (error) {
       console.error('❌ Failed to load progress from Clerk:', error);
       // Fallback to localStorage
@@ -81,22 +87,31 @@ export const useClerkProgress = () => {
     if (!user) {
       // Save to localStorage for guests
       localStorage.setItem('codingProgress', JSON.stringify(newProgress));
+      console.log('💾 Progress saved to localStorage (guest mode)');
       return;
     }
 
     try {
+      console.log('🔄 Attempting to save progress to Clerk...', {
+        userId: user.id,
+        completedProblems: newProgress.completedProblems.length
+      });
+
       await user.update({
-        publicMetadata: {
-          ...user.publicMetadata,
+        unsafeMetadata: {
           progress: newProgress,
           lastUpdated: new Date().toISOString()
         }
       });
-      console.log('✅ Progress saved to Clerk');
+      
+      console.log('✅ Progress saved to Clerk successfully!');
     } catch (error) {
       console.error('❌ Failed to save progress to Clerk:', error);
+      console.log('📝 Falling back to localStorage...');
+      
       // Fallback to localStorage
       localStorage.setItem('codingProgress', JSON.stringify(newProgress));
+      console.log('✅ Progress saved to localStorage as fallback');
     }
   };
 

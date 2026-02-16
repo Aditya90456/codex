@@ -308,7 +308,7 @@ const WelcomeScreenModern = () => {
       description: "Master algorithms with 250+ problems & AI explanations",
       color: "from-purple-500 to-indigo-500",
       badge: "Learn",
-      action: () => protectedAction(() => navigate('/playground'))
+      action: () => protectedAction(() => navigate('/leetcode'))
     },
     {
       icon: <Zap className="w-6 h-6" />,
@@ -461,7 +461,7 @@ const WelcomeScreenModern = () => {
                   <span className="font-medium">Study Groups</span>
                 </button>
                 <button
-                  onClick={() => protectedAction(() => navigate('/playground'))}
+                  onClick={() => protectedAction(() => navigate('/leetcode'))}
                   className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600/10 to-emerald-600/10 hover:from-green-600/20 hover:to-emerald-600/20 border border-green-500/20 hover:border-green-500/40 rounded-xl transition-all duration-200 transform hover:scale-105 text-green-400 hover:text-green-300"
                 >
                   <TrendingUp className="w-4 h-4" />
@@ -947,7 +947,7 @@ const WelcomeScreenModern = () => {
                           <span>Professional Layout</span>
                         </div>
                         <button 
-                          onClick={() => navigate('/playground')}
+                          onClick={() => navigate('/leetcode')}
                           className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-lg text-green-400 text-xs font-medium transition-all duration-200 hover:scale-105"
                         >
                           Try Now
@@ -973,7 +973,7 @@ const WelcomeScreenModern = () => {
                           <span>Curated Collection</span>
                         </div>
                         <button 
-                          onClick={() => navigate('/playground')}
+                          onClick={() => navigate('/leetcode')}
                           className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-400 text-xs font-medium transition-all duration-200 hover:scale-105"
                         >
                           Explore
@@ -999,7 +999,7 @@ const WelcomeScreenModern = () => {
                           <span>Real-time Feedback</span>
                         </div>
                         <button 
-                          onClick={() => navigate('/playground')}
+                          onClick={() => navigate('/leetcode')}
                           className="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-lg text-purple-400 text-xs font-medium transition-all duration-200 hover:scale-105"
                         >
                           Test Now
@@ -1023,7 +1023,7 @@ const WelcomeScreenModern = () => {
                         Get hints, explanations, and code suggestions
                       </p>
                       <button 
-                        onClick={() => navigate('/playground')}
+                        onClick={() => navigate('/leetcode')}
                         className="w-full px-2 py-1 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 rounded text-orange-400 text-xs font-medium transition-all duration-200"
                       >
                         Try AI Help
@@ -1043,7 +1043,7 @@ const WelcomeScreenModern = () => {
                         Visual algorithm explanations and drawings
                       </p>
                       <button 
-                        onClick={() => navigate('/playground')}
+                        onClick={() => navigate('/leetcode')}
                         className="w-full px-2 py-1 bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/30 rounded text-teal-400 text-xs font-medium transition-all duration-200"
                       >
                         Visualize
@@ -1083,7 +1083,7 @@ const WelcomeScreenModern = () => {
                         JavaScript, Python, Java, C++, and more
                       </p>
                       <button 
-                        onClick={() => navigate('/playground')}
+                        onClick={() => navigate('/leetcode')}
                         className="w-full px-2 py-1 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 rounded text-indigo-400 text-xs font-medium transition-all duration-200"
                       >
                         Code Now
@@ -1125,7 +1125,7 @@ const WelcomeScreenModern = () => {
                 {/* CTA Button */}
                 <div className="text-center">
                   <button
-                    onClick={() => safeNavigate('/playground')}
+                    onClick={() => safenavigate('/leetcode')}
                     className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-10 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl shadow-green-500/25 hover:shadow-2xl hover:shadow-green-500/40 transform hover:scale-105 relative overflow-hidden group"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
@@ -1958,7 +1958,7 @@ const WelcomeScreenModern = () => {
               </button>
               
               <button
-                onClick={() => protectedAction(() => navigate('/playground'))}
+                onClick={() => protectedAction(() => navigate('/leetcode'))}
                 className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-8 py-5 rounded-2xl font-bold transition-all shadow-xl shadow-red-500/25 hover:shadow-2xl hover:shadow-red-500/40 transform hover:scale-105 flex items-center justify-center space-x-3 relative overflow-hidden group"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-red-400/20 to-red-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>

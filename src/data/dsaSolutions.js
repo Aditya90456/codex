@@ -288,9 +288,13 @@ public:
   getSolution: function(problemId, language) {
     const solution = this[problemId];
     if (!solution) return null;
+    
     return {
-      code: solution[language],
-      explanation: solution.explanation
+      code: solution[language] || solution.javascript || '',
+      explanation: solution.explanation || 'No explanation available',
+      approach: solution.approach || solution.explanation || 'Optimal solution approach',
+      timeComplexity: solution.timeComplexity || 'O(n)',
+      spaceComplexity: solution.spaceComplexity || 'O(1)'
     };
   },
   

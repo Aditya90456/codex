@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
-import Editor from '@monaco-editor/react';
+import Editor, { loader } from '@monaco-editor/react';
 import { 
   Play, 
   Send, 
@@ -85,6 +85,13 @@ import {
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import { companyWiseProblems, timerPresets } from '../data/companyWiseProblems';
+
+// Configure Monaco loader to use CDN
+loader.config({
+  paths: {
+    vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs'
+  }
+});
 
 const LeetCodePlaygroundRed = () => {
   const navigate = useNavigate();
@@ -451,6 +458,14 @@ console.log(twoSum([2, 7, 11, 15], 9)); // Expected: [0, 1]
             <Grid3X3 className="w-4 h-4" />
             <span className="text-sm font-medium">Problems</span>
             {showProblemList ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+
+          <button
+            onClick={() => navigate('/roadmap')}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg hover:bg-purple-500/30 transition-all"
+          >
+            <Target className="w-4 h-4 text-purple-300" />
+            <span className="text-sm font-medium text-purple-300">Roadmap</span>
           </button>
 
           <button

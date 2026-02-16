@@ -363,7 +363,7 @@ const WelcomeScreenFeeds = () => {
                     <span>Solve Problems</span>
                   </button>
                   <button
-                    onClick={() => navigate('/blogs/create')}
+                    onClick={() => navigate('/blogs')}
                     className="w-full flex items-center gap-3 px-4 py-3 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-colors text-left"
                   >
                     <Plus className="w-5 h-5 text-green-400" />

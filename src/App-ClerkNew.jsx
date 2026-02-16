@@ -20,6 +20,7 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import ProfilePage from './pages/ProfilePage';
 import LeetCodeEditor from './components/LeetCodeEditor';
+import LeetCodeEditorRedesigned from './components/LeetCodeEditorRedesigned';
 import LeetCodeCompanyEditor from './components/LeetCodeCompanyEditor';
 import LeetCodePlaygroundRed from './components/LeetCodePlaygroundRed';
 import LearnPage from './pages/LearnPage';
@@ -35,6 +36,7 @@ import BlogPlatform from './components/BlogPlatform';
 import SharedCodeViewer from './components/SharedCodeViewer';
 import StudyGroups from './components/StudyGroups';
 import CertificatesDashboard from './components/CertificatesDashboard';
+import ProductCompanyRoadmap from './components/ProductCompanyRoadmap';
 import './App.css';
 
 // Validate Clerk configuration on app start
@@ -152,7 +154,7 @@ function AppContent() {
             path="/leetcode" 
             element={
               <ProtectedRoute>
-                <LeetCodeEditor />
+                <LeetCodeEditorRedesigned />
               </ProtectedRoute>
             } 
           />
@@ -281,6 +283,30 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <CertificatesDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/roadmap" 
+            element={
+              <ProtectedRoute>
+                <ProductCompanyRoadmap />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dsa-roadmap" 
+            element={
+              <ProtectedRoute>
+                <ProductCompanyRoadmap />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/faang-roadmap" 
+            element={
+              <ProtectedRoute>
+                <ProductCompanyRoadmap />
               </ProtectedRoute>
             } 
           />

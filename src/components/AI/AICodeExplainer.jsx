@@ -10,10 +10,11 @@ import {
   ArrowRight,
   ArrowDown,
   CheckCircle,
-  Lightbulb
+  Lightbulb,
+  X
 } from 'lucide-react';
 
-const AICodeExplainer = ({ code, problemTitle, language = 'javascript' }) => {
+const AICodeExplainer = ({ code, problemTitle, language = 'javascript', onClose }) => {
   const [isExplaining, setIsExplaining] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -312,20 +313,58 @@ const AICodeExplainer = ({ code, problemTitle, language = 'javascript' }) => {
 
   if (!isExplaining) {
     return (
-      <div className="p-6 bg-slate-900 rounded-lg border border-slate-700">
-        <div className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            <Brain className="w-8 h-8 text-purple-400 mr-2" />
-            <h3 className="text-xl font-bold text-white">AI Code Explainer</h3>
+      <div 
+        className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4"
+        onClick={(e) => e.target === e.currentTarget && onClose?.()}
+      >
+        <div className="bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 rounded-2xl border border-purple-500/30 max-w-2xl w-full p-8 shadow-2xl">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-purple-500/20 rounded-xl">
+                <Brain className="w-8 h-8 text-purple-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-white">AI Code Explainer</h3>
+                <p className="text-sm text-gray-400">Powered by Gemini AI</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white/10 rounded-lg transition-all"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
-          <p className="text-gray-400 mb-6">
-            Get step-by-step animated explanations of your algorithm
-          </p>
+          
+          <div className="text-center mb-8">
+            <p className="text-gray-300 text-lg mb-2">
+              Get step-by-step animated explanations of your algorithm
+            </p>
+            <p className="text-gray-500 text-sm">
+              Visualize data structures, understand complexity, and master the logic
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 text-center">
+              <div className="text-2xl mb-1">🎯</div>
+              <div className="text-sm text-gray-300">Step-by-step</div>
+            </div>
+            <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 text-center">
+              <div className="text-2xl mb-1">📊</div>
+              <div className="text-sm text-gray-300">Visual Animations</div>
+            </div>
+            <div className="bg-pink-500/10 border border-pink-500/30 rounded-xl p-4 text-center">
+              <div className="text-2xl mb-1">⚡</div>
+              <div className="text-sm text-gray-300">Complexity Analysis</div>
+            </div>
+          </div>
+
           <button
             onClick={startExplanation}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-semibold text-white transition-all duration-200 transform hover:scale-105 mx-auto"
+            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 rounded-xl font-bold text-lg text-white transition-all duration-200 transform hover:scale-105 shadow-lg shadow-purple-500/30"
           >
-            <Zap className="w-5 h-5" />
+            <Zap className="w-6 h-6" />
             Explain My Code
           </button>
         </div>
@@ -335,10 +374,24 @@ const AICodeExplainer = ({ code, problemTitle, language = 'javascript' }) => {
 
   if (!explanation) {
     return (
-      <div className="p-6 bg-slate-900 rounded-lg border border-slate-700">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-400">AI is analyzing your code...</p>
+      <div 
+        className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4"
+        onClick={(e) => e.target === e.currentTarget && onClose?.()}
+      >
+        <div className="bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 rounded-2xl border border-purple-500/30 max-w-md w-full p-8 shadow-2xl">
+          <div className="text-center">
+            <div className="relative w-20 h-20 mx-auto mb-6">
+              <div className="absolute inset-0 animate-spin">
+                <div className="h-full w-full border-4 border-purple-500/30 border-t-purple-500 rounded-full"></div>
+              </div>
+              <div className="absolute inset-2 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}>
+                <div className="h-full w-full border-4 border-pink-500/30 border-t-pink-500 rounded-full"></div>
+              </div>
+              <Brain className="absolute inset-0 m-auto w-8 h-8 text-purple-400 animate-pulse" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">AI is analyzing your code...</h3>
+            <p className="text-gray-400 text-sm">This may take a few seconds</p>
+          </div>
         </div>
       </div>
     );
@@ -347,142 +400,172 @@ const AICodeExplainer = ({ code, problemTitle, language = 'javascript' }) => {
   const currentStepData = explanation.steps[currentStep];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 p-4 rounded-lg border border-purple-500/30">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <Brain className="w-6 h-6 text-purple-400" />
-              {explanation.algorithm}
-            </h3>
-            <div className="flex items-center gap-4 mt-2 text-sm">
-              <span className="text-green-400">Time: {explanation.timeComplexity}</span>
-              <span className="text-blue-400">Space: {explanation.spaceComplexity}</span>
+    <div 
+      className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose?.()}
+    >
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl border border-white/10 max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                <Brain className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-white">{explanation.algorithm}</h3>
+                <div className="flex items-center gap-4 mt-1 text-sm text-white/90">
+                  <span className="flex items-center gap-1">
+                    ⏱️ Time: <span className="font-semibold">{explanation.timeComplexity}</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    💾 Space: <span className="font-semibold">{explanation.spaceComplexity}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={resetAnimation}
+                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all backdrop-blur-sm"
+                title="Reset"
+              >
+                <RotateCcw className="w-5 h-5 text-white" />
+              </button>
+              <button
+                onClick={isPlaying ? pauseAnimation : playAnimation}
+                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all backdrop-blur-sm"
+                title={isPlaying ? "Pause" : "Play"}
+              >
+                {isPlaying ? <Pause className="w-5 h-5 text-white" /> : <Play className="w-5 h-5 text-white" />}
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all backdrop-blur-sm"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          {/* Progress Bar */}
+          <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-white/90 font-semibold">Step {currentStep + 1} of {explanation.steps.length}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-white/80">Speed:</span>
+                <select
+                  value={animationSpeed}
+                  onChange={(e) => setAnimationSpeed(Number(e.target.value))}
+                  className="bg-white/20 text-white text-xs px-3 py-1 rounded-lg border border-white/20 focus:outline-none focus:border-white/40"
+                >
+                  <option value={2000} className="bg-slate-800">Slow</option>
+                  <option value={1000} className="bg-slate-800">Normal</option>
+                  <option value={500} className="bg-slate-800">Fast</option>
+                </select>
+              </div>
+            </div>
+            <div className="w-full bg-white/20 rounded-full h-2">
+              <div
+                className="bg-white h-2 rounded-full transition-all duration-300 shadow-lg"
+                style={{ width: `${((currentStep + 1) / explanation.steps.length) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Current Step */}
+          <div className="bg-slate-800/50 rounded-xl p-6 border border-white/10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+                {currentStep + 1}
+              </div>
+              <h4 className="text-xl font-bold text-white">{currentStepData.title}</h4>
+            </div>
+            
+            <p className="text-gray-300 text-lg mb-6">{currentStepData.description}</p>
+
+            {/* Visualization */}
+            {currentStepData.visualization && (
+              <div className="mb-6">
+                {renderVisualization(currentStepData.visualization)}
+              </div>
+            )}
+
+            {/* Explanation */}
+            <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-5 rounded-xl border border-blue-500/30">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-yellow-500/20 rounded-lg">
+                  <Lightbulb className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+                </div>
+                <div>
+                  <h5 className="text-sm font-semibold text-yellow-400 mb-2">Explanation</h5>
+                  <p className="text-gray-300 leading-relaxed">{currentStepData.explanation}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Key Insights */}
+          <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 p-5 rounded-xl border border-green-500/30">
+            <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              Key Insights
+            </h4>
+            <ul className="space-y-3">
+              {explanation.keyInsights.map((insight, index) => (
+                <li key={index} className="flex items-start gap-3 text-gray-300">
+                  <div className="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <ArrowRight className="w-4 h-4 text-green-400" />
+                  </div>
+                  <span className="leading-relaxed">{insight}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Navigation Footer */}
+        <div className="bg-slate-800/50 border-t border-white/10 p-4">
+          <div className="flex items-center justify-between">
             <button
-              onClick={resetAnimation}
-              className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
-              title="Reset"
+              onClick={prevStep}
+              disabled={currentStep === 0}
+              className="flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-gray-500 disabled:cursor-not-allowed rounded-lg transition-all font-semibold"
             >
-              <RotateCcw className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4" />
+              Previous
             </button>
+
+            <div className="flex space-x-2">
+              {explanation.steps.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentStep(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                    index === currentStep
+                      ? 'bg-purple-500 scale-125 shadow-lg shadow-purple-500/50'
+                      : index < currentStep
+                      ? 'bg-green-500'
+                      : 'bg-slate-600 hover:bg-slate-500'
+                  }`}
+                  title={`Step ${index + 1}`}
+                />
+              ))}
+            </div>
+
             <button
-              onClick={isPlaying ? pauseAnimation : playAnimation}
-              className="p-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
-              title={isPlaying ? "Pause" : "Play"}
+              onClick={nextStep}
+              disabled={currentStep === explanation.steps.length - 1}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-800 disabled:to-slate-800 disabled:text-gray-500 disabled:cursor-not-allowed rounded-lg transition-all font-semibold shadow-lg"
             >
-              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              Next
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="bg-slate-800 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-400">Step {currentStep + 1} of {explanation.steps.length}</span>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-400">Speed:</span>
-            <select
-              value={animationSpeed}
-              onChange={(e) => setAnimationSpeed(Number(e.target.value))}
-              className="bg-slate-700 text-white text-xs px-2 py-1 rounded"
-            >
-              <option value={2000}>Slow</option>
-              <option value={1000}>Normal</option>
-              <option value={500}>Fast</option>
-            </select>
-          </div>
-        </div>
-        <div className="w-full bg-slate-700 rounded-full h-2">
-          <div
-            className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentStep + 1) / explanation.steps.length) * 100}%` }}
-          ></div>
-        </div>
-      </div>
-
-      {/* Current Step */}
-      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-            {currentStep + 1}
-          </div>
-          <h4 className="text-lg font-semibold text-white">{currentStepData.title}</h4>
-        </div>
-        
-        <p className="text-gray-300 mb-6">{currentStepData.description}</p>
-
-        {/* Visualization */}
-        {currentStepData.visualization && (
-          <div className="mb-6">
-            {renderVisualization(currentStepData.visualization)}
-          </div>
-        )}
-
-        {/* Explanation */}
-        <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-600">
-          <div className="flex items-start gap-3">
-            <Lightbulb className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
-            <p className="text-gray-300">{currentStepData.explanation}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={prevStep}
-          disabled={currentStep === 0}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-gray-500 rounded-lg transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Previous
-        </button>
-
-        <div className="flex space-x-2">
-          {explanation.steps.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentStep(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                index === currentStep
-                  ? 'bg-purple-500 scale-125'
-                  : index < currentStep
-                  ? 'bg-green-500'
-                  : 'bg-slate-600'
-              }`}
-            />
-          ))}
-        </div>
-
-        <button
-          onClick={nextStep}
-          disabled={currentStep === explanation.steps.length - 1}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-gray-500 rounded-lg transition-colors"
-        >
-          Next
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Key Insights */}
-      <div className="bg-gradient-to-r from-green-900/30 to-blue-900/30 p-4 rounded-lg border border-green-500/30">
-        <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-          <CheckCircle className="w-5 h-5 text-green-400" />
-          Key Insights
-        </h4>
-        <ul className="space-y-2">
-          {explanation.keyInsights.map((insight, index) => (
-            <li key={index} className="flex items-start gap-2 text-gray-300">
-              <ArrowRight className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-              {insight}
-            </li>
-          ))}
-        </ul>
       </div>
     </div>
   );

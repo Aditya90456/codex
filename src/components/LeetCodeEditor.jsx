@@ -70,6 +70,7 @@ import SolutionViewer from './SolutionViewer';
 import NetworkMonitor from './NetworkMonitor';
 import AIPeerChat from './AIPeerChat';
 import AIWhiteboardVisualizer from './AIWhiteboardVisualizer';
+import RealTimeDryRun from './RealTimeDryRun';
 import DSACertificateSystem from './DSACertificateSystem';
 import DSARoadmapTracker from './DSARoadmapTracker';
 import LeetCodeDailyTask from './LeetCodeDailyTask';
@@ -78,6 +79,7 @@ import ProblemDescription from './ProblemDescription';
 import { useClerkProgress } from '../hooks/useClerkProgress';
 import SessionBookingModal from './SessionBookingModal';
 import CodeShareModal from './CodeShareModal';
+import PracticeScheduler from './PracticeScheduler';
 
 const LeetCodeEditor = () => {
   const navigate = useNavigate();
@@ -133,7 +135,7 @@ const LeetCodeEditor = () => {
   const [compilerErrors, setCompilerErrors] = useState([]);
   const [runtimeErrors, setRuntimeErrors] = useState([]);
   const [outputComparison, setOutputComparison] = useState(null);
-  const [leftPanelTab, setLeftPanelTab] = useState('description'); // 'description' or 'whiteboard'
+  const [leftPanelTab, setLeftPanelTab] = useState('description'); // 'description', 'whiteboard', or 'dryrun'
   const editorRef = useRef(null);
   const timerRef = useRef(null);
   const audioRef = useRef(null);
@@ -146,6 +148,7 @@ const LeetCodeEditor = () => {
   const [showDailyTask, setShowDailyTask] = useState(false);
   const [showMonthlyGoals, setShowMonthlyGoals] = useState(false);
   const [showCodeShareModal, setShowCodeShareModal] = useState(false);
+  const [showPracticeScheduler, setShowPracticeScheduler] = useState(false);
   const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [showSolutionViewer, setShowSolutionViewer] = useState(false);
   const [isLeftPanelMinimized, setIsLeftPanelMinimized] = useState(false);
@@ -1195,88 +1198,77 @@ ${code}
       </div>
 
       {/* Modern Top Navigation Bar */}
-      <div className={`h-16 bg-gradient-to-r ${theme.card} border-b ${theme.border} backdrop-blur-xl flex items-center justify-between px-6 relative z-10 shadow-lg`}>
-        <div className="flex items-center gap-6">
-          {/* Logo Section */}
-          <div className="flex items-center gap-3">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition"></div>
-              <div className="relative w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <Code2 className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <div>
-              <h1 className="text-lg font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Playground Sheet
-              </h1>
-              <p className="text-xs text-gray-400 font-medium">DSA • LLD • Practice</p>
-            </div>
-          </div>
-          
-          {/* Problem Source Toggle - Modern Pills with LLD */}
-          <div className={`flex items-center ${theme.card} rounded-xl p-1 ${theme.border} border shadow-inner`}>
-            <button
-              onClick={() => {
-                setProblemSource('dsa');
-                setSelectedProblem(dsaProblems[0]);
-              }}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                problemSource === 'dsa' 
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform scale-105' 
-                  : `${theme.textSecondary} hover:${theme.text} hover:bg-gray-700/30`
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4" />
-                <span>DSA</span>
-              </div>
-            </button>
-            <button
-              onClick={() => {
-                setProblemSource('company');
-                const companyProblems = companyWiseProblems[selectedCompany]?.problems || [];
-                if (companyProblems.length > 0) {
-                  setSelectedProblem(companyProblems[0]);
-                }
-              }}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                problemSource === 'company' 
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform scale-105' 
-                  : `${theme.textSecondary} hover:${theme.text} hover:bg-gray-700/30`
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4" />
-                <span>Companies</span>
-              </div>
-            </button>
-            <button
-              onClick={() => {
-                setProblemSource('lld');
-                // Load first LLD problem when switching
-                const allLldProblems = [...lldProblems.easy, ...lldProblems.medium, ...lldProblems.hard];
-                const firstLLDProblem = allLldProblems[0];
-                if (firstLLDProblem) {
-                  setSelectedProblem(firstLLDProblem);
-                  setCode(firstLLDProblem.starterCode || '');
-                }
-              }}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                problemSource === 'lld' 
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg transform scale-105' 
-                  : `${theme.textSecondary} hover:${theme.text} hover:bg-gray-700/30`
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4" />
-                <span>LLD</span>
-              </div>
-            </button>
-          </div>
-
-          {/* Company Selector - Modern Dropdown */}
-          {problemSource === 'company' && (
+      <div className={`bg-gradient-to-r ${theme.card} border-b ${theme.border} backdrop-blur-xl relative z-10 shadow-lg`}>
+        {/* First Row - Main Navigation */}
+        <div className="h-14 flex items-center justify-between px-6">
+          {/* Left Section - Logo & Source Toggle */}
+          <div className="flex items-center gap-4">
+            {/* Logo Section - Compact */}
             <div className="flex items-center gap-2">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition"></div>
+                <div className="relative w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Code2 className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <h1 className="text-base font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Playground
+              </h1>
+            </div>
+            
+            {/* Problem Source Toggle - Compact Pills */}
+            <div className={`flex items-center ${theme.card} rounded-lg p-0.5 ${theme.border} border shadow-inner`}>
+              <button
+                onClick={() => {
+                  setProblemSource('dsa');
+                  setSelectedProblem(dsaProblems[0]);
+                }}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                  problemSource === 'dsa' 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
+                    : `${theme.textSecondary} hover:${theme.text}`
+                }`}
+              >
+                DSA
+              </button>
+              <button
+                onClick={() => {
+                  setProblemSource('company');
+                  const companyProblems = companyWiseProblems[selectedCompany]?.problems || [];
+                  if (companyProblems.length > 0) {
+                    setSelectedProblem(companyProblems[0]);
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                  problemSource === 'company' 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
+                    : `${theme.textSecondary} hover:${theme.text}`
+                }`}
+              >
+                Companies
+              </button>
+              <button
+                onClick={() => {
+                  setProblemSource('lld');
+                  const allLldProblems = [...lldProblems.easy, ...lldProblems.medium, ...lldProblems.hard];
+                  const firstLLDProblem = allLldProblems[0];
+                  if (firstLLDProblem) {
+                    setSelectedProblem(firstLLDProblem);
+                    setCode(firstLLDProblem.starterCode || '');
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                  problemSource === 'lld' 
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg' 
+                    : `${theme.textSecondary} hover:${theme.text}`
+                }`}
+              >
+                LLD
+              </button>
+            </div>
+
+            {/* Company Selector - Compact */}
+            {problemSource === 'company' && (
               <select
                 value={selectedCompany}
                 onChange={(e) => {
@@ -1286,7 +1278,7 @@ ${code}
                     setSelectedProblem(companyProblems[0]);
                   }
                 }}
-                className={`bg-gradient-to-r ${theme.card} border ${theme.border} rounded-xl px-4 py-2 ${theme.text} focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium shadow-sm hover:shadow-md transition-all cursor-pointer`}
+                className={`bg-gradient-to-r ${theme.card} border ${theme.border} rounded-lg px-3 py-1.5 ${theme.text} focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs font-medium shadow-sm cursor-pointer`}
               >
                 {Object.entries(companyWiseProblems).map(([key, company]) => (
                   <option key={key} value={key} className="bg-gray-800">
@@ -1294,27 +1286,43 @@ ${code}
                   </option>
                 ))}
               </select>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Right Section - Actions */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/')}
-            className={`flex items-center gap-2 px-4 py-2 ${theme.card} ${theme.border} border rounded-xl ${theme.textSecondary} hover:${theme.text} hover:shadow-md transition-all duration-200`}
-          >
-            <Home className="w-4 h-4" />
-            <span className="text-sm font-medium">Home</span>
-          </button>
-          
-          <button
-            onClick={() => setShowProblemList(!showProblemList)}
-            className={`flex items-center gap-2 px-4 py-2 ${theme.card} ${theme.border} border rounded-xl ${theme.textSecondary} hover:${theme.text} hover:shadow-md transition-all duration-200`}
-          >
-            <span className="text-sm font-medium">Problems</span>
-            {showProblemList ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          </button>
+          {/* Right Section - Compact Action Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 ${theme.card} ${theme.border} border rounded-lg ${theme.textSecondary} hover:${theme.text} hover:shadow-md transition-all duration-200`}
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium">Home</span>
+            </button>
+            
+            <button
+              onClick={() => navigate('/roadmap')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 ${theme.border} border rounded-lg text-purple-300 hover:text-purple-100 hover:shadow-md transition-all duration-200`}
+            >
+              <Target className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium">Roadmap</span>
+            </button>
+            
+            <button
+              onClick={() => setShowPracticeScheduler(true)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 ${theme.border} border rounded-lg text-blue-300 hover:text-blue-100 hover:shadow-md transition-all duration-200`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium">Schedule</span>
+            </button>
+            
+            <button
+              onClick={() => setShowProblemList(!showProblemList)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 ${theme.card} ${theme.border} border rounded-lg ${theme.textSecondary} hover:${theme.text} hover:shadow-md transition-all duration-200`}
+            >
+              <span className="text-xs font-medium">Problems</span>
+              {showProblemList ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -1826,7 +1834,7 @@ ${code}
             )}
           </div>
 
-          {/* Tabs - Description and Whiteboard - Modern Design */}
+          {/* Tabs - Description, Whiteboard, and Dry Run - Modern Design */}
           <div className="flex border-b border-slate-700 bg-gradient-to-r from-slate-800/50 to-slate-800/30">
             <button
               onClick={() => setLeftPanelTab('description')}
@@ -1842,6 +1850,22 @@ ${code}
               </div>
               {leftPanelTab === 'description' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+              )}
+            </button>
+            <button
+              onClick={() => setLeftPanelTab('dryrun')}
+              className={`px-6 py-3 text-sm font-semibold transition-all duration-200 relative ${
+                leftPanelTab === 'dryrun'
+                  ? 'text-yellow-400'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4" />
+                <span>Dry Run</span>
+              </div>
+              {leftPanelTab === 'dryrun' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-500 to-orange-600"></div>
               )}
             </button>
             <button
@@ -1866,6 +1890,11 @@ ${code}
           <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-900/50 to-slate-800/30">
             {leftPanelTab === 'description' ? (
               <ProblemDescription problem={selectedProblem} />
+            ) : leftPanelTab === 'dryrun' ? (
+              <RealTimeDryRun 
+                code={code}
+                language={language}
+              />
             ) : (
               <AIWhiteboardVisualizer 
                 code={code}
@@ -2335,6 +2364,12 @@ ${code}
     {showSessionBooking && (
       <SessionBookingModal
         onClose={() => setShowSessionBooking(false)}
+      />
+    )}
+
+    {showPracticeScheduler && (
+      <PracticeScheduler
+        onClose={() => setShowPracticeScheduler(false)}
       />
     )}
 
