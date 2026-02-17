@@ -26,8 +26,8 @@ export const clerkConfig = {
   routing: {
     signInUrl: '/sign-in',
     signUpUrl: '/sign-up',
-    afterSignInUrl: '/dashboard',
-    afterSignUpUrl: '/dashboard',
+    afterSignInUrl: '/leetcode',  // Main coding platform
+    afterSignUpUrl: '/leetcode',  // Main coding platform
   },
   // Enhanced SSO configuration
   socialConnections: {
