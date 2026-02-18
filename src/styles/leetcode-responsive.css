@@ -1,0 +1,788 @@
+/* ============================================
+   LEETCODE PAGE RESPONSIVE STYLES
+   Optimized for coding practice interface
+   ============================================ */
+
+/* ============================================
+   LEETCODE LAYOUT
+   ============================================ */
+
+.leetcode-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  overflow: hidden;
+  background: #0a0e1a;
+}
+
+/* Desktop: Three-panel layout */
+@media (min-width: 1024px) {
+  .leetcode-container {
+    flex-direction: row;
+  }
+}
+
+/* ============================================
+   PROBLEM LIST SIDEBAR
+   ============================================ */
+
+.leetcode-sidebar {
+  width: 100%;
+  height: 35vh;
+  max-height: 35vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #0f1419;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+  .leetcode-sidebar {
+    height: 40vh;
+    max-height: 40vh;
+  }
+}
+
+@media (min-width: 1024px) {
+  .leetcode-sidebar {
+    width: 320px;
+    min-width: 280px;
+    max-width: 400px;
+    height: 100%;
+    max-height: 100%;
+    border-bottom: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    resize: horizontal;
+  }
+}
+
+/* Problem list header */
+.problem-list-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #0f1419;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Search and filters */
+.problem-search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .problem-search {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.problem-search-input {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  padding-left: 2.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: white;
+  font-size: 0.875rem;
+}
+
+.problem-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+}
+
+/* Difficulty filter */
+.difficulty-filter {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.difficulty-btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.difficulty-btn.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #60a5fa;
+}
+
+/* Problem items */
+.problem-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.problem-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.problem-item.active {
+  background: rgba(59, 130, 246, 0.1);
+  border-left: 3px solid #3b82f6;
+}
+
+.problem-number {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 40px;
+}
+
+.problem-title {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #e5e7eb;
+  line-height: 1.4;
+}
+
+.problem-difficulty {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+}
+
+.problem-difficulty.easy {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.problem-difficulty.medium {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.problem-difficulty.hard {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.problem-status {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.problem-status.solved {
+  color: #4ade80;
+}
+
+/* ============================================
+   MAIN EDITOR AREA
+   ============================================ */
+
+.leetcode-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: #0a0e1a;
+}
+
+/* Editor tabs */
+.editor-tabs-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0f1419;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.editor-tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.editor-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.editor-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #9ca3af;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.editor-tab:hover {
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.editor-tab.active {
+  color: #60a5fa;
+  border-bottom-color: #3b82f6;
+}
+
+/* Language selector */
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.language-select {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  color: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+/* Editor area */
+.editor-area {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.monaco-editor-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   RIGHT PANEL (Description, Test Cases, etc.)
+   ============================================ */
+
+.leetcode-right-panel {
+  width: 100%;
+  height: 30vh;
+  max-height: 30vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #0f1419;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+  .leetcode-right-panel {
+    height: 35vh;
+    max-height: 35vh;
+  }
+}
+
+@media (min-width: 1024px) {
+  .leetcode-right-panel {
+    width: 400px;
+    min-width: 350px;
+    max-width: 500px;
+    height: 100%;
+    max-height: 100%;
+    border-top: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    resize: horizontal;
+  }
+}
+
+/* Panel tabs */
+.panel-tabs {
+  display: flex;
+  background: #0f1419;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.panel-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.panel-tab {
+  flex: 1;
+  min-width: 80px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #9ca3af;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.panel-tab:hover {
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.panel-tab.active {
+  color: #60a5fa;
+  border-bottom-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+/* Panel content */
+.panel-content {
+  padding: 1.5rem;
+  color: #d1d5db;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .panel-content {
+    padding: 1rem;
+  }
+}
+
+/* Problem description */
+.problem-description h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #f9fafb;
+  margin-bottom: 1rem;
+}
+
+.problem-description h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.problem-description p {
+  margin-bottom: 1rem;
+}
+
+.problem-description pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+.problem-description code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: #60a5fa;
+}
+
+.problem-description ul,
+.problem-description ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.problem-description li {
+  margin-bottom: 0.5rem;
+}
+
+/* Test cases */
+.test-case {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.test-case-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.test-case-title {
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.test-case-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.test-case-status.passed {
+  color: #4ade80;
+}
+
+.test-case-status.failed {
+  color: #f87171;
+}
+
+.test-case-content {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.test-case-label {
+  color: #9ca3af;
+  margin-bottom: 0.25rem;
+}
+
+.test-case-value {
+  color: #e5e7eb;
+  margin-bottom: 0.75rem;
+}
+
+/* ============================================
+   ACTION BUTTONS
+   ============================================ */
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #0f1419;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 44px;
+  flex: 1;
+  min-width: 120px;
+}
+
+@media (min-width: 640px) {
+  .action-btn {
+    flex: 0 1 auto;
+  }
+}
+
+.action-btn-run {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.action-btn-run:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.action-btn-submit {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.action-btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.action-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.action-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ============================================
+   TIMER WIDGET
+   ============================================ */
+
+.timer-widget {
+  position: fixed;
+  top: 100px;
+  right: 1rem;
+  z-index: 50;
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+}
+
+@media (max-width: 640px) {
+  .timer-widget {
+    top: auto;
+    bottom: 80px;
+    right: 1rem;
+    left: 1rem;
+    min-width: auto;
+  }
+}
+
+.timer-display {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  color: #f9fafb;
+  margin-bottom: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.timer-btn {
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.timer-btn.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #60a5fa;
+}
+
+/* ============================================
+   STATS PANEL
+   ============================================ */
+
+.stats-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #60a5fa;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+/* ============================================
+   COMPANY SELECTOR
+   ============================================ */
+
+.company-selector {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.company-selector::-webkit-scrollbar {
+  display: none;
+}
+
+.company-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-width: 100px;
+}
+
+.company-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.company-btn.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #60a5fa;
+}
+
+.company-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 0.5rem;
+  object-fit: contain;
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.leetcode-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+}
+
+.loading-spinner-leetcode {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ============================================
+   MOBILE OPTIMIZATIONS
+   ============================================ */
+
+@media (max-width: 640px) {
+  .leetcode-sidebar {
+    height: 30vh;
+    max-height: 30vh;
+  }
+  
+  .leetcode-right-panel {
+    height: 25vh;
+    max-height: 25vh;
+  }
+  
+  .problem-item {
+    padding: 0.75rem;
+  }
+  
+  .problem-title {
+    font-size: 0.8125rem;
+  }
+  
+  .editor-tabs-container {
+    padding: 0.5rem;
+  }
+  
+  .panel-content {
+    font-size: 0.875rem;
+  }
+  
+  .action-buttons {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .problem-item,
+  .editor-tab,
+  .panel-tab,
+  .action-btn,
+  .timer-btn,
+  .company-btn {
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .problem-item,
+  .editor-tab,
+  .panel-tab,
+  .action-btn {
+    border-width: 2px;
+  }
+}

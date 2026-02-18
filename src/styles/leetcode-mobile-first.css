@@ -1,0 +1,879 @@
+/* ============================================
+   LEETCODE MOBILE-FIRST REDESIGN
+   Optimized for mobile users with touch-friendly UI
+   ============================================ */
+
+/* ============================================
+   MOBILE-FIRST BASE LAYOUT
+   ============================================ */
+
+.leetcode-mobile-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 100%);
+  overflow-x: hidden;
+}
+
+/* ============================================
+   MOBILE HEADER
+   ============================================ */
+
+.leetcode-mobile-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15, 20, 25, 0.98);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.75rem 1rem;
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.problem-title-mobile {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f9fafb;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.header-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.header-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Quick stats bar */
+.quick-stats {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 0.5rem;
+}
+
+.quick-stats::-webkit-scrollbar {
+  display: none;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.5rem;
+  white-space: nowrap;
+}
+
+.stat-icon {
+  width: 16px;
+  height: 16px;
+  color: #60a5fa;
+}
+
+.stat-text {
+  font-size: 0.875rem;
+  color: #d1d5db;
+}
+
+/* ============================================
+   MOBILE TAB NAVIGATION
+   ============================================ */
+
+.mobile-tab-nav {
+  display: flex;
+  background: rgba(15, 20, 25, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.mobile-tab-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-tab {
+  flex: 1;
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobile-tab:active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-tab.active {
+  color: #60a5fa;
+  border-bottom-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.mobile-tab-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.mobile-tab-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ============================================
+   MOBILE CONTENT AREA
+   ============================================ */
+
+.mobile-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* Problem description view */
+.problem-view-mobile {
+  padding: 1rem;
+}
+
+.problem-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.difficulty-badge-mobile {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.difficulty-badge-mobile.easy {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.difficulty-badge-mobile.medium {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.difficulty-badge-mobile.hard {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.problem-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tag-badge {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.problem-content {
+  color: #d1d5db;
+  line-height: 1.7;
+  font-size: 0.9375rem;
+}
+
+.problem-content h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #f9fafb;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.problem-content h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin: 1.25rem 0 0.625rem;
+}
+
+.problem-content p {
+  margin-bottom: 1rem;
+}
+
+.problem-content pre {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.problem-content code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: #60a5fa;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.problem-content ul,
+.problem-content ol {
+  margin-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.problem-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Examples section */
+.example-section {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.example-title {
+  font-weight: 600;
+  color: #60a5fa;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.example-content {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  color: #e5e7eb;
+}
+
+/* ============================================
+   MOBILE CODE EDITOR
+   ============================================ */
+
+.editor-view-mobile {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px);
+  min-height: 400px;
+}
+
+.editor-toolbar-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(15, 20, 25, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 0.75rem;
+}
+
+.language-selector-mobile {
+  flex: 1;
+  max-width: 150px;
+}
+
+.language-select-mobile {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.editor-actions-mobile {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.editor-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editor-action-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.code-editor-mobile {
+  flex: 1;
+  overflow: hidden;
+  background: #0a0e1a;
+}
+
+.monaco-editor-mobile {
+  width: 100%;
+  height: 100%;
+}
+
+/* Fallback textarea */
+.code-textarea-mobile {
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  background: #0a0e1a;
+  border: none;
+  color: #e5e7eb;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+}
+
+/* ============================================
+   MOBILE TEST CASES
+   ============================================ */
+
+.testcases-view-mobile {
+  padding: 1rem;
+}
+
+.testcase-card-mobile {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.testcase-header-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.testcase-number {
+  font-weight: 600;
+  color: #e5e7eb;
+  font-size: 0.9375rem;
+}
+
+.testcase-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 0.375rem;
+}
+
+.testcase-status-badge.passed {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.testcase-status-badge.failed {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.testcase-status-badge.pending {
+  background: rgba(156, 163, 175, 0.2);
+  color: #9ca3af;
+}
+
+.testcase-body-mobile {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.testcase-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.testcase-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.testcase-value {
+  color: #e5e7eb;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  word-break: break-all;
+}
+
+/* ============================================
+   MOBILE PROBLEM LIST
+   ============================================ */
+
+.problems-list-mobile {
+  padding: 0.5rem;
+}
+
+.problem-card-mobile {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.problem-card-mobile:active {
+  transform: scale(0.98);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.problem-card-mobile.active {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.problem-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.problem-number-mobile {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.problem-title-card {
+  flex: 1;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  line-height: 1.4;
+  margin: 0 0.75rem;
+}
+
+.problem-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+}
+
+.problem-stats-mobile {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.stat-mobile {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ============================================
+   MOBILE BOTTOM ACTION BAR
+   ============================================ */
+
+.mobile-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(15, 20, 25, 0.98);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.75rem 1rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.action-buttons-mobile {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.action-btn-mobile {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 48px;
+}
+
+.action-btn-mobile:active {
+  transform: scale(0.97);
+}
+
+.action-btn-mobile:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.btn-run-mobile {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-submit-mobile {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-secondary-mobile {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   MOBILE MODALS
+   ============================================ */
+
+.mobile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn 0.2s ease;
+}
+
+.mobile-modal-content {
+  width: 100%;
+  max-height: 85vh;
+  background: #1a1f2e;
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  animation: slideUp 0.3s ease;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #1a1f2e;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mobile-modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.mobile-modal-close {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+
+.mobile-modal-body {
+  padding: 1rem;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   MOBILE SEARCH & FILTER
+   ============================================ */
+
+.mobile-search-bar {
+  padding: 1rem;
+  background: rgba(15, 20, 25, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.search-input-wrapper {
+  position: relative;
+}
+
+.search-input-mobile {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  padding-left: 3rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: white;
+  font-size: 1rem;
+}
+
+.search-icon-mobile {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.filter-chips {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 0.25rem;
+}
+
+.filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  color: #d1d5db;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-chip:active {
+  transform: scale(0.95);
+}
+
+.filter-chip.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #60a5fa;
+}
+
+/* ============================================
+   MOBILE LOADING STATES
+   ============================================ */
+
+.mobile-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  gap: 1rem;
+}
+
+.mobile-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.mobile-loading-text {
+  font-size: 0.9375rem;
+  color: #9ca3af;
+}
+
+/* ============================================
+   MOBILE EMPTY STATES
+   ============================================ */
+
+.mobile-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.empty-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin-bottom: 0.5rem;
+}
+
+.empty-description {
+  font-size: 0.9375rem;
+  color: #9ca3af;
+  line-height: 1.6;
+}
+
+/* ============================================
+   TABLET OPTIMIZATIONS (640px+)
+   ============================================ */
+
+@media (min-width: 640px) {
+  .leetcode-mobile-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .problem-title-mobile {
+    font-size: 1.125rem;
+  }
+  
+  .mobile-tab {
+    min-width: 100px;
+    padding: 1rem 0.75rem;
+  }
+  
+  .mobile-tab-label {
+    font-size: 0.875rem;
+  }
+  
+  .problem-view-mobile,
+  .testcases-view-mobile,
+  .problems-list-mobile {
+    padding: 1.5rem;
+  }
+  
+  .problem-content {
+    font-size: 1rem;
+  }
+  
+  .action-buttons-mobile {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-modal-overlay,
+  .mobile-modal-content,
+  .problem-card-mobile,
+  .action-btn-mobile {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .mobile-tab,
+  .header-btn,
+  .action-btn-mobile,
+  .problem-card-mobile {
+    border-width: 2px;
+  }
+}

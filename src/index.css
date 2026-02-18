@@ -1,5 +1,14 @@
+@import './styles/global-fixes.css';
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import './styles/scrollbar.css';
+@import './styles/icon-fixes.css';
+@import './styles/responsive.css';
+@import './styles/responsive-enhanced.css';
+@import './styles/responsive-450px.css';
+@import './styles/editor-responsive.css';
+@import './styles/design-fixes.css';
+@import './styles/leetcode-responsive.css';
+@import './styles/leetcode-mobile-first.css';
 
 @tailwind base;
 @tailwind components;

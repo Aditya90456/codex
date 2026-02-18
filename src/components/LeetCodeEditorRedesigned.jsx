@@ -31,6 +31,7 @@ import ThemeCustomizer from './ThemeCustomizer';
 import { useClerkProgress } from '../hooks/useClerkProgress';
 import useSmartDebugger from '../hooks/useSmartDebugger';
 import { useTheme } from '../contexts/ThemeContext';
+import '../styles/leetcode-editor-responsive.css';
 
 // Configure Monaco loader to use CDN
 loader.config({
@@ -128,6 +129,9 @@ const LeetCodeEditorRedesigned = () => {
   const [showGithubModal, setShowGithubModal] = useState(false);
   const [showThemeCustomizer, setShowThemeCustomizer] = useState(false);
   
+  // Mobile menu state
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  
   // GitHub states
   const [githubConnected, setGithubConnected] = useState(false);
   const [githubSyncStatus, setGithubSyncStatus] = useState(null);
@@ -141,8 +145,36 @@ const LeetCodeEditorRedesigned = () => {
   const [monacoLoaded, setMonacoLoaded] = useState(false);
   const [monacoError, setMonacoError] = useState(false);
   
+  // Responsive states
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  
   const editorRef = useRef(null);
   const timerRef = useRef(null);
+  
+  // Responsive resize handler
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Auto-minimize left panel on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setIsLeftPanelMinimized(true);
+      setIsConsoleMinimized(true);
+    } else {
+      setIsLeftPanelMinimized(false);
+      setIsConsoleMinimized(false);
+    }
+  }, [isMobile]);
 
   // Monaco loading timeout
   useEffect(() => {
@@ -408,197 +440,331 @@ const LeetCodeEditorRedesigned = () => {
   };
 
   return (
-    <div className={`h-screen bg-gradient-to-br ${theme.background} ${theme.text} flex flex-col overflow-hidden`}>
-      {/* Modern Header */}
-      <header className={`h-14 bg-gradient-to-r ${theme.card} backdrop-blur-xl border-b ${theme.border} flex items-center justify-between px-4 shadow-2xl`}>
-        <div className="flex items-center gap-4">
+    <div className={`leetcode-editor-responsive h-screen bg-gradient-to-br ${theme.background} ${theme.text} flex flex-col overflow-hidden`}>
+      {/* Modern Header - Responsive */}
+      <header className={`${isMobile ? 'h-12' : 'h-14'} bg-gradient-to-r ${theme.card} backdrop-blur-xl border-b ${theme.border} flex items-center justify-between ${isMobile ? 'px-2' : 'px-4'} shadow-2xl safe-area-top`}>
+        {/* Left Section */}
+        <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-4'}`}>
           <button
             onClick={() => navigate('/')}
-            className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.primary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+            className={`flex items-center gap-2 ${isMobile ? 'px-2 py-1' : 'px-3 py-1.5'} bg-gradient-to-r ${theme.primary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
           >
-            <Home className="w-4 h-4 text-blue-400" />
-            <span className="text-sm font-medium">Home</span>
+            <Home className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-blue-400`} />
+            {!isMobile && <span className="text-sm font-medium">Home</span>}
           </button>
           
-          <div className={`h-6 w-px ${theme.border}`} />
+          {!isMobile && <div className={`h-6 w-px ${theme.border}`} />}
           
           <button
             onClick={() => setShowProblemList(!showProblemList)}
-            className={`flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg border ${theme.border} transition-all`}
+            className={`flex items-center gap-1.5 ${isMobile ? 'px-2 py-1' : 'px-3 py-1.5'} bg-white/5 hover:bg-white/10 rounded-lg border ${theme.border} transition-all`}
           >
-            <Layers className="w-4 h-4 text-purple-400" />
-            <span className="text-sm font-medium">Problems</span>
-            <ChevronDown className={`w-3 h-3 transition-transform ${showProblemList ? 'rotate-180' : ''}`} />
+            <Layers className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-purple-400`} />
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>{isMobile ? 'List' : 'Problems'}</span>
+            {!isMobile && <ChevronDown className={`w-3 h-3 transition-transform ${showProblemList ? 'rotate-180' : ''}`} />}
           </button>
 
-          <button
-            onClick={() => navigate('/roadmap')}
-            className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.secondary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
-          >
-            <Target className="w-4 h-4 text-purple-400" />
-            <span className="text-sm">Roadmap</span>
-          </button>
+          {!isMobile && (
+            <>
+              <button
+                onClick={() => navigate('/roadmap')}
+                className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.secondary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+              >
+                <Target className="w-4 h-4 text-purple-400" />
+                <span className="text-sm">Roadmap</span>
+              </button>
 
-          <button
-            onClick={() => setShowPracticeScheduler(true)}
-            className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.accent} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
-          >
-            <Calendar className="w-4 h-4 text-cyan-400" />
-            <span className="text-sm">Schedule</span>
-          </button>
+              <button
+                onClick={() => setShowPracticeScheduler(true)}
+                className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.accent} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+              >
+                <Calendar className="w-4 h-4 text-cyan-400" />
+                <span className="text-sm">Schedule</span>
+              </button>
+            </>
+          )}
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Theme Button */}
-          <button
-            onClick={() => setShowThemeCustomizer(true)}
-            className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.primary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
-          >
-            <Palette className="w-4 h-4" />
-            <span className="text-sm font-medium">Themes</span>
-          </button>
+        {/* Right Section */}
+        <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-3'}`}>
+          {!isMobile && !isTablet && (
+            <>
+              {/* Theme Button */}
+              <button
+                onClick={() => setShowThemeCustomizer(true)}
+                className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.primary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+              >
+                <Palette className="w-4 h-4" />
+                <span className="text-sm font-medium">Themes</span>
+              </button>
 
-          <button
-            onClick={() => setShowPracticeScheduler(true)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-500/10 to-emerald-500/10 hover:from-green-500/20 hover:to-emerald-500/20 rounded-lg border border-green-500/20 transition-all"
-          >
-            <Calendar className="w-4 h-4 text-green-400" />
-            <span className="text-sm">Schedule</span>
-          </button>
+              <button
+                onClick={() => setShowAIPeerChat(true)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-pink-500/10 to-rose-500/10 hover:from-pink-500/20 hover:to-rose-500/20 rounded-lg border border-pink-500/20 transition-all"
+              >
+                <MessageCircle className="w-4 h-4 text-pink-400" />
+                <span className="text-sm">AI Chat</span>
+              </button>
+            </>
+          )}
+          
+          {(isMobile || isTablet) && (
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+            >
+              {showMobileMenu ? <X className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
+            </button>
+          )}
 
-          <button
-            onClick={() => setShowAIPeerChat(true)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-pink-500/10 to-rose-500/10 hover:from-pink-500/20 hover:to-rose-500/20 rounded-lg border border-pink-500/20 transition-all"
-          >
-            <MessageCircle className="w-4 h-4 text-pink-400" />
-            <span className="text-sm">AI Chat</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* GitHub Sync Status */}
-          {githubSyncStatus && (
-            <div className={`px-3 py-1 rounded-lg text-xs ${
-              githubSyncStatus.type === 'success' ? 'bg-green-500/20 text-green-300' :
-              githubSyncStatus.type === 'error' ? 'bg-red-500/20 text-red-300' :
-              'bg-blue-500/20 text-blue-300'
-            }`}>
-              {githubSyncStatus.message}
+          {/* Timer - Hide on mobile */}
+          {!isMobile && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 rounded-lg border border-white/10">
+              <Timer className={`w-4 h-4 ${getTimerColor()}`} />
+              <span className={`text-sm font-mono ${getTimerColor()}`}>{formatTime(timeLeft)}</span>
+              <button onClick={() => setIsTimerRunning(!isTimerRunning)} className="ml-1">
+                {isTimerRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+              </button>
+              <button onClick={() => setTimeLeft(timerDuration * 60)}>
+                <RotateCcw className="w-3 h-3" />
+              </button>
             </div>
           )}
-          {/* Timer */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 rounded-lg border border-white/10">
-            <Timer className={`w-4 h-4 ${getTimerColor()}`} />
-            <span className={`text-sm font-mono ${getTimerColor()}`}>{formatTime(timeLeft)}</span>
-            <button onClick={() => setIsTimerRunning(!isTimerRunning)} className="ml-1">
-              {isTimerRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-            </button>
-            <button onClick={() => setTimeLeft(timerDuration * 60)}>
-              <RotateCcw className="w-3 h-3" />
-            </button>
-          </div>
 
           {/* Language Selector */}
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className={`px-3 py-1.5 bg-gradient-to-r ${theme.card} rounded-lg border ${theme.border} text-sm focus:outline-none focus:border-blue-500/50`}
+            className={`${isMobile ? 'px-2 py-1 text-xs' : 'px-3 py-1.5 text-sm'} bg-gradient-to-r ${theme.card} rounded-lg border ${theme.border} focus:outline-none focus:border-blue-500/50`}
           >
             {languages.map(lang => (
-              <option key={lang.value} value={lang.value}>{lang.label}</option>
+              <option key={lang.value} value={lang.value}>{isMobile ? lang.value.toUpperCase() : lang.label}</option>
             ))}
           </select>
 
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
+          {!isMobile && (
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+          )}
 
           <UserButton afterSignOutUrl="/" />
         </div>
       </header>
 
-      {/* Beautiful Progress Bar */}
-      <div className={`bg-gradient-to-r ${theme.card} border-b ${theme.border} px-4 py-3`}>
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
-            <Trophy className="w-5 h-5 text-yellow-400" />
-            <span className={`text-sm font-semibold ${theme.text}`}>Your Progress</span>
-            <span className={`text-xs ${theme.textSecondary}`}>
-              {progress.completedProblems.length} problems solved
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-green-400"></div>
-              <span className="text-gray-400">Easy: {progress.difficultyStats.easy.solved}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
-              <span className="text-gray-400">Medium: {progress.difficultyStats.medium.solved}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-400"></div>
-              <span className="text-gray-400">Hard: {progress.difficultyStats.hard.solved}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Zap className="w-3 h-3 text-orange-400" />
-              <span className="text-gray-400">Streak: {progress.currentStreak} days</span>
+      {/* Mobile Menu Dropdown */}
+      {(isMobile || isTablet) && showMobileMenu && (
+        <div className={`absolute top-${isMobile ? '12' : '14'} right-0 left-0 z-50 bg-gradient-to-b ${theme.card} backdrop-blur-xl border-b ${theme.border} shadow-2xl animate-slideDown`}>
+          <div className="p-4 space-y-2">
+            {/* Problems List */}
+            <button
+              onClick={() => {
+                setShowProblemList(true);
+                setShowMobileMenu(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r ${theme.primary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+            >
+              <Layers className="w-5 h-5 text-purple-400" />
+              <div className="flex-1 text-left">
+                <div className="font-semibold">Problems List</div>
+                <div className="text-xs text-gray-400">Browse all coding problems</div>
+              </div>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Roadmap */}
+            <button
+              onClick={() => {
+                navigate('/roadmap');
+                setShowMobileMenu(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r ${theme.secondary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+            >
+              <Target className="w-5 h-5 text-purple-400" />
+              <div className="flex-1 text-left">
+                <div className="font-semibold">Roadmap</div>
+                <div className="text-xs text-gray-400">Track your learning path</div>
+              </div>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Schedule */}
+            <button
+              onClick={() => {
+                setShowPracticeScheduler(true);
+                setShowMobileMenu(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r ${theme.accent} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+            >
+              <Calendar className="w-5 h-5 text-cyan-400" />
+              <div className="flex-1 text-left">
+                <div className="font-semibold">Practice Schedule</div>
+                <div className="text-xs text-gray-400">Plan your study sessions</div>
+              </div>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Themes */}
+            <button
+              onClick={() => {
+                setShowThemeCustomizer(true);
+                setShowMobileMenu(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r ${theme.primary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+            >
+              <Palette className="w-5 h-5 text-blue-400" />
+              <div className="flex-1 text-left">
+                <div className="font-semibold">Themes</div>
+                <div className="text-xs text-gray-400">Customize your editor</div>
+              </div>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* AI Chat */}
+            <button
+              onClick={() => {
+                setShowAIPeerChat(true);
+                setShowMobileMenu(false);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-pink-500/10 to-rose-500/10 hover:from-pink-500/20 hover:to-rose-500/20 rounded-lg border border-pink-500/20 transition-all"
+            >
+              <MessageCircle className="w-5 h-5 text-pink-400" />
+              <div className="flex-1 text-left">
+                <div className="font-semibold">AI Peer Chat</div>
+                <div className="text-xs text-gray-400">Get AI assistance</div>
+              </div>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Divider */}
+            <div className={`border-t ${theme.border} my-2`}></div>
+
+            {/* Additional Options */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  downloadSolution();
+                  setShowMobileMenu(false);
+                }}
+                className={`flex flex-col items-center gap-2 px-3 py-3 bg-gradient-to-r ${theme.card} hover:opacity-80 rounded-lg border ${theme.border} transition-all`}
+              >
+                <Download className="w-5 h-5 text-green-400" />
+                <span className="text-xs">Download</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setShowCodeShareModal(true);
+                  setShowMobileMenu(false);
+                }}
+                className={`flex flex-col items-center gap-2 px-3 py-3 bg-gradient-to-r ${theme.card} hover:opacity-80 rounded-lg border ${theme.border} transition-all`}
+              >
+                <Share2 className="w-5 h-5 text-blue-400" />
+                <span className="text-xs">Share</span>
+              </button>
             </div>
           </div>
         </div>
-        
-        {/* Progress Bar */}
-        <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
-          {/* Background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800"></div>
-          
-          {/* Progress fill with animated gradient */}
-          <div 
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500 ease-out"
-            style={{ 
-              width: `${Math.min((progress.completedProblems.length / 150) * 100, 100)}%`,
-              boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)'
-            }}
-          >
-            {/* Animated shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
-          </div>
-          
-          {/* Milestone markers */}
-          {[25, 50, 75, 100, 150].map((milestone) => (
-            <div
-              key={milestone}
-              className="absolute top-0 bottom-0 w-0.5 bg-white/20"
-              style={{ left: `${(milestone / 150) * 100}%` }}
-              title={`${milestone} problems`}
-            >
-              {progress.completedProblems.length >= milestone && (
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2">
-                  <CheckCircle className="w-3 h-3 text-green-400" />
+      )}
+
+      {/* Mobile Menu Overlay */}
+      {(isMobile || isTablet) && showMobileMenu && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setShowMobileMenu(false)}
+        />
+      )}
+
+      {/* Beautiful Progress Bar - Responsive */}
+      {!isMobile && (
+        <div className={`progress-section bg-gradient-to-r ${theme.card} border-b ${theme.border} ${isMobile ? 'px-2 py-2' : 'px-4 py-3'}`}>
+          <div className={`flex items-center ${isMobile ? 'flex-col gap-2' : 'justify-between'} mb-2`}>
+            <div className="flex items-center gap-3">
+              <Trophy className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-yellow-400`} />
+              <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold ${theme.text}`}>Your Progress</span>
+              <span className={`text-xs ${theme.textSecondary}`}>
+                {progress.completedProblems.length} solved
+              </span>
+            </div>
+            <div className={`flex items-center ${isMobile ? 'flex-wrap justify-center' : 'gap-4'} text-xs progress-stats`}>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                <span className="text-gray-400">E: {progress.difficultyStats.easy.solved}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                <span className="text-gray-400">M: {progress.difficultyStats.medium.solved}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-red-400"></div>
+                <span className="text-gray-400">H: {progress.difficultyStats.hard.solved}</span>
+              </div>
+              {!isMobile && (
+                <div className="flex items-center gap-1.5">
+                  <Zap className="w-3 h-3 text-orange-400" />
+                  <span className="text-gray-400">Streak: {progress.currentStreak} days</span>
                 </div>
               )}
             </div>
-          ))}
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
+            {/* Background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800"></div>
+            
+            {/* Progress fill with animated gradient */}
+            <div 
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500 ease-out"
+              style={{ 
+                width: `${Math.min((progress.completedProblems.length / 150) * 100, 100)}%`,
+                boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)'
+              }}
+            >
+              {/* Animated shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+            </div>
+            
+            {/* Milestone markers - Hide on mobile */}
+            {!isMobile && [25, 50, 75, 100, 150].map((milestone) => (
+              <div
+                key={milestone}
+                className="absolute top-0 bottom-0 w-0.5 bg-white/20"
+                style={{ left: `${(milestone / 150) * 100}%` }}
+                title={`${milestone} problems`}
+              >
+                {progress.completedProblems.length >= milestone && (
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2">
+                    <CheckCircle className="w-3 h-3 text-green-400" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          {/* Progress percentage */}
+          <div className="flex items-center justify-between mt-2 text-xs">
+            <span className="text-gray-500">0</span>
+            <span className="text-purple-400 font-semibold">
+              {Math.round((progress.completedProblems.length / 150) * 100)}% Complete
+            </span>
+            <span className="text-gray-500">150</span>
+          </div>
         </div>
-        
-        {/* Progress percentage */}
-        <div className="flex items-center justify-between mt-2 text-xs">
-          <span className="text-gray-500">0</span>
-          <span className="text-purple-400 font-semibold">
-            {Math.round((progress.completedProblems.length / 150) * 100)}% Complete
-          </span>
-          <span className="text-gray-500">150</span>
-        </div>
-      </div>
+      )}
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main Content - Responsive Layout */}
+      <div className={`flex-1 flex overflow-hidden ${isMobile ? 'flex-col' : ''}`}>
         {/* Left Panel - Problem Description */}
-        <div className={`${isLeftPanelMinimized ? 'w-12' : 'w-[45%]'} bg-gradient-to-b ${theme.card} backdrop-blur-sm border-r ${theme.border} flex flex-col transition-all duration-300`}>
-          {isLeftPanelMinimized ? (
+        <div className={`
+          ${isLeftPanelMinimized ? (isMobile ? 'hidden' : 'w-12') : isMobile ? 'w-full h-1/3' : isTablet ? 'w-[40%]' : 'w-[45%]'} 
+          bg-gradient-to-b ${theme.card} backdrop-blur-sm border-r ${theme.border} flex flex-col transition-all duration-300
+          ${isMobile ? 'border-b' : ''}
+        `}>
+          {isLeftPanelMinimized && !isMobile ? (
             <button
               onClick={() => setIsLeftPanelMinimized(false)}
               className="p-3 hover:bg-white/5 transition-all"
@@ -607,35 +773,37 @@ const LeetCodeEditorRedesigned = () => {
             </button>
           ) : (
             <>
-              <div className={`flex items-center justify-between p-4 border-b ${theme.border}`}>
-                <div className="flex items-center gap-3">
+              <div className={`flex items-center justify-between ${isMobile ? 'p-2' : 'p-4'} border-b ${theme.border}`}>
+                <div className={`flex items-center ${isMobile ? 'gap-1 flex-wrap' : 'gap-3'}`}>
                   <button
                     onClick={() => setLeftPanelTab('description')}
-                    className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
+                    className={`${isMobile ? 'px-2 py-1 text-xs' : 'px-3 py-1.5 text-sm'} rounded-lg transition-all ${
                       leftPanelTab === 'description' ? `bg-gradient-to-r ${theme.primary} bg-opacity-20 text-blue-300` : `${theme.textSecondary} hover:${theme.text}`
                     }`}
                   >
-                    <BookOpen className="w-4 h-4 inline mr-1" />
-                    Description
+                    <BookOpen className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} inline mr-1`} />
+                    {isMobile ? 'Desc' : 'Description'}
                   </button>
                   
-                  <button
-                    onClick={() => setLeftPanelTab('smart-debug')}
-                    className={`px-3 py-1.5 rounded-lg text-sm transition-all relative ${
-                      leftPanelTab === 'smart-debug' ? `bg-gradient-to-r ${theme.accent} bg-opacity-20 text-emerald-300` : `${theme.textSecondary} hover:${theme.text}`
-                    }`}
-                  >
-                    <Activity className="w-4 h-4 inline mr-1" />
-                    Smart Debug
-                    {/* Confidence indicator */}
-                    {analysisResult && getConfidence() > 40 && (
-                      <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
-                        getConfidence() >= 80 ? 'bg-red-400 animate-pulse' :
-                        getConfidence() >= 60 ? 'bg-yellow-400' :
-                        'bg-emerald-400'
-                      }`} />
-                    )}
-                  </button>
+                  {!isMobile && (
+                    <>
+                      <button
+                        onClick={() => setLeftPanelTab('smart-debug')}
+                        className={`px-3 py-1.5 rounded-lg text-sm transition-all relative ${
+                          leftPanelTab === 'smart-debug' ? `bg-gradient-to-r ${theme.accent} bg-opacity-20 text-emerald-300` : `${theme.textSecondary} hover:${theme.text}`
+                        }`}
+                      >
+                        <Activity className="w-4 h-4 inline mr-1" />
+                        Smart Debug
+                        {/* Confidence indicator */}
+                        {analysisResult && getConfidence() > 40 && (
+                          <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
+                            getConfidence() >= 80 ? 'bg-red-400 animate-pulse' :
+                            getConfidence() >= 60 ? 'bg-yellow-400' :
+                            'bg-emerald-400'
+                          }`} />
+                        )}
+                      </button>
                   
                   <button
                     onClick={() => setLeftPanelTab('whiteboard')}
@@ -656,6 +824,8 @@ const LeetCodeEditorRedesigned = () => {
                     <Zap className="w-4 h-4 inline mr-1" />
                     Dry Run
                   </button>
+                    </>
+                  )}
                 </div>
                 <button
                   onClick={() => setIsLeftPanelMinimized(true)}
@@ -927,9 +1097,9 @@ const LeetCodeEditorRedesigned = () => {
             )}
           </div>
 
-          {/* Action Buttons */}
-          <div className={`h-14 bg-gradient-to-r ${theme.card} border-t ${theme.border} flex items-center justify-between px-4`}>
-            <div className="flex items-center gap-2">
+          {/* Action Buttons - Responsive */}
+          <div className={`${isMobile ? 'h-12' : 'h-14'} bg-gradient-to-r ${theme.card} border-t ${theme.border} flex items-center justify-between ${isMobile ? 'px-2' : 'px-4'} safe-area-bottom`}>
+            <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-2'}`}>
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -938,10 +1108,10 @@ const LeetCodeEditorRedesigned = () => {
                 }}
                 type="button"
                 disabled={isRunning}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                className={`flex items-center gap-1.5 ${isMobile ? 'px-3 py-1.5 text-sm' : 'px-4 py-2'} bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95`}
               >
-                {isRunning ? <Zap className="w-4 h-4 animate-pulse" /> : <Play className="w-4 h-4" />}
-                Run
+                {isRunning ? <Zap className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} animate-pulse`} /> : <Play className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />}
+                {!isMobile && 'Run'}
               </button>
               <button
                 onClick={(e) => {
@@ -951,38 +1121,42 @@ const LeetCodeEditorRedesigned = () => {
                 }}
                 type="button"
                 disabled={isSubmitting}
-                className={`flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${theme.primary} hover:opacity-80 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95`}
+                className={`flex items-center gap-1.5 ${isMobile ? 'px-3 py-1.5 text-sm' : 'px-4 py-2'} bg-gradient-to-r ${theme.primary} hover:opacity-80 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95`}
               >
-                {isSubmitting ? <Zap className="w-4 h-4 animate-pulse" /> : <Send className="w-4 h-4" />}
-                Submit
+                {isSubmitting ? <Zap className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} animate-pulse`} /> : <Send className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />}
+                {!isMobile && 'Submit'}
               </button>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  console.log('Download button clicked');
-                  downloadSolution();
-                }}
-                type="button"
-                className={`flex items-center gap-2 px-3 py-2 bg-gradient-to-r ${theme.card} hover:opacity-80 rounded-lg border ${theme.border} transition-all text-sm active:scale-95`}
-              >
-                <Download className="w-4 h-4" />
-                Download
-              </button>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  console.log('Share button clicked');
-                  setShowCodeShareModal(true);
-                }}
-                type="button"
-                className={`flex items-center gap-2 px-3 py-2 bg-gradient-to-r ${theme.card} hover:opacity-80 rounded-lg border ${theme.border} transition-all text-sm active:scale-95`}
-              >
-                <Share2 className="w-4 h-4" />
-                Share
-              </button>
+            <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-2'}`}>
+              {!isMobile && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log('Download button clicked');
+                      downloadSolution();
+                    }}
+                    type="button"
+                    className={`flex items-center gap-2 px-3 py-2 bg-gradient-to-r ${theme.card} hover:opacity-80 rounded-lg border ${theme.border} transition-all text-sm active:scale-95`}
+                  >
+                    <Download className="w-4 h-4" />
+                    Download
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log('Share button clicked');
+                      setShowCodeShareModal(true);
+                    }}
+                    type="button"
+                    className={`flex items-center gap-2 px-3 py-2 bg-gradient-to-r ${theme.card} hover:opacity-80 rounded-lg border ${theme.border} transition-all text-sm active:scale-95`}
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Share
+                  </button>
+                </>
+              )}
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -990,11 +1164,23 @@ const LeetCodeEditorRedesigned = () => {
                   setShowAISuggestions(!showAISuggestions);
                 }}
                 type="button"
-                className={`flex items-center gap-2 px-3 py-2 bg-gradient-to-r ${theme.secondary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all text-sm active:scale-95`}
+                className={`flex items-center gap-1.5 ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} bg-gradient-to-r ${theme.secondary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all ${isMobile ? 'text-xs' : 'text-sm'} active:scale-95`}
               >
-                <Brain className="w-4 h-4" />
-                AI Explain
+                <Brain className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
+                {!isMobile && 'AI Explain'}
               </button>
+              {isMobile && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowMobileMenu(true);
+                  }}
+                  type="button"
+                  className={`p-1.5 bg-gradient-to-r ${theme.card} hover:opacity-80 rounded-lg border ${theme.border} transition-all active:scale-95`}
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -1060,14 +1246,36 @@ const LeetCodeEditorRedesigned = () => {
         </div>
       </div>
 
-      {/* Problem List Modal */}
+      {/* Mobile FAB - Toggle Problem Description */}
+      {isMobile && isLeftPanelMinimized && (
+        <button
+          onClick={() => setIsLeftPanelMinimized(false)}
+          className={`fixed bottom-20 right-4 z-40 p-4 bg-gradient-to-r ${theme.primary} rounded-full shadow-2xl hover:scale-110 transition-all duration-300 safe-area-bottom`}
+          aria-label="Show problem description"
+        >
+          <BookOpen className="w-6 h-6 text-white" />
+        </button>
+      )}
+      
+      {/* Mobile FAB - Hide Problem Description */}
+      {isMobile && !isLeftPanelMinimized && (
+        <button
+          onClick={() => setIsLeftPanelMinimized(true)}
+          className={`fixed bottom-20 right-4 z-40 p-4 bg-gradient-to-r ${theme.secondary} rounded-full shadow-2xl hover:scale-110 transition-all duration-300 safe-area-bottom`}
+          aria-label="Hide problem description"
+        >
+          <X className="w-6 h-6 text-white" />
+        </button>
+      )}
+
+      {/* Problem List Modal - Responsive */}
       {showProblemList && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl border border-white/10 max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-white/10">
+        <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center ${isMobile ? 'p-0' : 'p-4'}`}>
+          <div className={`bg-slate-900 ${isMobile ? 'w-full h-full rounded-none' : 'rounded-2xl max-w-4xl w-full max-h-[80vh]'} border border-white/10 overflow-hidden flex flex-col`}>
+            <div className={`${isMobile ? 'p-4' : 'p-6'} border-b border-white/10 safe-area-top`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-2xl font-bold">Problem List</h2>
+                  <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>Problem List</h2>
                   <p className="text-sm text-gray-400 mt-1">
                     {progress.completedProblems.length} problems solved
                   </p>
@@ -1080,11 +1288,11 @@ const LeetCodeEditorRedesigned = () => {
                 </button>
               </div>
               
-              {/* Problem Source Tabs */}
-              <div className="flex gap-2 mb-4">
+              {/* Problem Source Tabs - Responsive */}
+              <div className={`flex ${isMobile ? 'flex-col gap-2' : 'gap-2'} mb-4`}>
                 <button
                   onClick={() => setProblemSource('dsa')}
-                  className={`px-4 py-2 rounded-lg transition-all ${
+                  className={`${isMobile ? 'w-full' : ''} px-4 py-2 rounded-lg transition-all ${
                     problemSource === 'dsa' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-slate-800 text-gray-400'
                   }`}
                 >
@@ -1092,7 +1300,7 @@ const LeetCodeEditorRedesigned = () => {
                 </button>
                 <button
                   onClick={() => setProblemSource('company')}
-                  className={`px-4 py-2 rounded-lg transition-all ${
+                  className={`${isMobile ? 'w-full' : ''} px-4 py-2 rounded-lg transition-all ${
                     problemSource === 'company' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-slate-800 text-gray-400'
                   }`}
                 >
@@ -1100,7 +1308,7 @@ const LeetCodeEditorRedesigned = () => {
                 </button>
                 <button
                   onClick={() => setProblemSource('lld')}
-                  className={`px-4 py-2 rounded-lg transition-all ${
+                  className={`${isMobile ? 'w-full' : ''} px-4 py-2 rounded-lg transition-all ${
                     problemSource === 'lld' ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-slate-800 text-gray-400'
                   }`}
                 >
@@ -1113,7 +1321,7 @@ const LeetCodeEditorRedesigned = () => {
                 <select
                   value={selectedCompany}
                   onChange={(e) => setSelectedCompany(e.target.value)}
-                  className="w-full mb-4 px-4 py-2 bg-slate-800 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500/50"
+                  className={`w-full mb-4 ${isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2'} bg-slate-800 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500/50`}
                 >
                   {Object.keys(companyWiseProblems).map(company => (
                     <option key={company} value={company}>
@@ -1131,13 +1339,13 @@ const LeetCodeEditorRedesigned = () => {
                     placeholder="Search problems..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-slate-800 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500/50"
+                    className={`w-full pl-10 pr-4 ${isMobile ? 'py-2 text-sm' : 'py-2'} bg-slate-800 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500/50`}
                   />
                 </div>
                 <select
                   value={difficultyFilter}
                   onChange={(e) => setDifficultyFilter(e.target.value)}
-                  className="px-4 py-2 bg-slate-800 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500/50"
+                  className={`${isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2'} bg-slate-800 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500/50`}
                 >
                   <option value="All">All Levels</option>
                   <option value="Easy">Easy</option>
@@ -1146,7 +1354,7 @@ const LeetCodeEditorRedesigned = () => {
                 </select>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-3' : 'p-6'} safe-area-bottom`}>
               <div className="space-y-2">
                 {getFilteredProblems().map((problem) => {
                   const isCompleted = progress.completedProblems.includes(problem.id);
@@ -1164,7 +1372,7 @@ const LeetCodeEditorRedesigned = () => {
                         }
                         setShowProblemList(false);
                       }}
-                      className={`w-full p-4 rounded-lg border transition-all text-left ${
+                      className={`w-full ${isMobile ? 'p-3' : 'p-4'} rounded-lg border transition-all text-left ${
                         isCompleted 
                           ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20' 
                           : 'bg-slate-800/30 hover:bg-slate-800/50 border-white/5 hover:border-white/20'
@@ -1174,11 +1382,11 @@ const LeetCodeEditorRedesigned = () => {
                         <div className="flex items-center gap-3 flex-1">
                           {isCompleted && (
                             <div className="flex-shrink-0">
-                              <CheckCircle className="w-5 h-5 text-green-400" />
+                              <CheckCircle className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-green-400`} />
                             </div>
                           )}
                           <div className="flex-1">
-                            <div className="font-semibold mb-1 flex items-center gap-2">
+                            <div className={`${isMobile ? 'text-sm' : ''} font-semibold mb-1 flex items-center gap-2 flex-wrap`}>
                               {problem.title}
                               {isCompleted && (
                                 <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
@@ -1186,7 +1394,7 @@ const LeetCodeEditorRedesigned = () => {
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2 text-xs">
+                            <div className="flex items-center gap-2 text-xs flex-wrap">
                               <span className={`px-2 py-0.5 rounded ${getDifficultyColor(problem.difficulty)}`}>
                                 {problem.difficulty}
                               </span>
@@ -1194,7 +1402,7 @@ const LeetCodeEditorRedesigned = () => {
                             </div>
                           </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                        <ChevronRight className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-gray-400 flex-shrink-0`} />
                       </div>
                     </button>
                   );

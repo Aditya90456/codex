@@ -5,10 +5,11 @@ const LeetCodePage = () => {
   useEffect(() => {
     // Set page title
     document.title = 'LeetCode Practice | CP-AI';
+    
   }, []);
 
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-screen overflow-hidden">
       <LeetCodeEditor />
     </div>
   );

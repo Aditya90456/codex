@@ -1,0 +1,368 @@
+/* ============================================
+   ICON FIXES - Lucide React Icons
+   Ensures icons display properly across all devices
+   ============================================ */
+
+/* ============================================
+   BASE ICON STYLES
+   ============================================ */
+
+/* Fix for all SVG icons */
+svg {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Lucide icons specific */
+.lucide,
+[class*="lucide-"] {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ============================================
+   ICON SIZES
+   ============================================ */
+
+.icon-xs,
+.icon-size-xs {
+  width: 12px;
+  height: 12px;
+}
+
+.icon-sm,
+.icon-size-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-md,
+.icon-size-md,
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-lg,
+.icon-size-lg {
+  width: 24px;
+  height: 24px;
+}
+
+.icon-xl,
+.icon-size-xl {
+  width: 32px;
+  height: 32px;
+}
+
+.icon-2xl,
+.icon-size-2xl {
+  width: 40px;
+  height: 40px;
+}
+
+/* ============================================
+   ICON IN BUTTONS
+   ============================================ */
+
+button svg,
+.btn svg,
+[role="button"] svg {
+  width: 1.25em;
+  height: 1.25em;
+  flex-shrink: 0;
+}
+
+button.icon-only svg,
+.btn-icon svg {
+  width: 1.5em;
+  height: 1.5em;
+}
+
+/* Icon with text in buttons */
+button > svg + span,
+button > span + svg,
+.btn > svg + span,
+.btn > span + svg {
+  margin-left: 0.5rem;
+}
+
+/* ============================================
+   ICON IN INPUTS
+   ============================================ */
+
+.input-wrapper svg,
+.input-icon svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+/* ============================================
+   ICON IN NAVIGATION
+   ============================================ */
+
+nav svg,
+.nav svg,
+.navbar svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.mobile-nav svg,
+.mobile-bottom-nav svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* ============================================
+   ICON IN CARDS
+   ============================================ */
+
+.card svg,
+.card-header svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   ICON IN BADGES
+   ============================================ */
+
+.badge svg,
+.tag svg,
+.chip svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   ICON IN TABS
+   ============================================ */
+
+.tab svg,
+.mobile-tab svg,
+.editor-tab svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   ICON COLORS
+   ============================================ */
+
+.icon-primary {
+  color: #3b82f6;
+}
+
+.icon-secondary {
+  color: #6b7280;
+}
+
+.icon-success {
+  color: #10b981;
+}
+
+.icon-warning {
+  color: #f59e0b;
+}
+
+.icon-danger {
+  color: #ef4444;
+}
+
+.icon-info {
+  color: #3b82f6;
+}
+
+/* ============================================
+   ICON ANIMATIONS
+   ============================================ */
+
+.icon-spin {
+  animation: icon-spin 1s linear infinite;
+}
+
+@keyframes icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.icon-pulse {
+  animation: icon-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes icon-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.icon-bounce {
+  animation: icon-bounce 1s infinite;
+}
+
+@keyframes icon-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-25%);
+  }
+}
+
+/* ============================================
+   ICON STATES
+   ============================================ */
+
+.icon-disabled,
+button:disabled svg,
+.btn:disabled svg {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icon-hover:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s;
+}
+
+/* ============================================
+   MOBILE ICON FIXES
+   ============================================ */
+
+@media (max-width: 640px) {
+  /* Larger icons on mobile for better touch targets */
+  button svg,
+  .btn svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .mobile-nav svg,
+  .mobile-bottom-nav svg {
+    width: 22px;
+    height: 22px;
+  }
+  
+  /* Hide icon text on mobile */
+  .icon-text-mobile-hide {
+    display: none;
+  }
+}
+
+/* ============================================
+   ICON ALIGNMENT FIXES
+   ============================================ */
+
+/* Center icons in flex containers */
+.flex svg,
+.inline-flex svg {
+  align-self: center;
+}
+
+/* Fix icon alignment in text */
+p svg,
+span svg,
+a svg {
+  vertical-align: middle;
+  margin-top: -0.125em;
+}
+
+/* ============================================
+   ICON SPACING FIXES
+   ============================================ */
+
+/* Icon before text */
+svg + * {
+  margin-left: 0.5rem;
+}
+
+/* Icon after text */
+* + svg {
+  margin-left: 0.5rem;
+}
+
+/* Remove margin when icon is alone */
+svg:only-child {
+  margin: 0;
+}
+
+/* ============================================
+   ICON CONTAINER FIXES
+   ============================================ */
+
+.icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-container svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   ICON ACCESSIBILITY
+   ============================================ */
+
+/* Hide decorative icons from screen readers */
+svg[aria-hidden="true"] {
+  pointer-events: none;
+}
+
+/* Ensure interactive icons are accessible */
+button svg,
+a svg,
+[role="button"] svg {
+  pointer-events: none;
+}
+
+/* ============================================
+   BROWSER-SPECIFIC ICON FIXES
+   ============================================ */
+
+/* Safari */
+@supports (-webkit-appearance: none) {
+  svg {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+
+/* Firefox */
+@-moz-document url-prefix() {
+  svg {
+    transform: translateZ(0);
+  }
+}
