@@ -9,12 +9,14 @@ import {
   Layers, Filter, Search, Timer, Pause, RotateCcw, Volume2, VolumeX,
   Youtube, Github, Download, Share2, MessageCircle, Lightbulb,
   Award, BarChart3, Users, Pencil, Building2, Map, X, Eye, Activity,
-  Palette
+  Palette, Sparkles
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import { companyWiseProblems } from '../data/companyWiseProblems';
 import { lldProblems } from '../data/lldProblems';
+import { tufProblems, getAllTUFProblems } from '../data/tufProblems';
 import AICodeExplainer from './AI/AICodeExplainer';
+import AICodeCompletionWidget from './AI/AICodeCompletionWidget';
 import SolutionViewer from './SolutionViewer';
 import AIPeerChat from './AIPeerChat';
 import AIWhiteboardVisualizer from './AIWhiteboardVisualizer';
@@ -28,10 +30,14 @@ import DSARoadmapTracker from './DSARoadmapTracker';
 import LeetCodeDailyTask from './LeetCodeDailyTask';
 import MonthlyGoals from './MonthlyGoals';
 import ThemeCustomizer from './ThemeCustomizer';
+import VideoStreamPlayer from './VideoStreamPlayer';
 import { useClerkProgress } from '../hooks/useClerkProgress';
 import useSmartDebugger from '../hooks/useSmartDebugger';
+import useAICodeCompletion from '../hooks/useAICodeCompletion';
 import { useTheme } from '../contexts/ThemeContext';
 import '../styles/leetcode-editor-responsive.css';
+import '../styles/z-index-fix.css';
+import '../styles/problem-list-animations.css';
 
 // Configure Monaco loader to use CDN
 loader.config({
@@ -56,6 +62,7 @@ const LeetCodeEditorRedesigned = () => {
   // Problem source and selection
   const [problemSource, setProblemSource] = useState('dsa');
   const [selectedCompany, setSelectedCompany] = useState('google');
+  const [selectedTUFCategory, setSelectedTUFCategory] = useState('arrays');
   const [selectedProblem, setSelectedProblem] = useState(dsaProblems[0]);
   
   // Code editor states
@@ -81,6 +88,26 @@ const LeetCodeEditorRedesigned = () => {
     enableVoiceNotifications: true,
     language: language
   });
+
+  // AI Code Completion Integration
+  const {
+    completion: aiCompletion,
+    isLoading: isCompletionLoading,
+    isInitialized: isCompletionInitialized,
+    requestCompletion,
+    acceptCompletion,
+    dismissCompletion,
+  } = useAICodeCompletion({
+    enabled: true,
+    language: language,
+    problemContext: selectedProblem,
+    debounceDelay: 800,
+    autoAcceptDelay: 5000,
+  });
+  
+  // AI Completion states
+  const [aiCompletionEnabled, setAiCompletionEnabled] = useState(true);
+  const [cursorPosition, setCursorPosition] = useState(null);
   
   // UI states
   const [showProblemList, setShowProblemList] = useState(false);
@@ -116,6 +143,8 @@ const LeetCodeEditorRedesigned = () => {
   // Feature modals
   const [showVideoPlayer, setShowVideoPlayer] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [showVideoStream, setShowVideoStream] = useState(false);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState('');
   const [showSessionBooking, setShowSessionBooking] = useState(false);
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [showRoadmapTracker, setShowRoadmapTracker] = useState(false);
@@ -171,6 +200,7 @@ const LeetCodeEditorRedesigned = () => {
       setIsLeftPanelMinimized(true);
       setIsConsoleMinimized(true);
     } else {
+      // Desktop and tablet show panels normally
       setIsLeftPanelMinimized(false);
       setIsConsoleMinimized(false);
     }
@@ -272,6 +302,9 @@ const LeetCodeEditorRedesigned = () => {
     }
     if (problemSource === 'lld') {
       return [...lldProblems.easy, ...lldProblems.medium, ...lldProblems.hard];
+    }
+    if (problemSource === 'tuf') {
+      return tufProblems[selectedTUFCategory] || [];
     }
     return dsaProblems;
   };
@@ -441,123 +474,192 @@ const LeetCodeEditorRedesigned = () => {
 
   return (
     <div className={`leetcode-editor-responsive h-screen bg-gradient-to-br ${theme.background} ${theme.text} flex flex-col overflow-hidden`}>
-      {/* Modern Header - Responsive */}
-      <header className={`${isMobile ? 'h-12' : 'h-14'} bg-gradient-to-r ${theme.card} backdrop-blur-xl border-b ${theme.border} flex items-center justify-between ${isMobile ? 'px-2' : 'px-4'} shadow-2xl safe-area-top`}>
+      {/* Redesigned Modern Header */}
+      <header className={`${isMobile ? 'h-14' : 'h-16'} bg-gradient-to-r from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-2xl border-b border-white/10 flex items-center ${isMobile ? 'px-3' : 'px-6'} shadow-2xl safe-area-top relative z-10`}>
+        {/* Animated Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 animate-gradient-x pointer-events-none -z-10"></div>
+        
+        <div className="flex items-center justify-between w-full gap-2 overflow-x-auto scrollbar-hide">
         {/* Left Section */}
-        <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-4'}`}>
+        <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-4'} relative z-10 flex-shrink-0`}>
+          {/* Logo/Brand */}
           <button
             onClick={() => navigate('/')}
-            className={`flex items-center gap-2 ${isMobile ? 'px-2 py-1' : 'px-3 py-1.5'} bg-gradient-to-r ${theme.primary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+            className={`flex items-center gap-2 ${isMobile ? 'px-2.5 py-1.5' : 'px-4 py-2'} bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-xl shadow-lg shadow-blue-500/20 transition-all duration-300 hover:scale-105 active:scale-95 whitespace-nowrap flex-shrink-0`}
           >
-            <Home className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-blue-400`} />
-            {!isMobile && <span className="text-sm font-medium">Home</span>}
+            <Code2 className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-white`} />
+            {!isMobile && <span className="text-sm font-bold text-white">CodeX</span>}
           </button>
           
-          {!isMobile && <div className={`h-6 w-px ${theme.border}`} />}
+          {!isMobile && <div className="h-8 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />}
           
+          {/* Problem Selector */}
           <button
             onClick={() => setShowProblemList(!showProblemList)}
-            className={`flex items-center gap-1.5 ${isMobile ? 'px-2 py-1' : 'px-3 py-1.5'} bg-white/5 hover:bg-white/10 rounded-lg border ${theme.border} transition-all`}
+            className={`group flex items-center gap-2 ${isMobile ? 'px-2.5 py-1.5' : 'px-4 py-2'} bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 hover:border-purple-500/30 transition-all duration-300 backdrop-blur-sm whitespace-nowrap flex-shrink-0`}
           >
-            <Layers className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-purple-400`} />
-            <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>{isMobile ? 'List' : 'Problems'}</span>
-            {!isMobile && <ChevronDown className={`w-3 h-3 transition-transform ${showProblemList ? 'rotate-180' : ''}`} />}
+            <Layers className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-purple-400 group-hover:text-purple-300 transition-colors`} />
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold text-gray-300 group-hover:text-white transition-colors`}>
+              {isMobile ? 'List' : 'Problems'}
+            </span>
+            {!isMobile && (
+              <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-300 ${showProblemList ? 'rotate-180' : ''}`} />
+            )}
           </button>
 
-          {!isMobile && (
-            <>
+          {/* Desktop Navigation */}
+          {!isMobile && !isTablet && (
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={() => navigate('/roadmap')}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.secondary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+                className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:from-purple-500/20 hover:to-pink-500/20 rounded-xl border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 whitespace-nowrap flex-shrink-0"
               >
-                <Target className="w-4 h-4 text-purple-400" />
-                <span className="text-sm">Roadmap</span>
+                <Target className="w-4 h-4 text-purple-400 group-hover:text-purple-300 transition-colors" />
+                <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Roadmap</span>
               </button>
 
               <button
                 onClick={() => setShowPracticeScheduler(true)}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.accent} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+                className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 hover:from-cyan-500/20 hover:to-blue-500/20 rounded-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 whitespace-nowrap flex-shrink-0"
               >
-                <Calendar className="w-4 h-4 text-cyan-400" />
-                <span className="text-sm">Schedule</span>
+                <Calendar className="w-4 h-4 text-cyan-400 group-hover:text-cyan-300 transition-colors" />
+                <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Schedule</span>
               </button>
-            </>
+            </div>
           )}
         </div>
 
         {/* Right Section */}
-        <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-3'}`}>
-          {!isMobile && !isTablet && (
+        <div className={`flex items-center ${isMobile ? 'gap-2' : isTablet ? 'gap-2' : 'gap-3'} relative z-10 flex-shrink-0 ml-auto`}>
+          {/* Desktop & Tablet: Show key features */}
+          {!isMobile && (
             <>
-              {/* Theme Button */}
-              <button
-                onClick={() => setShowThemeCustomizer(true)}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme.primary} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
-              >
-                <Palette className="w-4 h-4" />
-                <span className="text-sm font-medium">Themes</span>
-              </button>
+              {/* Timer Widget - Redesigned */}
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 rounded-xl border border-white/10 backdrop-blur-sm shadow-lg flex-shrink-0">
+                <Timer className={`w-4 h-4 ${getTimerColor()} transition-colors`} />
+                <span className={`text-sm font-mono font-bold ${getTimerColor()} transition-colors min-w-[45px]`}>
+                  {formatTime(timeLeft)}
+                </span>
+                <div className="flex items-center gap-1 ml-1 border-l border-white/10 pl-2">
+                  <button 
+                    onClick={() => setIsTimerRunning(!isTimerRunning)} 
+                    className="hover:bg-white/10 rounded-lg p-1 transition-all duration-200 hover:scale-110 active:scale-95"
+                    title={isTimerRunning ? "Pause Timer" : "Start Timer"}
+                  >
+                    {isTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                  </button>
+                  <button 
+                    onClick={() => setTimeLeft(timerDuration * 60)} 
+                    className="hover:bg-white/10 rounded-lg p-1 transition-all duration-200 hover:scale-110 active:scale-95"
+                    title="Reset Timer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                  <button 
+                    onClick={() => setShowTimerSettings(!showTimerSettings)} 
+                    className="hover:bg-white/10 rounded-lg p-1 transition-all duration-200 hover:scale-110 active:scale-95"
+                    title="Timer Settings"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
 
-              <button
-                onClick={() => setShowAIPeerChat(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-pink-500/10 to-rose-500/10 hover:from-pink-500/20 hover:to-rose-500/20 rounded-lg border border-pink-500/20 transition-all"
+              {/* Language Selector - Redesigned */}
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-slate-800/80 to-slate-700/80 rounded-xl border border-white/10 hover:border-blue-500/30 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer backdrop-blur-sm shadow-lg flex-shrink-0 whitespace-nowrap"
               >
-                <MessageCircle className="w-4 h-4 text-pink-400" />
-                <span className="text-sm">AI Chat</span>
-              </button>
+                {languages.map(lang => (
+                  <option key={lang.value} value={lang.value} className="bg-slate-800">
+                    {lang.label}
+                  </option>
+                ))}
+              </select>
+
+              <div className="h-8 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+
+              {/* Action Buttons Group */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Theme Button */}
+                <button
+                  onClick={() => setShowThemeCustomizer(true)}
+                  className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500/20 hover:to-purple-500/20 rounded-xl border border-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300 whitespace-nowrap flex-shrink-0"
+                  title="Customize Theme"
+                >
+                  <Palette className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
+                  <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Themes</span>
+                </button>
+
+                {/* AI Chat Button */}
+                <button
+                  onClick={() => setShowAIPeerChat(true)}
+                  className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500/10 to-rose-500/10 hover:from-pink-500/20 hover:to-rose-500/20 rounded-xl border border-pink-500/20 hover:border-pink-500/40 transition-all duration-300 shadow-lg shadow-pink-500/5 whitespace-nowrap flex-shrink-0"
+                  title="AI Peer Chat"
+                >
+                  <MessageCircle className="w-4 h-4 text-pink-400 group-hover:text-pink-300 transition-colors" />
+                  <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">AI Chat</span>
+                </button>
+              </div>
+
+              <div className="h-8 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+
+              {/* Settings & User */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="p-2.5 hover:bg-white/10 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95 border border-transparent hover:border-white/10"
+                  title="Settings"
+                >
+                  <Settings className="w-4 h-4 text-gray-400 hover:text-white transition-colors" />
+                </button>
+
+                {/* User Button with custom styling */}
+                <div className="relative">
+                  <UserButton afterSignOutUrl="/" />
+                </div>
+              </div>
             </>
           )}
-          
-          {(isMobile || isTablet) && (
-            <button
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
-            >
-              {showMobileMenu ? <X className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
-            </button>
-          )}
 
-          {/* Timer - Hide on mobile */}
-          {!isMobile && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 rounded-lg border border-white/10">
-              <Timer className={`w-4 h-4 ${getTimerColor()}`} />
-              <span className={`text-sm font-mono ${getTimerColor()}`}>{formatTime(timeLeft)}</span>
-              <button onClick={() => setIsTimerRunning(!isTimerRunning)} className="ml-1">
-                {isTimerRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+          {/* Tablet: Compact version - REMOVED, now uses desktop version */}
+
+          {/* Mobile: Minimal version */}
+          {isMobile && (
+            <>
+              {/* Language Selector */}
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="px-2.5 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-slate-800/80 to-slate-700/80 rounded-xl border border-white/10 focus:outline-none backdrop-blur-sm"
+              >
+                {languages.map(lang => (
+                  <option key={lang.value} value={lang.value} className="bg-slate-800">
+                    {lang.value.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 border border-white/10 hover:border-white/20 active:scale-95"
+              >
+                {showMobileMenu ? <X className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
               </button>
-              <button onClick={() => setTimeLeft(timerDuration * 60)}>
-                <RotateCcw className="w-3 h-3" />
-              </button>
-            </div>
+
+              {/* User Button */}
+              <UserButton afterSignOutUrl="/" />
+            </>
           )}
-
-          {/* Language Selector */}
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className={`${isMobile ? 'px-2 py-1 text-xs' : 'px-3 py-1.5 text-sm'} bg-gradient-to-r ${theme.card} rounded-lg border ${theme.border} focus:outline-none focus:border-blue-500/50`}
-          >
-            {languages.map(lang => (
-              <option key={lang.value} value={lang.value}>{isMobile ? lang.value.toUpperCase() : lang.label}</option>
-            ))}
-          </select>
-
-          {!isMobile && (
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
-            >
-              <Settings className="w-4 h-4" />
-            </button>
-          )}
-
-          <UserButton afterSignOutUrl="/" />
+        </div>
         </div>
       </header>
 
       {/* Mobile Menu Dropdown */}
       {(isMobile || isTablet) && showMobileMenu && (
-        <div className={`absolute top-${isMobile ? '12' : '14'} right-0 left-0 z-50 bg-gradient-to-b ${theme.card} backdrop-blur-xl border-b ${theme.border} shadow-2xl animate-slideDown`}>
+        <div className={`absolute top-${isMobile ? '14' : '16'} right-0 left-0 z-20 bg-gradient-to-b ${theme.card} backdrop-blur-xl border-b ${theme.border} shadow-2xl animate-slideDown`}>
           <div className="p-4 space-y-2">
             {/* Problems List */}
             <button
@@ -639,6 +741,22 @@ const LeetCodeEditorRedesigned = () => {
               <ChevronRight className="w-4 h-4" />
             </button>
 
+            {/* Timer Settings */}
+            <button
+              onClick={() => {
+                setShowTimerSettings(true);
+                setShowMobileMenu(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r ${theme.accent} bg-opacity-10 hover:bg-opacity-20 rounded-lg border ${theme.border} transition-all`}
+            >
+              <Timer className={`w-5 h-5 ${getTimerColor()}`} />
+              <div className="flex-1 text-left">
+                <div className="font-semibold">Timer Settings</div>
+                <div className="text-xs text-gray-400">{formatTime(timeLeft)} remaining</div>
+              </div>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
             {/* Divider */}
             <div className={`border-t ${theme.border} my-2`}></div>
 
@@ -673,7 +791,7 @@ const LeetCodeEditorRedesigned = () => {
       {/* Mobile Menu Overlay */}
       {(isMobile || isTablet) && showMobileMenu && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40"
+          className="fixed inset-0 bg-black/50 z-[15]"
           onClick={() => setShowMobileMenu(false)}
         />
       )}
@@ -936,7 +1054,12 @@ const LeetCodeEditorRedesigned = () => {
                           e.preventDefault();
                           e.stopPropagation();
                           console.log('Video button clicked');
-                          setShowVideoModal(true);
+                          if (selectedProblem.videoUrl) {
+                            setCurrentVideoUrl(selectedProblem.videoUrl);
+                            setShowVideoStream(true);
+                          } else {
+                            setShowVideoModal(true);
+                          }
                         }}
                         type="button"
                         className="flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg border border-red-500/30 transition-all text-sm active:scale-95"
@@ -1002,6 +1125,22 @@ const LeetCodeEditorRedesigned = () => {
               <span className={`text-sm font-medium ${theme.text}`}>Code Editor</span>
             </div>
             <div className="flex items-center gap-2">
+              {/* AI Completion Toggle */}
+              {isCompletionInitialized && (
+                <button
+                  onClick={() => setAiCompletionEnabled(!aiCompletionEnabled)}
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-all ${
+                    aiCompletionEnabled 
+                      ? `bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 border border-purple-500/30` 
+                      : `bg-white/5 ${theme.textSecondary} hover:text-purple-300 border ${theme.border}`
+                  }`}
+                  title={aiCompletionEnabled ? 'AI Completion: ON' : 'AI Completion: OFF'}
+                >
+                  <Sparkles className={`w-3 h-3 ${aiCompletionEnabled ? 'animate-pulse' : ''}`} />
+                  AI Complete
+                </button>
+              )}
+              
               {/* Smart Debugger Toggle */}
               {analysisResult && getConfidence() > 30 && (
                 <button
@@ -1055,45 +1194,132 @@ const LeetCodeEditorRedesigned = () => {
                 </div>
               </div>
             ) : (
-              <Editor
-                height="100%"
-                language={language}
-                value={code}
-                onChange={(newCode) => {
-                  setCode(newCode);
-                  updateCode(newCode);
-                }}
-                theme={theme.editorTheme || 'vs-dark'}
-                loading={
-                  <div className={`h-full flex items-center justify-center bg-gradient-to-br ${theme.background}`}>
-                    <div className="text-center">
-                      <Zap className="w-8 h-8 text-blue-400 mx-auto mb-2 animate-pulse" />
-                      <p className={theme.textSecondary}>Loading editor...</p>
+              <>
+                <Editor
+                  height="100%"
+                  language={language}
+                  value={code}
+                  onChange={(newCode) => {
+                    setCode(newCode);
+                    updateCode(newCode);
+                  }}
+                  theme={theme.editorTheme || 'vs-dark'}
+                  loading={
+                    <div className={`h-full flex items-center justify-center bg-gradient-to-br ${theme.background}`}>
+                      <div className="text-center">
+                        <Zap className="w-8 h-8 text-blue-400 mx-auto mb-2 animate-pulse" />
+                        <p className={theme.textSecondary}>Loading editor...</p>
+                      </div>
                     </div>
-                  </div>
-                }
-                options={{
-                  fontSize: themeFontSize === 'small' ? 12 : themeFontSize === 'large' ? 16 : themeFontSize === 'xlarge' ? 18 : 14,
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  lineNumbers: 'on',
-                  renderLineHighlight: 'all',
-                  cursorBlinking: 'smooth',
-                  cursorSmoothCaretAnimation: 'on',
-                  smoothScrolling: true,
-                  fontFamily: fontFamily === 'mono' ? "'Fira Code', 'Cascadia Code', Consolas, monospace" : 
-                             fontFamily === 'sans' ? "'Inter', 'Segoe UI', sans-serif" : 
-                             "'Times New Roman', serif",
-                  fontLigatures: fontFamily === 'mono',
-                  padding: { top: 16, bottom: 16 },
-                  automaticLayout: true
-                }}
-                onMount={(editor, monaco) => {
-                  editorRef.current = editor;
-                  setMonacoLoaded(true);
-                  console.log('Monaco Editor loaded successfully');
-                }}
-              />
+                  }
+                  options={{
+                    fontSize: themeFontSize === 'small' ? 12 : themeFontSize === 'large' ? 16 : themeFontSize === 'xlarge' ? 18 : 14,
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    lineNumbers: 'on',
+                    renderLineHighlight: 'all',
+                    cursorBlinking: 'smooth',
+                    cursorSmoothCaretAnimation: 'on',
+                    smoothScrolling: true,
+                    fontFamily: fontFamily === 'mono' ? "'Fira Code', 'Cascadia Code', Consolas, monospace" : 
+                               fontFamily === 'sans' ? "'Inter', 'Segoe UI', sans-serif" : 
+                               "'Times New Roman', serif",
+                    fontLigatures: fontFamily === 'mono',
+                    padding: { top: 16, bottom: 16 },
+                    automaticLayout: true,
+                    suggestOnTriggerCharacters: true,
+                    quickSuggestions: true,
+                    wordBasedSuggestions: true,
+                  }}
+                  onMount={(editor, monaco) => {
+                    editorRef.current = editor;
+                    setMonacoLoaded(true);
+                    console.log('Monaco Editor loaded successfully');
+
+                    // Track cursor position for AI completion
+                    editor.onDidChangeCursorPosition((e) => {
+                      setCursorPosition(e.position);
+                    });
+
+                    // Trigger AI completion on content change
+                    editor.onDidChangeModelContent((e) => {
+                      if (aiCompletionEnabled && isCompletionInitialized) {
+                        const position = editor.getPosition();
+                        const model = editor.getModel();
+                        if (model && position) {
+                          const offset = model.getOffsetAt(position);
+                          const currentCode = model.getValue();
+                          
+                          // Request completion after typing
+                          if (e.changes.length > 0 && e.changes[0].text) {
+                            requestCompletion(currentCode, offset);
+                          }
+                        }
+                      }
+                    });
+
+                    // Keyboard shortcuts for AI completion
+                    editor.addCommand(monaco.KeyCode.Tab, () => {
+                      if (aiCompletion) {
+                        const accepted = acceptCompletion();
+                        if (accepted) {
+                          const position = editor.getPosition();
+                          const range = new monaco.Range(
+                            position.lineNumber,
+                            position.column,
+                            position.lineNumber,
+                            position.column
+                          );
+                          editor.executeEdits('ai-completion', [{
+                            range: range,
+                            text: accepted,
+                            forceMoveMarkers: true
+                          }]);
+                        }
+                      }
+                    });
+
+                    editor.addCommand(monaco.KeyCode.Escape, () => {
+                      if (aiCompletion) {
+                        dismissCompletion();
+                      }
+                    });
+                  }}
+                />
+
+                {/* AI Code Completion Widget */}
+                {aiCompletionEnabled && (
+                  <AICodeCompletionWidget
+                    completion={aiCompletion}
+                    isLoading={isCompletionLoading}
+                    position={cursorPosition}
+                    onAccept={() => {
+                      const accepted = acceptCompletion();
+                      if (accepted && editorRef.current) {
+                        const editor = editorRef.current;
+                        const position = editor.getPosition();
+                        const monaco = window.monaco;
+                        if (monaco && position) {
+                          const range = new monaco.Range(
+                            position.lineNumber,
+                            position.column,
+                            position.lineNumber,
+                            position.column
+                          );
+                          editor.executeEdits('ai-completion', [{
+                            range: range,
+                            text: accepted,
+                            forceMoveMarkers: true
+                          }]);
+                          editor.focus();
+                        }
+                      }
+                    }}
+                    onDismiss={dismissCompletion}
+                    editorRef={editorRef}
+                  />
+                )}
+              </>
             )}
           </div>
 
@@ -1268,100 +1494,187 @@ const LeetCodeEditorRedesigned = () => {
         </button>
       )}
 
-      {/* Problem List Modal - Responsive */}
+      {/* Problem List Modal - Redesigned with Better Spacing */}
       {showProblemList && (
-        <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center ${isMobile ? 'p-0' : 'p-4'}`}>
-          <div className={`bg-slate-900 ${isMobile ? 'w-full h-full rounded-none' : 'rounded-2xl max-w-4xl w-full max-h-[80vh]'} border border-white/10 overflow-hidden flex flex-col`}>
-            <div className={`${isMobile ? 'p-4' : 'p-6'} border-b border-white/10 safe-area-top`}>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>Problem List</h2>
-                  <p className="text-sm text-gray-400 mt-1">
-                    {progress.completedProblems.length} problems solved
-                  </p>
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className={`bg-gradient-to-br from-slate-900 to-slate-850 ${isMobile ? 'w-full h-full rounded-none' : 'rounded-3xl max-w-6xl w-full h-[85vh]'} border border-slate-600/40 overflow-hidden flex flex-col shadow-[0_25px_50px_rgba(0,0,0,0.6)]`}>
+            
+            {/* Header - Fixed */}
+            <div className="bg-gradient-to-r from-slate-800/70 to-slate-750/70 border-b border-slate-600/40 flex-shrink-0">
+              <div className={`${isMobile ? 'p-6' : 'p-8'}`}>
+                {/* Title */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+                      <Layers className="w-7 h-7 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-bold text-white">Problem Library</h2>
+                      <p className="text-sm text-gray-400 mt-1">Choose a problem to solve</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowProblemList(false)}
+                    className="p-3 hover:bg-slate-700/50 rounded-2xl transition-all group"
+                  >
+                    <X className="w-6 h-6 text-gray-400 group-hover:text-white" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setShowProblemList(false)}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-all"
-                >
-                  <XCircle className="w-5 h-5" />
-                </button>
-              </div>
-              
-              {/* Problem Source Tabs - Responsive */}
-              <div className={`flex ${isMobile ? 'flex-col gap-2' : 'gap-2'} mb-4`}>
-                <button
-                  onClick={() => setProblemSource('dsa')}
-                  className={`${isMobile ? 'w-full' : ''} px-4 py-2 rounded-lg transition-all ${
-                    problemSource === 'dsa' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-slate-800 text-gray-400'
-                  }`}
-                >
-                  DSA Problems
-                </button>
-                <button
-                  onClick={() => setProblemSource('company')}
-                  className={`${isMobile ? 'w-full' : ''} px-4 py-2 rounded-lg transition-all ${
-                    problemSource === 'company' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-slate-800 text-gray-400'
-                  }`}
-                >
-                  Company Wise
-                </button>
-                <button
-                  onClick={() => setProblemSource('lld')}
-                  className={`${isMobile ? 'w-full' : ''} px-4 py-2 rounded-lg transition-all ${
-                    problemSource === 'lld' ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-slate-800 text-gray-400'
-                  }`}
-                >
-                  LLD Problems
-                </button>
-              </div>
-
-              {/* Company Selector */}
-              {problemSource === 'company' && (
-                <select
-                  value={selectedCompany}
-                  onChange={(e) => setSelectedCompany(e.target.value)}
-                  className={`w-full mb-4 ${isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2'} bg-slate-800 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500/50`}
-                >
-                  {Object.keys(companyWiseProblems).map(company => (
-                    <option key={company} value={company}>
-                      {company.charAt(0).toUpperCase() + company.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              )}
-
-              <div className="flex gap-3">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search problems..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full pl-10 pr-4 ${isMobile ? 'py-2 text-sm' : 'py-2'} bg-slate-800 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500/50`}
-                  />
+                
+                {/* Stats */}
+                <div className="flex items-center gap-6 text-sm mb-6">
+                  <div className="flex items-center gap-2.5 px-4 py-2 bg-slate-700/40 rounded-xl">
+                    <div className="w-2.5 h-2.5 bg-blue-400 rounded-full"></div>
+                    <span className="text-gray-300">
+                      <span className="text-white font-bold">{getFilteredProblems().length}</span> problems
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2.5 px-4 py-2 bg-green-500/15 rounded-xl border border-green-500/25">
+                    <CheckCircle className="w-4.5 h-4.5 text-green-400" />
+                    <span className="text-green-400 font-bold">
+                      {progress.completedProblems.length} solved
+                    </span>
+                  </div>
                 </div>
-                <select
-                  value={difficultyFilter}
-                  onChange={(e) => setDifficultyFilter(e.target.value)}
-                  className={`${isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2'} bg-slate-800 rounded-lg border border-white/10 focus:outline-none focus:border-blue-500/50`}
-                >
-                  <option value="All">All Levels</option>
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
-                </select>
+
+                {/* Tabs */}
+                <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-3 mb-6`}>
+                  <button
+                    onClick={() => setProblemSource('dsa')}
+                    className={`relative px-5 py-4 rounded-xl text-sm font-bold transition-all overflow-hidden ${
+                      problemSource === 'dsa' 
+                        ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30' 
+                        : 'bg-slate-800/60 text-gray-400 hover:bg-slate-700/80 hover:text-white border border-slate-700/50'
+                    }`}
+                  >
+                    {problemSource === 'dsa' && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-blue-600/20"></div>
+                    )}
+                    <div className="relative flex items-center justify-center gap-2">
+                      <Code2 className="w-4 h-4" />
+                      <span>DSA</span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setProblemSource('tuf')}
+                    className={`relative px-5 py-4 rounded-xl text-sm font-bold transition-all overflow-hidden ${
+                      problemSource === 'tuf' 
+                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' 
+                        : 'bg-slate-800/60 text-gray-400 hover:bg-slate-700/80 hover:text-white border border-slate-700/50'
+                    }`}
+                  >
+                    {problemSource === 'tuf' && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-orange-600/20"></div>
+                    )}
+                    <div className="relative flex items-center justify-center gap-2">
+                      <Zap className="w-4 h-4" />
+                      <span>TUF</span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setProblemSource('company')}
+                    className={`relative px-5 py-4 rounded-xl text-sm font-bold transition-all overflow-hidden ${
+                      problemSource === 'company' 
+                        ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/30' 
+                        : 'bg-slate-800/60 text-gray-400 hover:bg-slate-700/80 hover:text-white border border-slate-700/50'
+                    }`}
+                  >
+                    {problemSource === 'company' && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-purple-600/20"></div>
+                    )}
+                    <div className="relative flex items-center justify-center gap-2">
+                      <Building2 className="w-4 h-4" />
+                      <span>Company</span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setProblemSource('lld')}
+                    className={`relative px-5 py-4 rounded-xl text-sm font-bold transition-all overflow-hidden ${
+                      problemSource === 'lld' 
+                        ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' 
+                        : 'bg-slate-800/60 text-gray-400 hover:bg-slate-700/80 hover:text-white border border-slate-700/50'
+                    }`}
+                  >
+                    {problemSource === 'lld' && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20"></div>
+                    )}
+                    <div className="relative flex items-center justify-center gap-2">
+                      <Layers className="w-4 h-4" />
+                      <span>LLD</span>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Category Selectors */}
+                {problemSource === 'tuf' && (
+                  <select
+                    value={selectedTUFCategory}
+                    onChange={(e) => setSelectedTUFCategory(e.target.value)}
+                    className="w-full mb-5 px-4 py-3 bg-slate-800/60 text-white rounded-xl border border-slate-600/50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all"
+                  >
+                    <option value="basics">Step 1: Basics</option>
+                    <option value="arrays">Step 3: Arrays</option>
+                    <option value="binarySearch">Step 4: Binary Search</option>
+                    <option value="linkedList">Step 6: Linked List</option>
+                    <option value="recursion">Step 7: Recursion</option>
+                  </select>
+                )}
+
+                {problemSource === 'company' && (
+                  <select
+                    value={selectedCompany}
+                    onChange={(e) => setSelectedCompany(e.target.value)}
+                    className="w-full mb-5 px-4 py-3 bg-slate-800/60 text-white rounded-xl border border-slate-600/50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                  >
+                    {Object.keys(companyWiseProblems).map(company => (
+                      <option key={company} value={company}>
+                        {company.charAt(0).toUpperCase() + company.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Search and Filter */}
+                <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-3`}>
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search problems..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 bg-slate-800/60 text-white placeholder-gray-500 rounded-xl border border-slate-600/50 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    />
+                  </div>
+                  <select
+                    value={difficultyFilter}
+                    onChange={(e) => setDifficultyFilter(e.target.value)}
+                    className={`${isMobile ? 'w-full' : 'w-44'} px-4 py-3 bg-slate-800/60 text-white rounded-xl border border-slate-600/50 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-semibold`}
+                  >
+                    <option value="All">All Levels</option>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                </div>
               </div>
             </div>
-            <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-3' : 'p-6'} safe-area-bottom`}>
-              <div className="space-y-2">
+
+            {/* Problem List - Scrollable */}
+            <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-4' : 'p-8'}`}>
+              <div className="space-y-3 pb-4">
                 {getFilteredProblems().map((problem) => {
                   const isCompleted = progress.completedProblems.includes(problem.id);
+                  const hasTUFVideo = problem.videoUrl && problemSource === 'tuf';
                   
                   return (
-                    <button
+                    <div
                       key={problem.id}
+                      className={`group relative rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
+                        isCompleted 
+                          ? 'bg-gradient-to-br from-green-500/8 to-emerald-500/5 border-green-500/40 hover:border-green-400/60 hover:shadow-[0_10px_40px_rgba(34,197,94,0.15)]' 
+                          : 'bg-gradient-to-br from-slate-800/50 to-slate-800/30 border-slate-600/50 hover:border-blue-500/60 hover:shadow-[0_10px_40px_rgba(59,130,246,0.12)]'
+                      }`}
                       onClick={() => {
                         setSelectedProblem(problem);
                         const starterCode = problem.starterCode;
@@ -1372,42 +1685,251 @@ const LeetCodeEditorRedesigned = () => {
                         }
                         setShowProblemList(false);
                       }}
-                      className={`w-full ${isMobile ? 'p-3' : 'p-4'} rounded-lg border transition-all text-left ${
-                        isCompleted 
-                          ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20' 
-                          : 'bg-slate-800/30 hover:bg-slate-800/50 border-white/5 hover:border-white/20'
-                      }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 flex-1">
-                          {isCompleted && (
-                            <div className="flex-shrink-0">
-                              <CheckCircle className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-green-400`} />
-                            </div>
-                          )}
+                      {/* Hover gradient effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      
+                      <div className="relative p-6">
+                        <div className="flex items-start justify-between gap-4 mb-4">
                           <div className="flex-1">
-                            <div className={`${isMobile ? 'text-sm' : ''} font-semibold mb-1 flex items-center gap-2 flex-wrap`}>
-                              {problem.title}
+                            <div className="flex items-center gap-3 mb-3">
+                              <h3 className="text-xl font-bold text-white group-hover:text-blue-300 transition-colors leading-tight">
+                                {problem.title}
+                              </h3>
                               {isCompleted && (
-                                <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
-                                  Solved
+                                <div className="flex items-center gap-1 px-2 py-1 bg-green-500/20 rounded-full border border-green-500/40">
+                                  <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2.5 flex-wrap">
+                              <span className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide ${getDifficultyColor(problem.difficulty)}`}>
+                                {problem.difficulty}
+                              </span>
+                              <span className="px-3 py-1.5 bg-purple-500/15 text-purple-300 rounded-lg text-xs font-bold border border-purple-500/30">
+                                {problem.category}
+                              </span>
+                              {problemSource === 'tuf' && (
+                                <span className="px-3 py-1.5 bg-orange-500/15 text-orange-300 rounded-lg text-xs font-bold border border-orange-500/30">
+                                  TUF
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2 text-xs flex-wrap">
-                              <span className={`px-2 py-0.5 rounded ${getDifficultyColor(problem.difficulty)}`}>
-                                {problem.difficulty}
-                              </span>
-                              <span className="text-gray-400">{problem.category}</span>
-                            </div>
+                          </div>
+                          <div className="flex-shrink-0 p-2.5 bg-slate-700/30 rounded-xl group-hover:bg-blue-500/20 transition-all border border-slate-600/30 group-hover:border-blue-500/50">
+                            <ChevronRight className="w-6 h-6 text-gray-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                           </div>
                         </div>
-                        <ChevronRight className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-gray-400 flex-shrink-0`} />
+
+                        {/* Tags */}
+                        {problem.tags && problem.tags.length > 0 && (
+                          <div className="flex items-center gap-2 flex-wrap mb-4">
+                            {problem.tags.slice(0, 4).map((tag, idx) => (
+                              <span key={idx} className="px-2.5 py-1 bg-slate-700/40 text-gray-400 rounded-md text-xs font-medium">
+                                {tag}
+                              </span>
+                            ))}
+                            {problem.tags.length > 4 && (
+                              <span className="px-2.5 py-1 bg-slate-700/30 text-gray-500 rounded-md text-xs">
+                                +{problem.tags.length - 4}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* TUF Actions */}
+                        {hasTUFVideo && (
+                          <div className="flex items-center gap-3 pt-4 border-t-2 border-slate-700/50">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCurrentVideoUrl(problem.videoUrl);
+                                setShowVideoStream(true);
+                                setShowProblemList(false);
+                              }}
+                              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500/20 to-red-600/20 hover:from-red-500/30 hover:to-red-600/30 rounded-xl border border-red-500/40 hover:border-red-500/60 transition-all text-sm font-bold text-red-300 hover:scale-105"
+                            >
+                              <Youtube className="w-4 h-4" />
+                              Watch Video
+                            </button>
+                            {problem.articleUrl && (
+                              <a
+                                href={problem.articleUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500/20 to-blue-600/20 hover:from-blue-500/30 hover:to-blue-600/30 rounded-xl border border-blue-500/40 hover:border-blue-500/60 transition-all text-sm font-bold text-blue-300 hover:scale-105"
+                              >
+                                <BookOpen className="w-4 h-4" />
+                                Read Article
+                              </a>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Completion indicator */}
+                        {isCompleted && (
+                          <div className="mt-4 pt-4 border-t-2 border-green-500/30">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 px-3 py-2 bg-green-500/20 rounded-xl border border-green-500/40">
+                                <Trophy className="w-4 h-4 text-green-400" />
+                                <span className="text-sm font-bold text-green-300">Completed</span>
+                              </div>
+                              <div className="flex items-center gap-2 px-3 py-2 bg-yellow-500/20 rounded-xl border border-yellow-500/40">
+                                <Star className="w-4 h-4 text-yellow-400" />
+                                <span className="text-sm font-bold text-yellow-300">Great job!</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
+
+              {/* Empty State */}
+              {getFilteredProblems().length === 0 && (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full"></div>
+                    <div className="relative p-6 bg-slate-800/50 rounded-3xl border-2 border-slate-700/50">
+                      <Filter className="w-16 h-16 text-gray-500" />
+                    </div>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-3">No problems found</h3>
+                  <p className="text-gray-400 text-base mb-6">Try adjusting your search or filters</p>
+                  <button
+                    onClick={() => {
+                      setSearchTerm('');
+                      setDifficultyFilter('All');
+                    }}
+                    className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-bold hover:scale-105 transition-all shadow-lg"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showThemeCustomizer && (
+        <ThemeCustomizer onClose={() => setShowThemeCustomizer(false)} />
+      )}
+
+      {/* Timer Settings Modal */}
+      {showTimerSettings && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[40] flex items-center justify-center p-4">
+          <div className={`bg-gradient-to-br ${theme.card} rounded-2xl border-2 ${theme.border} max-w-md w-full p-6 shadow-2xl`}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Timer className="w-6 h-6 text-blue-400" />
+                Timer Settings
+              </h2>
+              <button
+                onClick={() => setShowTimerSettings(false)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Timer Presets */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-gray-400 mb-3 block">Quick Presets</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => {
+                      setTimerDuration(15);
+                      setTimeLeft(15 * 60);
+                    }}
+                    className={`px-4 py-3 rounded-lg border ${theme.border} transition-all hover:bg-white/10 ${
+                      timerDuration === 15 ? 'bg-blue-500/20 border-blue-500/50' : 'bg-white/5'
+                    }`}
+                  >
+                    <div className="text-lg font-bold">15</div>
+                    <div className="text-xs text-gray-400">Easy</div>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTimerDuration(25);
+                      setTimeLeft(25 * 60);
+                    }}
+                    className={`px-4 py-3 rounded-lg border ${theme.border} transition-all hover:bg-white/10 ${
+                      timerDuration === 25 ? 'bg-yellow-500/20 border-yellow-500/50' : 'bg-white/5'
+                    }`}
+                  >
+                    <div className="text-lg font-bold">25</div>
+                    <div className="text-xs text-gray-400">Medium</div>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTimerDuration(45);
+                      setTimeLeft(45 * 60);
+                    }}
+                    className={`px-4 py-3 rounded-lg border ${theme.border} transition-all hover:bg-white/10 ${
+                      timerDuration === 45 ? 'bg-red-500/20 border-red-500/50' : 'bg-white/5'
+                    }`}
+                  >
+                    <div className="text-lg font-bold">45</div>
+                    <div className="text-xs text-gray-400">Hard</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Custom Duration */}
+              <div>
+                <label className="text-sm font-semibold text-gray-400 mb-2 block">
+                  Custom Duration: {timerDuration} minutes
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="180"
+                  value={timerDuration}
+                  onChange={(e) => {
+                    const duration = parseInt(e.target.value);
+                    setTimerDuration(duration);
+                    setTimeLeft(duration * 60);
+                  }}
+                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>1 min</span>
+                  <span>180 min</span>
+                </div>
+              </div>
+
+              {/* Sound Toggle */}
+              <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                <div className="flex items-center gap-2">
+                  {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                  <span className="text-sm">Sound Notifications</span>
+                </div>
+                <button
+                  onClick={() => setSoundEnabled(!soundEnabled)}
+                  className={`relative w-12 h-6 rounded-full transition-all ${
+                    soundEnabled ? 'bg-blue-500' : 'bg-gray-600'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      soundEnabled ? 'translate-x-6' : ''
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setShowTimerSettings(false)}
+                className={`w-full px-4 py-3 bg-gradient-to-r ${theme.primary} rounded-lg hover:opacity-80 transition-all font-semibold`}
+              >
+                Done
+              </button>
             </div>
           </div>
         </div>
@@ -1483,7 +2005,7 @@ const LeetCodeEditorRedesigned = () => {
 
       {/* Video Modal */}
       {showVideoModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
           <div className="bg-slate-900 rounded-2xl border border-white/10 max-w-4xl w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -1518,7 +2040,7 @@ const LeetCodeEditorRedesigned = () => {
 
       {/* Session Booking Modal */}
       {showSessionModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
           <div className="bg-slate-900 rounded-2xl border border-white/10 max-w-2xl w-full p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -1598,6 +2120,17 @@ const LeetCodeEditorRedesigned = () => {
       <ThemeCustomizer
         isOpen={showThemeCustomizer}
         onClose={() => setShowThemeCustomizer(false)}
+      />
+
+      {/* Video Stream Player */}
+      <VideoStreamPlayer
+        videoUrl={currentVideoUrl}
+        problemTitle={selectedProblem?.title || 'Problem Solution'}
+        isOpen={showVideoStream}
+        onClose={() => {
+          setShowVideoStream(false);
+          setCurrentVideoUrl('');
+        }}
       />
     </div>
   );

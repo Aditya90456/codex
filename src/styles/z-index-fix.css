@@ -1,0 +1,93 @@
+/* Z-Index Management - Fix Overlapping UI */
+
+/* Layer 1: Base Content (z-index: 0-9) */
+.editor-content {
+  z-index: 1;
+}
+
+.problem-description {
+  z-index: 1;
+}
+
+/* Layer 2: Header & Navigation (z-index: 10-19) */
+.header-main {
+  z-index: 10;
+}
+
+.progress-bar {
+  z-index: 10;
+}
+
+/* Layer 3: Dropdowns & Tooltips (z-index: 20-29) */
+.dropdown-menu {
+  z-index: 20;
+}
+
+.tooltip {
+  z-index: 25;
+}
+
+/* Layer 4: Modals & Overlays (z-index: 30-49) */
+.modal-backdrop {
+  z-index: 30;
+}
+
+.modal-content {
+  z-index: 35;
+}
+
+.timer-settings-modal {
+  z-index: 40;
+}
+
+/* Layer 5: Problem List Modal (z-index: 50-59) */
+.problem-list-modal {
+  z-index: 50 !important;
+}
+
+.problem-list-backdrop {
+  z-index: 50 !important;
+}
+
+.problem-list-content {
+  z-index: 51 !important;
+}
+
+/* Layer 6: Video Player (z-index: 60-69) */
+.video-player-modal {
+  z-index: 60 !important;
+}
+
+/* Layer 7: Notifications & Toasts (z-index: 70-79) */
+.notification {
+  z-index: 70;
+}
+
+.toast {
+  z-index: 75;
+}
+
+/* Layer 8: Critical Alerts (z-index: 80-99) */
+.alert-critical {
+  z-index: 90;
+}
+
+/* Ensure modals don't overlap incorrectly */
+.fixed {
+  position: fixed;
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Fix for overlapping elements */
+.relative {
+  position: relative;
+}
+
+/* Ensure proper stacking context */
+.stacking-context {
+  isolation: isolate;
+}
