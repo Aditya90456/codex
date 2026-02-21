@@ -1,17 +1,18 @@
 import { useEffect } from 'react';
-import LeetCodeEditor from '../components/LeetCodeEditor';
+import ThemedLeetCodeEditor from '../components/LeetCode/ThemedLeetCodeEditor';
+import { ThemeProvider } from '../contexts/ThemeContext';
 
 const LeetCodePage = () => {
   useEffect(() => {
-    // Set page title
     document.title = 'LeetCode Practice | CP-AI';
-    
   }, []);
 
   return (
-    <div className="w-full h-screen overflow-hidden">
-      <LeetCodeEditor />
-    </div>
+    <ThemeProvider>
+      <div className="w-full h-screen overflow-hidden">
+        <ThemedLeetCodeEditor />
+      </div>
+    </ThemeProvider>
   );
 };
 

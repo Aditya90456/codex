@@ -10,6 +10,84 @@ export const useTheme = () => {
   return context;
 };
 
+// Helper function to extract color values from Tailwind classes
+const extractColorFromTailwind = (tailwindClass) => {
+  // Handle undefined or null input
+  if (!tailwindClass || typeof tailwindClass !== 'string') {
+    return '#3b82f6';
+  }
+  
+  const colorMap = {
+    'blue-600': '#2563eb', 'blue-500': '#3b82f6', 'blue-400': '#60a5fa',
+    'purple-600': '#9333ea', 'purple-500': '#a855f7', 'purple-400': '#c084fc',
+    'pink-600': '#db2777', 'pink-500': '#ec4899', 'pink-400': '#f472b6',
+    'cyan-600': '#0891b2', 'cyan-500': '#06b6d4', 'cyan-400': '#22d3ee',
+    'gray-950': '#030712', 'gray-900': '#111827', 'gray-800': '#1f2937',
+    'slate-950': '#020617', 'slate-900': '#0f172a', 'slate-800': '#1e293b',
+    'orange-950': '#431407', 'orange-900': '#7c2d12', 'orange-500': '#f97316',
+    'red-500': '#ef4444', 'green-600': '#16a34a', 'teal-500': '#14b8a6',
+    'yellow-500': '#eab308', 'indigo-600': '#4f46e5'
+  };
+  
+  const match = tailwindClass.match(/(blue|purple|pink|cyan|gray|slate|orange|red|green|teal|yellow|indigo)-(\d+)/);
+  if (match) {
+    const key = `${match[1]}-${match[2]}`;
+    return colorMap[key] || '#3b82f6';
+  }
+  return '#3b82f6';
+};
+
+// Function to apply theme CSS variables
+const applyThemeVariables = (theme) => {
+  if (typeof document === 'undefined' || !theme) return;
+  
+  const root = document.documentElement;
+  
+  // Helper to safely split and get color
+  const safeGetColor = (colorString, index) => {
+    if (!colorString || typeof colorString !== 'string') return '';
+    const parts = colorString.split(' ');
+    return parts[index] || '';
+  };
+  
+  // Extract colors from gradient classes with safety checks
+  const primaryStart = extractColorFromTailwind(safeGetColor(theme.primary, 1));
+  const primaryEnd = extractColorFromTailwind(safeGetColor(theme.primary, 2));
+  const secondaryStart = extractColorFromTailwind(safeGetColor(theme.secondary, 1));
+  const secondaryEnd = extractColorFromTailwind(safeGetColor(theme.secondary, 2));
+  const accentStart = extractColorFromTailwind(safeGetColor(theme.accent, 1));
+  const accentEnd = extractColorFromTailwind(safeGetColor(theme.accent, 2));
+  const backgroundStart = extractColorFromTailwind(safeGetColor(theme.background, 1));
+  const backgroundEnd = extractColorFromTailwind(safeGetColor(theme.background, 3));
+  const cardStart = extractColorFromTailwind(safeGetColor(theme.card, 1));
+  const cardEnd = extractColorFromTailwind(safeGetColor(theme.card, 2));
+  
+  // Apply CSS variables
+  root.style.setProperty('--theme-primary-start', primaryStart);
+  root.style.setProperty('--theme-primary-end', primaryEnd);
+  root.style.setProperty('--theme-secondary-start', secondaryStart);
+  root.style.setProperty('--theme-secondary-end', secondaryEnd);
+  root.style.setProperty('--theme-accent-start', accentStart);
+  root.style.setProperty('--theme-accent-end', accentEnd);
+  root.style.setProperty('--theme-background-start', backgroundStart);
+  root.style.setProperty('--theme-background-end', backgroundEnd);
+  root.style.setProperty('--theme-card-start', cardStart);
+  root.style.setProperty('--theme-card-end', cardEnd);
+  
+  // Text colors with safety checks
+  const textColor = theme.text?.includes('white') ? '#ffffff' : 
+                   theme.text?.includes('gray-900') ? '#111827' : '#ffffff';
+  const textSecondaryColor = theme.textSecondary?.includes('gray-400') ? '#9ca3af' :
+                            theme.textSecondary?.includes('gray-600') ? '#4b5563' : '#9ca3af';
+  
+  root.style.setProperty('--theme-text', textColor);
+  root.style.setProperty('--theme-text-secondary', textSecondaryColor);
+  
+  // Border color
+  const borderColor = extractColorFromTailwind(theme.border?.replace('border-', '') || '');
+  root.style.setProperty('--theme-border', borderColor);
+};
+
 // Predefined themes
 export const themes = {
   default: {
@@ -273,9 +351,9 @@ export const themes = {
 
 export const ThemeProvider = ({ children }) => {
   const [currentTheme, setCurrentTheme] = useState('default');
-  const [customColors, setCustomColors] = useState(null);
-  const [fontSize, setFontSize] = useState('medium');
-  const [fontFamily, setFontFamily] = useState('mono');
+  const [customColors, setCustomColors] = useState([]);
+  const [fontSize, setFontSize] = useState('md');
+  const [fontFamily, setFontFamily] = useState('Inter');
 
   // Load theme from localStorage
   useEffect(() => {
@@ -290,44 +368,81 @@ export const ThemeProvider = ({ children }) => {
     if (savedFontFamily) setFontFamily(savedFontFamily);
   }, []);
 
-  // Save theme to localStorage
-  const changeTheme = (themeName) => {
+  // Apply theme variables when theme changes
+  useEffect(() => {
+    const theme = themes[currentTheme];
+    if (theme) {
+      applyThemeVariables(theme);
+    }
+  }, [currentTheme]);
+
+  // Save theme to localStorage and apply variables
+  const setTheme = (themeName) => {
     setCurrentTheme(themeName);
     localStorage.setItem('userTheme', themeName);
-    setCustomColors(null);
-    localStorage.removeItem('customColors');
+    const theme = themes[themeName];
+    if (theme) {
+      applyThemeVariables(theme);
+    }
   };
 
   // Save custom colors
   const setCustomTheme = (colors) => {
     setCustomColors(colors);
     localStorage.setItem('customColors', JSON.stringify(colors));
-    setCurrentTheme('custom');
   };
 
   // Change font size
   const changeFontSize = (size) => {
     setFontSize(size);
     localStorage.setItem('fontSize', size);
+    
+    // Apply font size to root element
+    const root = document.documentElement;
+    const sizeMap = {
+      sm: '14px',
+      md: '16px', 
+      lg: '18px',
+      xl: '20px'
+    };
+    root.style.setProperty('--base-font-size', sizeMap[size] || '16px');
   };
 
   // Change font family
   const changeFontFamily = (family) => {
     setFontFamily(family);
     localStorage.setItem('fontFamily', family);
+    
+    // Apply font family to root element
+    const root = document.documentElement;
+    root.style.setProperty('--base-font-family', family);
   };
 
-  const theme = customColors || themes[currentTheme] || themes.default;
+  const theme = themes[currentTheme] || themes.default;
 
   const value = {
+    // Theme data
     theme,
-    currentTheme,
-    changeTheme,
-    setCustomTheme,
     themes,
+    currentTheme,
+    
+    // Theme functions
+    setTheme,
+    applyTheme: applyThemeVariables,
+    
+    // Custom colors
+    customColors,
+    setCustomColors: setCustomTheme,
+    
+    // Typography
     fontSize,
-    changeFontSize,
+    setFontSize: changeFontSize,
     fontFamily,
+    setFontFamily: changeFontFamily,
+    
+    // Legacy support
+    changeTheme: setTheme,
+    changeFontSize,
     changeFontFamily
   };
 

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { clerkConfig, validateClerkConfig } from './lib/clerk';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { TranslationProvider } from './contexts/TranslationContext';
 import AuthButton from './components/Auth/AuthButton';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import LoadingScreen from './components/Auth/LoadingScreen';
@@ -337,7 +338,9 @@ function App() {
     >
       <ThemeProvider>
         <AuthProvider>
-          <AppContent />
+          <TranslationProvider>
+            <AppContent />
+          </TranslationProvider>
         </AuthProvider>
       </ThemeProvider>
     </ClerkProvider>

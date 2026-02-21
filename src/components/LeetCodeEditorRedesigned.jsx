@@ -9,7 +9,7 @@ import {
   Layers, Filter, Search, Timer, Pause, RotateCcw, Volume2, VolumeX,
   Youtube, Github, Download, Share2, MessageCircle, Lightbulb,
   Award, BarChart3, Users, Pencil, Building2, Map, X, Eye, Activity,
-  Palette, Sparkles
+  Palette, Sparkles, Globe, Volume
 } from 'lucide-react';
 import { dsaProblems } from '../data/dsaProblems';
 import { companyWiseProblems } from '../data/companyWiseProblems';
@@ -34,7 +34,9 @@ import VideoStreamPlayer from './VideoStreamPlayer';
 import { useClerkProgress } from '../hooks/useClerkProgress';
 import useSmartDebugger from '../hooks/useSmartDebugger';
 import useAICodeCompletion from '../hooks/useAICodeCompletion';
+import useResponsive from '../hooks/useResponsive';
 import { useTheme } from '../contexts/ThemeContext';
+import { useTranslation } from '../contexts/TranslationContext';
 import '../styles/leetcode-editor-responsive.css';
 import '../styles/z-index-fix.css';
 import '../styles/problem-list-animations.css';
@@ -50,6 +52,23 @@ const LeetCodeEditorRedesigned = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   const { theme, fontSize: themeFontSize, fontFamily } = useTheme();
+  const { 
+    t, 
+    language: translationLanguage, 
+    changeLanguage: handleTranslationChange,
+    speak,
+    stopSpeaking,
+    isSpeaking,
+    isTranslating,
+    supportedLanguages: translationLanguages,
+    translateText
+  } = useTranslation();
+  
+  // Aliases for UI language (same as translation language)
+  const uiLanguage = translationLanguage;
+  const changeUILanguage = handleTranslationChange;
+  
+  const responsive = useResponsive();
   
   // Clerk-based progress tracking
   const { 
@@ -112,6 +131,7 @@ const LeetCodeEditorRedesigned = () => {
   // UI states
   const [showProblemList, setShowProblemList] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showThemeCustomizer, setShowThemeCustomizer] = useState(false);
   const [isLeftPanelMinimized, setIsLeftPanelMinimized] = useState(false);
   const [isConsoleMinimized, setIsConsoleMinimized] = useState(false);
   const [consoleTab, setConsoleTab] = useState('testcase');
@@ -121,6 +141,9 @@ const LeetCodeEditorRedesigned = () => {
   const [showSmartDebugNotification, setShowSmartDebugNotification] = useState(false);
   const [notificationDismissed, setNotificationDismissed] = useState(false);
   const [smartDebugMode, setSmartDebugMode] = useState('auto'); // auto, manual, off
+  
+  // Translation state
+  const [translatedDescription, setTranslatedDescription] = useState('');
   
   // Execution states
   const [isRunning, setIsRunning] = useState(false);
@@ -156,7 +179,6 @@ const LeetCodeEditorRedesigned = () => {
   const [showSolutionViewer, setShowSolutionViewer] = useState(false);
   const [showAIPeerChat, setShowAIPeerChat] = useState(false);
   const [showGithubModal, setShowGithubModal] = useState(false);
-  const [showThemeCustomizer, setShowThemeCustomizer] = useState(false);
   
   // Mobile menu state
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -193,6 +215,33 @@ const LeetCodeEditorRedesigned = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+  
+  // Translate problem description when language changes (with debouncing)
+  useEffect(() => {
+    // Clear previous translation immediately when language changes
+    setTranslatedDescription('');
+    
+    const translateDescription = async () => {
+      if (translationLanguage === 'en' || !selectedProblem?.description) {
+        return;
+      }
+      
+      try {
+        console.log(`🌐 Translating to ${translationLanguage}...`);
+        const translated = await translateText(selectedProblem.description, translationLanguage);
+        setTranslatedDescription(translated);
+        console.log('✅ Translation complete');
+      } catch (error) {
+        console.error('❌ Translation failed:', error);
+        setTranslatedDescription('');
+      }
+    };
+    
+    // Debounce translation to avoid rapid API calls
+    const timeoutId = setTimeout(translateDescription, 300);
+    
+    return () => clearTimeout(timeoutId);
+  }, [translationLanguage, selectedProblem, translateText]);
   
   // Auto-minimize left panel on mobile
   useEffect(() => {
@@ -500,7 +549,7 @@ const LeetCodeEditorRedesigned = () => {
           >
             <Layers className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-purple-400 group-hover:text-purple-300 transition-colors`} />
             <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold text-gray-300 group-hover:text-white transition-colors`}>
-              {isMobile ? 'List' : 'Problems'}
+              {isMobile ? 'Prob' : 'Problems'}
             </span>
             {!isMobile && (
               <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-300 ${showProblemList ? 'rotate-180' : ''}`} />
@@ -578,6 +627,22 @@ const LeetCodeEditorRedesigned = () => {
                 ))}
               </select>
 
+              {/* Translation Language Selector - VISIBLE */}
+              <div className="relative flex-shrink-0">
+                <select
+                  value={translationLanguage}
+                  onChange={(e) => handleTranslationChange(e.target.value)}
+                  className="px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-xl border border-emerald-400/30 focus:outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/20 transition-all cursor-pointer backdrop-blur-sm shadow-lg whitespace-nowrap"
+                  title="Translate problem description"
+                >
+                  {translationLanguages.map(lang => (
+                    <option key={lang.code} value={lang.code} className="bg-slate-800">
+                      {lang.flag} {lang.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="h-8 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
 
               {/* Action Buttons Group */}
@@ -589,7 +654,7 @@ const LeetCodeEditorRedesigned = () => {
                   title="Customize Theme"
                 >
                   <Palette className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
-                  <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Themes</span>
+                  <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">{t('themes')}</span>
                 </button>
 
                 {/* AI Chat Button */}
@@ -599,7 +664,7 @@ const LeetCodeEditorRedesigned = () => {
                   title="AI Peer Chat"
                 >
                   <MessageCircle className="w-4 h-4 text-pink-400 group-hover:text-pink-300 transition-colors" />
-                  <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">AI Chat</span>
+                  <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">{t('aiChat')}</span>
                 </button>
               </div>
 
@@ -661,6 +726,24 @@ const LeetCodeEditorRedesigned = () => {
       {(isMobile || isTablet) && showMobileMenu && (
         <div className={`absolute top-${isMobile ? '14' : '16'} right-0 left-0 z-20 bg-gradient-to-b ${theme.card} backdrop-blur-xl border-b ${theme.border} shadow-2xl animate-slideDown`}>
           <div className="p-4 space-y-2">
+            {/* Translation Language Selector */}
+            <div className="mb-3">
+              <label className="text-xs text-gray-400 mb-1 block">Translate to:</label>
+              <select
+                value={translationLanguage}
+                onChange={(e) => {
+                  handleTranslationChange(e.target.value);
+                }}
+                className="w-full px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-800/80 to-emerald-700/80 rounded-xl border border-emerald-500/20 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
+              >
+                {translationLanguages.map(lang => (
+                  <option key={lang.code} value={lang.code} className="bg-slate-800">
+                    {lang.flag} {lang.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Problems List */}
             <button
               onClick={() => {
@@ -900,7 +983,7 @@ const LeetCodeEditorRedesigned = () => {
                     }`}
                   >
                     <BookOpen className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} inline mr-1`} />
-                    {isMobile ? 'Desc' : 'Description'}
+                    {isMobile ? t('description').substring(0, 4) : t('description')}
                   </button>
                   
                   {!isMobile && (
@@ -912,7 +995,7 @@ const LeetCodeEditorRedesigned = () => {
                         }`}
                       >
                         <Activity className="w-4 h-4 inline mr-1" />
-                        Smart Debug
+                        {t('smartDebug')}
                         {/* Confidence indicator */}
                         {analysisResult && getConfidence() > 40 && (
                           <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
@@ -930,7 +1013,7 @@ const LeetCodeEditorRedesigned = () => {
                     }`}
                   >
                     <Brain className="w-4 h-4 inline mr-1" />
-                    Whiteboard
+                    {t('whiteboard')}
                   </button>
                   
                   <button
@@ -940,7 +1023,7 @@ const LeetCodeEditorRedesigned = () => {
                     }`}
                   >
                     <Zap className="w-4 h-4 inline mr-1" />
-                    Dry Run
+                    {t('dryRun')}
                   </button>
                     </>
                   )}
@@ -993,22 +1076,83 @@ const LeetCodeEditorRedesigned = () => {
 
                     {/* Description */}
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-400 mb-2">Description</h3>
-                      <p className="text-gray-300 leading-relaxed">{selectedProblem.description}</p>
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-semibold text-gray-400">{t('description')}</h3>
+                        <div className="flex items-center gap-2">
+                          {/* Translation Language Selector - For Problem Description */}
+                          <select
+                            value={translationLanguage}
+                            onChange={(e) => handleTranslationChange(e.target.value)}
+                            className="px-2 py-1 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg border border-emerald-400/30 focus:outline-none focus:border-emerald-400/50 transition-all cursor-pointer"
+                            title="Translate problem description"
+                          >
+                            {translationLanguages.map(lang => (
+                              <option key={lang.code} value={lang.code} className="bg-slate-800">
+                                {lang.flag} {lang.name}
+                              </option>
+                            ))}
+                          </select>
+                          
+                          {/* Speak Button */}
+                          <button
+                            onClick={() => {
+                              const textToSpeak = translatedDescription || selectedProblem.description;
+                              isSpeaking ? stopSpeaking() : speak(textToSpeak, translationLanguage);
+                            }}
+                            className="p-2 hover:bg-slate-700 rounded-lg transition-all"
+                            title={isSpeaking ? "Stop speaking" : "Read aloud"}
+                          >
+                            {isSpeaking ? (
+                              <VolumeX className="w-4 h-4 text-blue-400 animate-pulse" />
+                            ) : (
+                              <Volume className="w-4 h-4 text-gray-400 hover:text-blue-400" />
+                            )}
+                          </button>
+                          
+                          {/* UI Language Selector - 150+ Languages */}
+                          <select
+                            value={uiLanguage}
+                            onChange={(e) => changeUILanguage(e.target.value)}
+                            className="px-3 py-1.5 text-xs font-medium text-white bg-slate-700/50 hover:bg-slate-700 rounded-lg border border-slate-600/50 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer max-w-[200px]"
+                            title="Change app language (150+ languages)"
+                          >
+                            {translationLanguages.map(lang => (
+                              <option key={lang.code} value={lang.code} className="bg-slate-800">
+                                {lang.flag} {lang.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      {isTranslating ? (
+                        <div className="flex items-center gap-2 text-gray-400">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+                          <span className="text-sm">Translating...</span>
+                        </div>
+                      ) : (
+                        <p className="text-gray-300 leading-relaxed">
+                          {translatedDescription || selectedProblem.description}
+                        </p>
+                      )}
+                      {translatedDescription && (
+                        <div className="mt-2 text-xs text-gray-500 italic">
+                          Translated from English
+                        </div>
+                      )}
                     </div>
 
                     {/* Examples */}
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-400 mb-3">Examples</h3>
+                      <h3 className="text-sm font-semibold text-gray-400 mb-3">{t('examples')}</h3>
                       {selectedProblem.examples?.map((example, idx) => (
                         <div key={idx} className="mb-4 p-4 bg-slate-800/30 rounded-lg border border-white/5">
                           <div className="text-sm">
                             <div className="mb-2">
-                              <span className="text-gray-400">Input:</span>
+                              <span className="text-gray-400">{t('input')}:</span>
                               <code className="ml-2 text-blue-300">{example.input}</code>
                             </div>
                             <div>
-                              <span className="text-gray-400">Output:</span>
+                              <span className="text-gray-400">{t('output')}:</span>
                               <code className="ml-2 text-green-300">{example.output}</code>
                             </div>
                             {example.explanation && (
@@ -1022,7 +1166,7 @@ const LeetCodeEditorRedesigned = () => {
                     {/* Constraints */}
                     {selectedProblem.constraints && (
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-400 mb-2">Constraints</h3>
+                        <h3 className="text-sm font-semibold text-gray-400 mb-2">{t('constraints')}</h3>
                         <ul className="space-y-1 text-sm text-gray-300">
                           {selectedProblem.constraints.map((constraint, idx) => (
                             <li key={idx} className="flex items-start gap-2">
@@ -1047,7 +1191,7 @@ const LeetCodeEditorRedesigned = () => {
                         className="flex items-center gap-2 px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-blue-500/30 transition-all text-sm active:scale-95"
                       >
                         <Lightbulb className="w-4 h-4" />
-                        Solutions
+                        {t('solutions')}
                       </button>
                       <button
                         onClick={(e) => {
@@ -1065,7 +1209,7 @@ const LeetCodeEditorRedesigned = () => {
                         className="flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg border border-red-500/30 transition-all text-sm active:scale-95"
                       >
                         <Youtube className="w-4 h-4" />
-                        Video
+                        {t('video')}
                       </button>
                       <button
                         onClick={(e) => {
@@ -1078,7 +1222,7 @@ const LeetCodeEditorRedesigned = () => {
                         className="flex items-center gap-2 px-3 py-2 bg-purple-500/10 hover:bg-purple-500/20 rounded-lg border border-purple-500/30 transition-all text-sm active:scale-95"
                       >
                         <Users className="w-4 h-4" />
-                        1v1 Session
+                        {t('session')}
                       </button>
                     </div>
                   </>
@@ -1122,7 +1266,7 @@ const LeetCodeEditorRedesigned = () => {
           <div className={`h-12 bg-gradient-to-r ${theme.card} border-b ${theme.border} flex items-center justify-between px-4`}>
             <div className="flex items-center gap-2">
               <Code2 className="w-4 h-4 text-purple-400" />
-              <span className={`text-sm font-medium ${theme.text}`}>Code Editor</span>
+              <span className={`text-sm font-medium ${theme.text}`}>{t('codeEditor')}</span>
             </div>
             <div className="flex items-center gap-2">
               {/* AI Completion Toggle */}
@@ -1337,7 +1481,7 @@ const LeetCodeEditorRedesigned = () => {
                 className={`flex items-center gap-1.5 ${isMobile ? 'px-3 py-1.5 text-sm' : 'px-4 py-2'} bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95`}
               >
                 {isRunning ? <Zap className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} animate-pulse`} /> : <Play className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />}
-                {!isMobile && 'Run'}
+                {!isMobile && t('run')}
               </button>
               <button
                 onClick={(e) => {
@@ -1350,7 +1494,7 @@ const LeetCodeEditorRedesigned = () => {
                 className={`flex items-center gap-1.5 ${isMobile ? 'px-3 py-1.5 text-sm' : 'px-4 py-2'} bg-gradient-to-r ${theme.primary} hover:opacity-80 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95`}
               >
                 {isSubmitting ? <Zap className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} animate-pulse`} /> : <Send className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />}
-                {!isMobile && 'Submit'}
+                {!isMobile && t('submit')}
               </button>
             </div>
 
@@ -1367,7 +1511,7 @@ const LeetCodeEditorRedesigned = () => {
                     className={`flex items-center gap-2 px-3 py-2 bg-gradient-to-r ${theme.card} hover:opacity-80 rounded-lg border ${theme.border} transition-all text-sm active:scale-95`}
                   >
                     <Download className="w-4 h-4" />
-                    Download
+                    {t('download')}
                   </button>
                   <button
                     onClick={(e) => {
@@ -1379,7 +1523,7 @@ const LeetCodeEditorRedesigned = () => {
                     className={`flex items-center gap-2 px-3 py-2 bg-gradient-to-r ${theme.card} hover:opacity-80 rounded-lg border ${theme.border} transition-all text-sm active:scale-95`}
                   >
                     <Share2 className="w-4 h-4" />
-                    Share
+                    {t('share')}
                   </button>
                 </>
               )}

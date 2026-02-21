@@ -1,0 +1,401 @@
+/* ============================================
+   THEMED LEETCODE EDITOR STYLES
+   Responsive and theme-aware styling
+   ============================================ */
+
+/* Theme-aware scrollbar */
+.themed-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.themed-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.themed-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--theme-primary-start);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.themed-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-primary-end);
+}
+
+/* Monaco Editor Theme Integration */
+.monaco-editor {
+  border-radius: 0;
+}
+
+.monaco-editor .margin {
+  background: transparent !important;
+}
+
+.monaco-editor .monaco-scrollable-element {
+  border-radius: 0;
+}
+
+/* Responsive Editor Layout */
+@media (max-width: 768px) {
+  .monaco-editor .minimap {
+    display: none !important;
+  }
+  
+  .monaco-editor .margin {
+    width: 40px !important;
+  }
+  
+  .monaco-editor .line-numbers {
+    font-size: 12px !important;
+  }
+}
+
+/* Theme-aware buttons */
+.themed-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.themed-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.themed-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Animated gradient backgrounds */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+/* Theme-aware code highlighting */
+.code-highlight {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--theme-accent-start),
+    transparent
+  );
+  animation: highlight-sweep 2s ease-in-out;
+}
+
+@keyframes highlight-sweep {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Responsive problem list */
+.problem-list-item {
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.problem-list-item:hover {
+  border-left-color: var(--theme-primary-start);
+  transform: translateX(4px);
+}
+
+.problem-list-item.active {
+  border-left-color: var(--theme-accent-start);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Timer animations */
+.timer-pulse {
+  animation: timer-pulse 1s ease-in-out infinite;
+}
+
+@keyframes timer-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.timer-warning {
+  animation: timer-warning 0.5s ease-in-out infinite;
+}
+
+@keyframes timer-warning {
+  0%, 100% {
+    color: #ef4444;
+  }
+  50% {
+    color: #fbbf24;
+  }
+}
+
+/* Console output styling */
+.console-output {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  line-height: 1.6;
+}
+
+.console-output .success {
+  color: #10b981;
+}
+
+.console-output .error {
+  color: #ef4444;
+}
+
+.console-output .info {
+  color: #6b7280;
+}
+
+.console-output .warning {
+  color: #f59e0b;
+}
+
+/* Responsive modal */
+@media (max-width: 640px) {
+  .problem-list-modal {
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+}
+
+/* Touch-friendly buttons on mobile */
+@media (max-width: 768px) {
+  .themed-button,
+  button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1rem;
+  }
+  
+  .icon-button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem;
+  }
+}
+
+/* Smooth panel transitions */
+.panel-slide-enter {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.panel-slide-enter-active {
+  transform: translateX(0);
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.panel-slide-exit {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.panel-slide-exit-active {
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+/* Theme selector preview */
+.theme-preview {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.theme-preview::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.theme-preview:hover::after {
+  transform: translateX(100%);
+}
+
+/* Difficulty badges */
+.difficulty-easy {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.difficulty-medium {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.difficulty-hard {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Loading states */
+.skeleton-loader {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Focus states for accessibility */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--theme-accent-start);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Prevent layout shift */
+.no-layout-shift {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Performance optimizations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .monaco-editor {
+    border: 1px solid #000;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .themed-button {
+    border: 2px solid currentColor;
+  }
+  
+  .problem-list-item {
+    border: 1px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .themed-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Mobile landscape optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .problem-description {
+    max-height: 60vh;
+  }
+  
+  .console-panel {
+    max-height: 30vh;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .editor-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* Ultra-wide screen optimizations */
+@media (min-width: 1920px) {
+  .problem-description {
+    max-width: 600px;
+  }
+  
+  .editor-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+}

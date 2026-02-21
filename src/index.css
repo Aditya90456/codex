@@ -1,5 +1,6 @@
+@import './styles/theme-variables.css';
 @import './styles/global-fixes.css';
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Fira+Code:wght@300;400;500;600;700&display=swap');
 @import './styles/scrollbar.css';
 @import './styles/icon-fixes.css';
 @import './styles/responsive.css';
@@ -9,6 +10,7 @@
 @import './styles/design-fixes.css';
 @import './styles/leetcode-responsive.css';
 @import './styles/leetcode-mobile-first.css';
+@import './styles/themed-leetcode.css';
 
 @tailwind base;
 @tailwind components;
