@@ -10,7 +10,8 @@ import {
   Settings,
   Palette,
   Globe,
-  ChevronDown
+  ChevronDown,
+  Trophy
 } from 'lucide-react';
 import useResponsiveTheme from '../../hooks/useResponsiveTheme';
 import ThemeSelector from '../UI/ThemeSelector';
@@ -46,6 +47,7 @@ const ResponsiveNav = () => {
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/leetcode', label: 'LeetCode', icon: Code },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { path: '/learn', label: 'Learn', icon: BookOpen },
     { path: '/profile', label: 'Profile', icon: User },
   ];

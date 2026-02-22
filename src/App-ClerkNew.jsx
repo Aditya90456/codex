@@ -4,6 +4,7 @@ import { clerkConfig, validateClerkConfig } from './lib/clerk';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { TranslationProvider } from './contexts/TranslationContext';
+import { LeaderboardProvider } from './contexts/LeaderboardContext';
 import AuthButton from './components/Auth/AuthButton';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import LoadingScreen from './components/Auth/LoadingScreen';
@@ -38,6 +39,7 @@ import SharedCodeViewer from './components/SharedCodeViewer';
 import StudyGroups from './components/StudyGroups';
 import CertificatesDashboard from './components/CertificatesDashboard';
 import ProductCompanyRoadmap from './components/ProductCompanyRoadmap';
+import LeaderboardFullPage from './pages/LeaderboardFullPage';
 import './App.css';
 
 // Validate Clerk configuration on app start
@@ -156,6 +158,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <LeetCodeEditorRedesigned />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/leaderboard" 
+            element={
+              <ProtectedRoute>
+                <LeaderboardFullPage />
               </ProtectedRoute>
             } 
           />
@@ -339,7 +349,9 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <TranslationProvider>
-            <AppContent />
+            <LeaderboardProvider>
+              <AppContent />
+            </LeaderboardProvider>
           </TranslationProvider>
         </AuthProvider>
       </ThemeProvider>

@@ -30,6 +30,7 @@ import DSARoadmapTracker from './DSARoadmapTracker';
 import LeetCodeDailyTask from './LeetCodeDailyTask';
 import MonthlyGoals from './MonthlyGoals';
 import ThemeCustomizer from './ThemeCustomizer';
+import PointsAnimation from './Leaderboard/PointsAnimation';
 import VideoStreamPlayer from './VideoStreamPlayer';
 import { useClerkProgress } from '../hooks/useClerkProgress';
 import useSmartDebugger from '../hooks/useSmartDebugger';
@@ -37,6 +38,7 @@ import useAICodeCompletion from '../hooks/useAICodeCompletion';
 import useResponsive from '../hooks/useResponsive';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTranslation } from '../contexts/TranslationContext';
+import { useLeaderboard } from '../contexts/LeaderboardContext';
 import { executeCode, runTestCases, validateCode } from '../services/codeExecutionService';
 import '../styles/leetcode-editor-responsive.css';
 import '../styles/z-index-fix.css';
@@ -176,6 +178,11 @@ const LeetCodeEditorRedesigned = () => {
   const [showMonthlyGoals, setShowMonthlyGoals] = useState(false);
   const [showCodeShareModal, setShowCodeShareModal] = useState(false);
   const [showPracticeScheduler, setShowPracticeScheduler] = useState(false);
+
+  // Leaderboard integration
+  const { addProblemSolved, userStats } = useLeaderboard();
+  const [showPointsAnimation, setShowPointsAnimation] = useState(false);
+  const [pointsData, setPointsData] = useState(null);
   const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [showSolutionViewer, setShowSolutionViewer] = useState(false);
   const [showAIPeerChat, setShowAIPeerChat] = useState(false);
@@ -492,13 +499,29 @@ const LeetCodeEditorRedesigned = () => {
             0 // timeSpent - can be enhanced later with timer
           );
           
+          // Award leaderboard points!
+          const averageTime = 120; // Mock average time in seconds
+          const timeSpent = testResults[0]?.runtime ? testResults[0].runtime / 1000 : 60;
+          
+          const pointsResult = addProblemSolved(
+            difficulty.toLowerCase(),
+            timeSpent,
+            averageTime
+          );
+          
           console.log('✅ Problem marked as completed:', selectedProblem.id);
+          console.log('🏆 Points awarded:', pointsResult);
+          
+          // Show points animation
+          setPointsData(pointsResult);
+          setShowPointsAnimation(true);
         }
         setConsoleOutput(prev => [
           ...prev,
           { type: 'success', message: '' },
           { type: 'success', message: '🎉 All tests passed! Problem completed!' },
-          { type: 'success', message: '✅ Progress saved to your profile!' }
+          { type: 'success', message: '✅ Progress saved to your profile!' },
+          { type: 'success', message: `🏆 Points earned: +${pointsData?.pointsEarned || 0}` }
         ]);
       } else {
         setConsoleOutput(prev => [
@@ -695,6 +718,21 @@ const LeetCodeEditorRedesigned = () => {
                 >
                   <MessageCircle className="w-4 h-4 text-pink-400 group-hover:text-pink-300 transition-colors" />
                   <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">{t('aiChat')}</span>
+                </button>
+
+                {/* Leaderboard Button */}
+                <button
+                  onClick={() => navigate('/leaderboard')}
+                  className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 hover:from-yellow-500/20 hover:to-orange-500/20 rounded-xl border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300 shadow-lg shadow-yellow-500/5 whitespace-nowrap flex-shrink-0"
+                  title="Leaderboard"
+                >
+                  <Trophy className="w-4 h-4 text-yellow-400 group-hover:text-yellow-300 transition-colors" />
+                  <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Leaderboard</span>
+                  {userStats.totalPoints > 0 && (
+                    <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-300 rounded-full text-xs font-bold">
+                      {userStats.totalPoints}
+                    </span>
+                  )}
                 </button>
               </div>
 
@@ -2260,6 +2298,19 @@ const LeetCodeEditorRedesigned = () => {
           setCurrentVideoUrl('');
         }}
       />
+
+      {/* Points Animation */}
+      {showPointsAnimation && pointsData && (
+        <PointsAnimation
+          points={pointsData.pointsEarned}
+          bonusPoints={pointsData.bonusPoints}
+          newBadges={pointsData.newBadges}
+          onComplete={() => {
+            setShowPointsAnimation(false);
+            setPointsData(null);
+          }}
+        />
+      )}
     </div>
   );
 };
