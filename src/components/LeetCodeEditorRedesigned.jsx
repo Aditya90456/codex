@@ -37,6 +37,7 @@ import useAICodeCompletion from '../hooks/useAICodeCompletion';
 import useResponsive from '../hooks/useResponsive';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTranslation } from '../contexts/TranslationContext';
+import { executeCode, runTestCases, validateCode } from '../services/codeExecutionService';
 import '../styles/leetcode-editor-responsive.css';
 import '../styles/z-index-fix.css';
 import '../styles/problem-list-animations.css';
@@ -399,58 +400,66 @@ const LeetCodeEditorRedesigned = () => {
     setConsoleOutput([{ type: 'info', message: '⏳ Running code...' }]);
 
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      // Validate code first
+      const validation = validateCode(code, language);
+      if (!validation.valid) {
+        throw new Error(`Syntax Error: ${validation.error}`);
+      }
+
+      // Prepare test case
       const testCase = {
         input: customInput || selectedProblem.examples[0].input,
         expected: selectedProblem.examples[0].output
       };
 
-      console.log('Sending request to:', `${backendUrl}/api/leetcode/run`);
+      console.log('Executing code with real API...');
       console.log('Test case:', testCase);
 
-      const response = await fetch(`${backendUrl}/api/leetcode/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          language,
-          testCases: [testCase],
-          problemId: selectedProblem.id
-        })
-      });
-
-      const data = await response.json();
-      console.log('Response:', data);
+      // Execute code using real API (Piston - completely free!)
+      const startTime = Date.now();
+      const results = await runTestCases(code, language, [testCase]);
+      const endTime = Date.now();
       
-      if (data.success) {
-        const result = data.results[0];
-        
-        // Track run attempt
-        if (user) {
-          await recordSubmission(selectedProblem.id, result.passed, language, 1);
-        }
-
-        setConsoleOutput([
-          { type: 'success', message: '✓ Code executed successfully' },
-          { type: 'info', message: '' },
-          { type: 'info', message: `Input: ${testCase.input}` },
-          { type: result.passed ? 'success' : 'error', message: `Your Output: ${JSON.stringify(result.output)}` },
-          { type: 'success', message: `Expected: ${testCase.expected}` },
-          { type: result.passed ? 'success' : 'error', message: result.passed ? '✓ Test passed' : '✗ Test failed' },
-          { type: 'info', message: '' },
-          { type: 'info', message: `Runtime: ${result.runtime}ms` },
-          { type: 'info', message: `Memory: ${(result.memory / 1024).toFixed(1)} MB` }
-        ]);
-        
-        setTestResults(data.results);
-      } else {
-        throw new Error(data.error || 'Execution failed');
+      const result = results[0];
+      
+      // Track run attempt
+      if (user) {
+        await recordSubmission(selectedProblem.id, result.passed, language, 1);
       }
+
+      // Display results
+      const outputMessages = [
+        { type: 'success', message: '✓ Code executed successfully' },
+        { type: 'info', message: '' },
+        { type: 'info', message: `Input: ${testCase.input}` },
+        { type: result.passed ? 'success' : 'error', message: `Your Output: ${result.output || '(empty)'}` },
+        { type: 'info', message: `Expected: ${testCase.expected}` },
+        { type: result.passed ? 'success' : 'error', message: result.passed ? '✓ Test passed' : '✗ Test failed' },
+        { type: 'info', message: '' },
+        { type: 'info', message: `Runtime: ${result.runtime}ms` },
+      ];
+
+      if (result.memory > 0) {
+        outputMessages.push({ type: 'info', message: `Memory: ${(result.memory / 1024).toFixed(1)} MB` });
+      }
+
+      if (result.error) {
+        outputMessages.push({ type: 'error', message: '' });
+        outputMessages.push({ type: 'error', message: `Error: ${result.error}` });
+      }
+
+      setConsoleOutput(outputMessages);
+      setTestResults(results);
+      
     } catch (error) {
       console.error('Run code error:', error);
       setConsoleOutput([
         { type: 'error', message: `❌ ${error.message}` },
-        { type: 'info', message: 'Make sure the backend server is running' }
+        { type: 'info', message: '' },
+        { type: 'info', message: '🔧 Troubleshooting:' },
+        { type: 'info', message: '1. Check your code syntax' },
+        { type: 'info', message: '2. Make sure your code handles the input correctly' },
+        { type: 'info', message: '3. Verify the output format matches expected' }
       ]);
     } finally {
       setIsRunning(false);
@@ -464,6 +473,9 @@ const LeetCodeEditorRedesigned = () => {
     
     try {
       await runCode();
+      
+      // Wait a bit for runCode to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Mark as completed if all tests pass
       if (testResults && testResults.every(r => r.passed)) {
@@ -488,9 +500,20 @@ const LeetCodeEditorRedesigned = () => {
           { type: 'success', message: '🎉 All tests passed! Problem completed!' },
           { type: 'success', message: '✅ Progress saved to your profile!' }
         ]);
+      } else {
+        setConsoleOutput(prev => [
+          ...prev,
+          { type: 'warning', message: '' },
+          { type: 'warning', message: '⚠️ Some tests failed. Fix the issues and try again.' }
+        ]);
       }
     } catch (error) {
       console.error('Submit error:', error);
+      setConsoleOutput(prev => [
+        ...prev,
+        { type: 'error', message: '' },
+        { type: 'error', message: `❌ Submit failed: ${error.message}` }
+      ]);
     } finally {
       setIsSubmitting(false);
     }
@@ -1439,7 +1462,7 @@ const LeetCodeEditorRedesigned = () => {
                 }}
                 type="button"
                 disabled={isRunning}
-                className={`flex items-center gap-1.5 ${isMobile ? 'px-3 py-1.5 text-sm' : 'px-4 py-2'} bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95`}
+                className={`flex items-center gap-1.5 ${isMobile ? 'px-3 py-1.5 text-sm' : 'px-4 py-2'} bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-lg`}
               >
                 {isRunning ? <Zap className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} animate-pulse`} /> : <Play className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />}
                 {!isMobile && t('run')}
@@ -1452,7 +1475,7 @@ const LeetCodeEditorRedesigned = () => {
                 }}
                 type="button"
                 disabled={isSubmitting}
-                className={`flex items-center gap-1.5 ${isMobile ? 'px-3 py-1.5 text-sm' : 'px-4 py-2'} bg-gradient-to-r ${theme.primary} hover:opacity-80 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95`}
+                className={`flex items-center gap-1.5 ${isMobile ? 'px-3 py-1.5 text-sm' : 'px-4 py-2'} bg-gradient-to-r ${theme.primary} hover:opacity-80 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-lg`}
               >
                 {isSubmitting ? <Zap className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'} animate-pulse`} /> : <Send className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />}
                 {!isMobile && t('submit')}
