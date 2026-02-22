@@ -92,13 +92,18 @@ export const supportedLanguages = [
   { code: 'zu', name: 'isiZulu', flag: '🇿🇦', voice: 'zu-ZA' },
 ];
 
-// Base translations for English
+// Base translations for English - Comprehensive
 const baseTranslations = {
+  // Navigation
   problems: 'Problems',
   roadmap: 'Roadmap',
   schedule: 'Schedule',
   themes: 'Themes',
   aiChat: 'AI Chat',
+  home: 'Home',
+  profile: 'Profile',
+  
+  // Problem Library
   problemLibrary: 'Problem Library',
   chooseAProblem: 'Choose a problem to solve',
   problemsSolved: 'problems solved',
@@ -107,6 +112,11 @@ const baseTranslations = {
   easy: 'Easy',
   medium: 'Medium',
   hard: 'Hard',
+  filterByDifficulty: 'Filter by Difficulty',
+  filterByTopic: 'Filter by Topic',
+  sortBy: 'Sort By',
+  
+  // Problem Details
   description: 'Description',
   smartDebug: 'Smart Debug',
   whiteboard: 'Whiteboard',
@@ -119,35 +129,86 @@ const baseTranslations = {
   output: 'Output',
   explanation: 'Explanation',
   constraints: 'Constraints',
+  hints: 'Hints',
+  discuss: 'Discuss',
+  
+  // Actions
   run: 'Run',
   submit: 'Submit',
   download: 'Download',
   share: 'Share',
+  copy: 'Copy',
+  paste: 'Paste',
+  clear: 'Clear',
+  reset: 'Reset',
   aiExplain: 'AI Explain',
+  
+  // Test Cases
   testcase: 'Testcase',
+  testcases: 'Test Cases',
   result: 'Result',
+  results: 'Results',
+  passed: 'Passed',
+  failed: 'Failed',
   runYourCode: 'Run your code to see results...',
-  browseProblems: 'Browse all coding problems',
-  trackLearning: 'Track your learning path',
-  planStudy: 'Plan your study sessions',
-  customizeTheme: 'Customize Theme',
-  aiPeerChat: 'AI Peer Chat',
-  // Editor related
+  allTestsPassed: 'All tests passed!',
+  someTestsFailed: 'Some tests failed',
+  
+  // Editor
   codeEditor: 'Code Editor',
   theme: 'Theme',
   font: 'Font',
   fontSize: 'Font Size',
   language: 'Language',
   settings: 'Settings',
-  // Additional UI
+  autoComplete: 'Auto Complete',
+  lineNumbers: 'Line Numbers',
+  wordWrap: 'Word Wrap',
+  
+  // UI Elements
   close: 'Close',
   save: 'Save',
   cancel: 'Cancel',
-  reset: 'Reset',
+  delete: 'Delete',
+  edit: 'Edit',
   loading: 'Loading...',
   translating: 'Translating...',
   translateDescription: 'Translate Description',
   changeLanguage: 'Change Language',
+  selectLanguage: 'Select Language',
+  
+  // Features
+  browseProblems: 'Browse all coding problems',
+  trackLearning: 'Track your learning path',
+  planStudy: 'Plan your study sessions',
+  customizeTheme: 'Customize Theme',
+  aiPeerChat: 'AI Peer Chat',
+  
+  // Status Messages
+  success: 'Success',
+  error: 'Error',
+  warning: 'Warning',
+  info: 'Information',
+  saved: 'Saved successfully',
+  failed: 'Operation failed',
+  tryAgain: 'Try again',
+  
+  // Time
+  today: 'Today',
+  yesterday: 'Yesterday',
+  thisWeek: 'This Week',
+  thisMonth: 'This Month',
+  
+  // Common
+  search: 'Search',
+  filter: 'Filter',
+  sort: 'Sort',
+  view: 'View',
+  help: 'Help',
+  about: 'About',
+  logout: 'Logout',
+  login: 'Login',
+  signup: 'Sign Up',
 };
 
 export const TranslationProvider = ({ children }) => {
@@ -174,7 +235,21 @@ export const TranslationProvider = ({ children }) => {
     }
   }, [translationCache]);
 
-  // Translate text using Google Translate API with caching
+  // Language code mapping for better API compatibility
+  const languageMapping = {
+    'zh': 'zh-CN',
+    'pt': 'pt-BR',
+    'no': 'nb',
+    'he': 'iw',
+    'tl': 'fil',
+  };
+
+  // Get API-compatible language code
+  const getApiLanguageCode = (lang) => {
+    return languageMapping[lang] || lang;
+  };
+
+  // Translate text using multiple APIs with enhanced fallback
   const translateText = async (text, targetLang) => {
     if (targetLang === 'en' || !text) return text;
     
@@ -185,27 +260,32 @@ export const TranslationProvider = ({ children }) => {
       return translationCache[cacheKey];
     }
     
+    const apiLang = getApiLanguageCode(targetLang);
+    
     try {
       setIsTranslating(true);
-      
-      // Use multiple translation APIs with fallback
       let translatedText = text;
+      let translationSuccess = false;
       
-      // Try MyMemory API first (free, no key required)
+      // Try MyMemory API first (free, no key required, supports 150+ languages)
       try {
         const response = await fetch(
-          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`,
-          { timeout: 3000 }
+          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${apiLang}`
         );
         const data = await response.json();
         
-        if (data.responseData?.translatedText) {
+        if (data.responseData && data.responseData.translatedText && 
+            data.responseData.translatedText !== text) {
           translatedText = data.responseData.translatedText;
+          translationSuccess = true;
+          console.log(`✅ MyMemory translation successful for ${targetLang}`);
         }
       } catch (error) {
-        console.warn('MyMemory API failed, trying fallback...');
-        
-        // Fallback: Use LibreTranslate (if available)
+        console.warn('MyMemory API failed:', error.message);
+      }
+      
+      // Fallback 1: LibreTranslate (if MyMemory failed)
+      if (!translationSuccess) {
         try {
           const response = await fetch('https://libretranslate.de/translate', {
             method: 'POST',
@@ -213,22 +293,46 @@ export const TranslationProvider = ({ children }) => {
             body: JSON.stringify({
               q: text,
               source: 'en',
-              target: targetLang,
+              target: apiLang,
               format: 'text'
-            }),
-            timeout: 3000
+            })
           });
           const data = await response.json();
           
-          if (data.translatedText) {
+          if (data.translatedText && data.translatedText !== text) {
             translatedText = data.translatedText;
+            translationSuccess = true;
+            console.log(`✅ LibreTranslate translation successful for ${targetLang}`);
           }
         } catch (fallbackError) {
-          console.warn('All translation APIs failed');
+          console.warn('LibreTranslate API failed:', fallbackError.message);
         }
       }
       
-      // Cache the result
+      // Fallback 2: Lingva Translate (another free API)
+      if (!translationSuccess) {
+        try {
+          const response = await fetch(
+            `https://lingva.ml/api/v1/en/${apiLang}/${encodeURIComponent(text)}`
+          );
+          const data = await response.json();
+          
+          if (data.translation && data.translation !== text) {
+            translatedText = data.translation;
+            translationSuccess = true;
+            console.log(`✅ Lingva translation successful for ${targetLang}`);
+          }
+        } catch (lingvaError) {
+          console.warn('Lingva API failed:', lingvaError.message);
+        }
+      }
+      
+      // If all APIs failed, show warning
+      if (!translationSuccess) {
+        console.warn(`⚠️ Translation not available for ${targetLang}, using English`);
+      }
+      
+      // Cache the result (even if translation failed, to avoid repeated attempts)
       setTranslationCache(prev => ({
         ...prev,
         [cacheKey]: translatedText
@@ -243,7 +347,7 @@ export const TranslationProvider = ({ children }) => {
     }
   };
 
-  // Load translations for a language
+  // Load translations for a language with batch processing
   const loadTranslations = async (lang) => {
     if (translations[lang]) return;
     
@@ -251,14 +355,40 @@ export const TranslationProvider = ({ children }) => {
     const newTranslations = {};
     
     try {
-      // Translate all base keys
-      for (const [key, value] of Object.entries(baseTranslations)) {
-        newTranslations[key] = await translateText(value, lang);
+      const entries = Object.entries(baseTranslations);
+      const batchSize = 5; // Translate 5 items at a time to avoid rate limits
+      
+      console.log(`🌐 Loading translations for ${lang}...`);
+      
+      // Process in batches
+      for (let i = 0; i < entries.length; i += batchSize) {
+        const batch = entries.slice(i, i + batchSize);
+        
+        // Translate batch items in parallel
+        const batchPromises = batch.map(async ([key, value]) => {
+          const translated = await translateText(value, lang);
+          return [key, translated];
+        });
+        
+        const batchResults = await Promise.all(batchPromises);
+        
+        // Add batch results to translations
+        batchResults.forEach(([key, translated]) => {
+          newTranslations[key] = translated;
+        });
+        
+        // Small delay between batches to avoid rate limiting
+        if (i + batchSize < entries.length) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
       }
       
       setTranslations(prev => ({ ...prev, [lang]: newTranslations }));
+      console.log(`✅ Translations loaded for ${lang}`);
     } catch (error) {
       console.error('Failed to load translations:', error);
+      // Fallback: use English translations
+      setTranslations(prev => ({ ...prev, [lang]: baseTranslations }));
     } finally {
       setIsTranslating(false);
     }
@@ -267,6 +397,20 @@ export const TranslationProvider = ({ children }) => {
   // Get translated text
   const t = (key) => {
     return translations[language]?.[key] || baseTranslations[key] || key;
+  };
+
+  // Translate dynamic content (like problem descriptions, user content)
+  const translateDynamic = async (text, targetLang = language) => {
+    if (!text || targetLang === 'en') return text;
+    return await translateText(text, targetLang);
+  };
+
+  // Batch translate multiple texts
+  const translateBatch = async (texts, targetLang = language) => {
+    if (!texts || texts.length === 0 || targetLang === 'en') return texts;
+    
+    const promises = texts.map(text => translateText(text, targetLang));
+    return await Promise.all(promises);
   };
 
   // Text-to-Speech function with enhanced multi-language support
@@ -404,6 +548,8 @@ export const TranslationProvider = ({ children }) => {
       language, 
       changeLanguage, 
       t, 
+      translateDynamic,
+      translateBatch,
       isTranslating, 
       speak, 
       stopSpeaking, 

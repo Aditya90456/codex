@@ -614,33 +614,40 @@ const LeetCodeEditorRedesigned = () => {
                 </div>
               </div>
 
-              {/* Language Selector - Redesigned */}
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-slate-800/80 to-slate-700/80 rounded-xl border border-white/10 hover:border-blue-500/30 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer backdrop-blur-sm shadow-lg flex-shrink-0 whitespace-nowrap"
-              >
-                {languages.map(lang => (
-                  <option key={lang.value} value={lang.value} className="bg-slate-800">
-                    {lang.label}
-                  </option>
-                ))}
-              </select>
+              {/* Language Selectors Group */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Code Language Selector */}
+                <div className="flex flex-col">
+                  <label className="text-[10px] text-gray-400 mb-0.5 px-1">Code</label>
+                  <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    className="px-3 py-1.5 text-sm font-semibold text-white bg-gradient-to-r from-slate-800/80 to-slate-700/80 rounded-lg border border-white/10 hover:border-blue-500/30 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer backdrop-blur-sm shadow-lg whitespace-nowrap"
+                  >
+                    {languages.map(lang => (
+                      <option key={lang.value} value={lang.value} className="bg-slate-800">
+                        {lang.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              {/* Translation Language Selector - VISIBLE */}
-              <div className="relative flex-shrink-0">
-                <select
-                  value={translationLanguage}
-                  onChange={(e) => handleTranslationChange(e.target.value)}
-                  className="px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-xl border border-emerald-400/30 focus:outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/20 transition-all cursor-pointer backdrop-blur-sm shadow-lg whitespace-nowrap"
-                  title="Translate problem description"
-                >
-                  {translationLanguages.map(lang => (
-                    <option key={lang.code} value={lang.code} className="bg-slate-800">
-                      {lang.flag} {lang.name}
-                    </option>
-                  ))}
-                </select>
+                {/* Translation Language Selector */}
+                <div className="flex flex-col">
+                  <label className="text-[10px] text-gray-400 mb-0.5 px-1">Translate</label>
+                  <select
+                    value={translationLanguage}
+                    onChange={(e) => handleTranslationChange(e.target.value)}
+                    className="px-3 py-1.5 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg border border-emerald-400/30 focus:outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/20 transition-all cursor-pointer backdrop-blur-sm shadow-lg whitespace-nowrap"
+                    title="Translate problem description"
+                  >
+                    {translationLanguages.map(lang => (
+                      <option key={lang.code} value={lang.code} className="bg-slate-800">
+                        {lang.flag} {lang.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="h-8 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
@@ -726,24 +733,6 @@ const LeetCodeEditorRedesigned = () => {
       {(isMobile || isTablet) && showMobileMenu && (
         <div className={`absolute top-${isMobile ? '14' : '16'} right-0 left-0 z-20 bg-gradient-to-b ${theme.card} backdrop-blur-xl border-b ${theme.border} shadow-2xl animate-slideDown`}>
           <div className="p-4 space-y-2">
-            {/* Translation Language Selector */}
-            <div className="mb-3">
-              <label className="text-xs text-gray-400 mb-1 block">Translate to:</label>
-              <select
-                value={translationLanguage}
-                onChange={(e) => {
-                  handleTranslationChange(e.target.value);
-                }}
-                className="w-full px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-800/80 to-emerald-700/80 rounded-xl border border-emerald-500/20 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
-              >
-                {translationLanguages.map(lang => (
-                  <option key={lang.code} value={lang.code} className="bg-slate-800">
-                    {lang.flag} {lang.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* Problems List */}
             <button
               onClick={() => {
@@ -1079,20 +1068,6 @@ const LeetCodeEditorRedesigned = () => {
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="text-sm font-semibold text-gray-400">{t('description')}</h3>
                         <div className="flex items-center gap-2">
-                          {/* Translation Language Selector - For Problem Description */}
-                          <select
-                            value={translationLanguage}
-                            onChange={(e) => handleTranslationChange(e.target.value)}
-                            className="px-2 py-1 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg border border-emerald-400/30 focus:outline-none focus:border-emerald-400/50 transition-all cursor-pointer"
-                            title="Translate problem description"
-                          >
-                            {translationLanguages.map(lang => (
-                              <option key={lang.code} value={lang.code} className="bg-slate-800">
-                                {lang.flag} {lang.name}
-                              </option>
-                            ))}
-                          </select>
-                          
                           {/* Speak Button */}
                           <button
                             onClick={() => {
@@ -1108,20 +1083,6 @@ const LeetCodeEditorRedesigned = () => {
                               <Volume className="w-4 h-4 text-gray-400 hover:text-blue-400" />
                             )}
                           </button>
-                          
-                          {/* UI Language Selector - 150+ Languages */}
-                          <select
-                            value={uiLanguage}
-                            onChange={(e) => changeUILanguage(e.target.value)}
-                            className="px-3 py-1.5 text-xs font-medium text-white bg-slate-700/50 hover:bg-slate-700 rounded-lg border border-slate-600/50 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer max-w-[200px]"
-                            title="Change app language (150+ languages)"
-                          >
-                            {translationLanguages.map(lang => (
-                              <option key={lang.code} value={lang.code} className="bg-slate-800">
-                                {lang.flag} {lang.name}
-                              </option>
-                            ))}
-                          </select>
                         </div>
                       </div>
                       {isTranslating ? (
