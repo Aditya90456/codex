@@ -40,6 +40,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import { useLeaderboard } from '../contexts/LeaderboardContext';
 import { executeCode, runTestCases, validateCode } from '../services/codeExecutionService';
+import { runProblemTests } from '../services/enhancedTestRunner';
 import '../styles/leetcode-editor-responsive.css';
 import '../styles/z-index-fix.css';
 import '../styles/problem-list-animations.css';
@@ -404,55 +405,92 @@ const LeetCodeEditorRedesigned = () => {
     console.log('Run Code button clicked');
     setIsRunning(true);
     setConsoleTab('result');
-    setConsoleOutput([{ type: 'info', message: '⏳ Running code...' }]);
+    setConsoleOutput([{ type: 'info', message: '⏳ Running comprehensive test suite...' }]);
 
     try {
-      // Validate code first
-      const validation = validateCode(code, language);
-      if (!validation.valid) {
-        throw new Error(`Syntax Error: ${validation.error}`);
-      }
-
-      // Prepare test case
-      const testCase = {
-        input: customInput || selectedProblem.examples[0].input,
-        expected: selectedProblem.examples[0].output
-      };
-
-      console.log('Executing code with real API...');
-      console.log('Test case:', testCase);
-
-      // Execute code using real API (Piston - completely free!)
-      const startTime = Date.now();
-      const results = await runTestCases(code, language, [testCase]);
-      const endTime = Date.now();
+      console.log('🧪 Starting comprehensive test execution...');
       
-      const result = results[0];
+      // Run comprehensive test suite with syntax validation
+      const { syntaxErrors, results, summary } = await runProblemTests(selectedProblem, language, code);
+      
+      // Check for syntax errors first
+      if (syntaxErrors && syntaxErrors.length > 0) {
+        const outputMessages = [
+          { type: 'error', message: '❌ Syntax Errors Detected:' },
+          { type: 'info', message: '' }
+        ];
+        
+        syntaxErrors.forEach(err => {
+          outputMessages.push({
+            type: err.type === 'error' ? 'error' : 'warning',
+            message: `${err.type === 'error' ? '❌' : '⚠️'} ${err.message}${err.line ? ` (line ${err.line})` : ''}`
+          });
+        });
+        
+        outputMessages.push({ type: 'info', message: '' });
+        outputMessages.push({ type: 'info', message: '� Fix these errors and try again:' });
+        outputMessages.push({ type: 'info', message: '1. Check for missing/extra brackets, braces, or parentheses' });
+        outputMessages.push({ type: 'info', message: '2. Verify function definition syntax' });
+        outputMessages.push({ type: 'info', message: '3. Ensure proper indentation (Python)' });
+        outputMessages.push({ type: 'info', message: '4. Check for typos in keywords' });
+        
+        setConsoleOutput(outputMessages);
+        setIsRunning(false);
+        return;
+      }
       
       // Track run attempt
       if (user) {
-        await recordSubmission(selectedProblem.id, result.passed, language, 1);
+        await recordSubmission(selectedProblem.id, summary.allPassed, language, 1);
       }
 
-      // Display results
+      // Display comprehensive results
       const outputMessages = [
-        { type: 'success', message: '✓ Code executed successfully' },
+        { type: 'success', message: '✓ Test execution completed' },
         { type: 'info', message: '' },
-        { type: 'info', message: `Input: ${testCase.input}` },
-        { type: result.passed ? 'success' : 'error', message: `Your Output: ${result.output || '(empty)'}` },
-        { type: 'info', message: `Expected: ${testCase.expected}` },
-        { type: result.passed ? 'success' : 'error', message: result.passed ? '✓ Test passed' : '✗ Test failed' },
+        { type: 'info', message: `📊 Test Results: ${summary.totalPassed}/${summary.totalTests} passed (${summary.passRate}%)` },
+        { type: 'info', message: `📝 Examples: ${summary.examplesPassed}/${summary.examplesTotal} passed` },
+        { type: 'info', message: `🔒 Hidden Tests: ${summary.hiddenPassed}/${summary.hiddenTotal} passed` },
         { type: 'info', message: '' },
-        { type: 'info', message: `Runtime: ${result.runtime}ms` },
       ];
 
-      if (result.memory > 0) {
-        outputMessages.push({ type: 'info', message: `Memory: ${(result.memory / 1024).toFixed(1)} MB` });
+      // Show detailed results for failed tests
+      const failedTests = results.filter(r => !r.passed);
+      if (failedTests.length > 0) {
+        outputMessages.push({ type: 'error', message: '❌ Failed Test Cases:' });
+        failedTests.slice(0, 3).forEach(test => {
+          outputMessages.push({ type: 'error', message: `Test ${test.id}: ${test.explanation}` });
+          outputMessages.push({ type: 'info', message: `  Input: ${test.input}` });
+          outputMessages.push({ type: 'error', message: `  Expected: ${test.expected}` });
+          outputMessages.push({ type: 'error', message: `  Got: ${test.output || '(empty)'}` });
+          if (test.error) {
+            outputMessages.push({ type: 'error', message: `  Error: ${test.error}` });
+          }
+          outputMessages.push({ type: 'info', message: '' });
+        });
+        
+        if (failedTests.length > 3) {
+          outputMessages.push({ type: 'info', message: `... and ${failedTests.length - 3} more failed tests` });
+        }
+      } else {
+        outputMessages.push({ type: 'success', message: '🎉 All test cases passed!' });
       }
 
-      if (result.error) {
-        outputMessages.push({ type: 'error', message: '' });
-        outputMessages.push({ type: 'error', message: `Error: ${result.error}` });
+      // Performance metrics
+      outputMessages.push({ type: 'info', message: '' });
+      outputMessages.push({ type: 'info', message: `⚡ Average Runtime: ${summary.avgRuntime}ms` });
+      if (summary.maxMemory > 0) {
+        outputMessages.push({ type: 'info', message: `💾 Peak Memory: ${(summary.maxMemory / 1024).toFixed(1)} MB` });
+      }
+
+      // Show first successful test as example
+      const firstSuccess = results.find(r => r.passed);
+      if (firstSuccess) {
+        outputMessages.push({ type: 'info', message: '' });
+        outputMessages.push({ type: 'success', message: '✅ Example Success:' });
+        outputMessages.push({ type: 'info', message: `Input: ${firstSuccess.input}` });
+        outputMessages.push({ type: 'success', message: `Output: ${firstSuccess.output}` });
+        outputMessages.push({ type: 'info', message: `Runtime: ${firstSuccess.runtime}ms` });
       }
 
       setConsoleOutput(outputMessages);
@@ -465,8 +503,9 @@ const LeetCodeEditorRedesigned = () => {
         { type: 'info', message: '' },
         { type: 'info', message: '🔧 Troubleshooting:' },
         { type: 'info', message: '1. Check your code syntax' },
-        { type: 'info', message: '2. Make sure your code handles the input correctly' },
-        { type: 'info', message: '3. Verify the output format matches expected' }
+        { type: 'info', message: '2. Make sure your function name matches the problem' },
+        { type: 'info', message: '3. Verify your function handles all input types' },
+        { type: 'info', message: '4. Check for edge cases (empty arrays, null values, etc.)' }
       ]);
     } finally {
       setIsRunning(false);
@@ -484,8 +523,10 @@ const LeetCodeEditorRedesigned = () => {
       // Wait a bit for runCode to complete
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Mark as completed if all tests pass
-      if (testResults && testResults.every(r => r.passed)) {
+      // Check if all tests passed (comprehensive test results)
+      const allTestsPassed = testResults && Array.isArray(testResults) && testResults.every(r => r.passed);
+      
+      if (allTestsPassed) {
         if (user) {
           // Get problem details for progress tracking
           const difficulty = selectedProblem.difficulty || 'Medium';
@@ -516,18 +557,31 @@ const LeetCodeEditorRedesigned = () => {
           setPointsData(pointsResult);
           setShowPointsAnimation(true);
         }
+        
+        const passedCount = testResults.filter(r => r.passed).length;
+        const totalCount = testResults.length;
+        
         setConsoleOutput(prev => [
           ...prev,
           { type: 'success', message: '' },
-          { type: 'success', message: '🎉 All tests passed! Problem completed!' },
-          { type: 'success', message: '✅ Progress saved to your profile!' },
-          { type: 'success', message: `🏆 Points earned: +${pointsData?.pointsEarned || 0}` }
+          { type: 'success', message: '🎉 Congratulations! All test cases passed!' },
+          { type: 'success', message: `✅ ${passedCount}/${totalCount} test cases passed` },
+          { type: 'success', message: '🏆 Problem completed successfully!' },
+          { type: 'success', message: '📈 Progress saved to your profile!' },
+          { type: 'success', message: `🎯 Points earned: +${pointsData?.pointsEarned || 0}` }
         ]);
       } else {
+        const passedCount = testResults ? testResults.filter(r => r.passed).length : 0;
+        const totalCount = testResults ? testResults.length : 0;
+        const failedCount = totalCount - passedCount;
+        
         setConsoleOutput(prev => [
           ...prev,
           { type: 'warning', message: '' },
-          { type: 'warning', message: '⚠️ Some tests failed. Fix the issues and try again.' }
+          { type: 'warning', message: `⚠️ ${failedCount} test case(s) failed` },
+          { type: 'info', message: `📊 Passed: ${passedCount}/${totalCount}` },
+          { type: 'warning', message: '🔧 Fix the failing tests and try again' },
+          { type: 'info', message: '💡 Check the failed test cases above for details' }
         ]);
       }
     } catch (error) {
@@ -621,6 +675,23 @@ const LeetCodeEditorRedesigned = () => {
                 <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Schedule</span>
               </button>
             </div>
+          )}
+
+          {/* Leaderboard Button - Always Visible */}
+          {!isMobile && (
+            <button
+              onClick={() => navigate('/leaderboard')}
+              className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 hover:from-yellow-500/20 hover:to-orange-500/20 rounded-xl border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300 shadow-lg shadow-yellow-500/5 whitespace-nowrap flex-shrink-0"
+              title="Leaderboard"
+            >
+              <Trophy className="w-4 h-4 text-yellow-400 group-hover:text-yellow-300 transition-colors" />
+              <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Leaderboard</span>
+              {userStats.totalPoints > 0 && (
+                <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-300 rounded-full text-xs font-bold">
+                  {userStats.totalPoints}
+                </span>
+              )}
+            </button>
           )}
         </div>
 
@@ -718,21 +789,6 @@ const LeetCodeEditorRedesigned = () => {
                 >
                   <MessageCircle className="w-4 h-4 text-pink-400 group-hover:text-pink-300 transition-colors" />
                   <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">{t('aiChat')}</span>
-                </button>
-
-                {/* Leaderboard Button */}
-                <button
-                  onClick={() => navigate('/leaderboard')}
-                  className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 hover:from-yellow-500/20 hover:to-orange-500/20 rounded-xl border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300 shadow-lg shadow-yellow-500/5 whitespace-nowrap flex-shrink-0"
-                  title="Leaderboard"
-                >
-                  <Trophy className="w-4 h-4 text-yellow-400 group-hover:text-yellow-300 transition-colors" />
-                  <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Leaderboard</span>
-                  {userStats.totalPoints > 0 && (
-                    <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-300 rounded-full text-xs font-bold">
-                      {userStats.totalPoints}
-                    </span>
-                  )}
                 </button>
               </div>
 
@@ -838,6 +894,25 @@ const LeetCodeEditorRedesigned = () => {
               <div className="flex-1 text-left">
                 <div className="font-semibold">Practice Schedule</div>
                 <div className="text-xs text-gray-400">Plan your study sessions</div>
+              </div>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Leaderboard */}
+            <button
+              onClick={() => {
+                navigate('/leaderboard');
+                setShowMobileMenu(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 hover:from-yellow-500/20 hover:to-orange-500/20 rounded-lg border border-yellow-500/20 transition-all`}
+            >
+              <Trophy className="w-5 h-5 text-yellow-400" />
+              <div className="flex-1 text-left">
+                <div className="font-semibold">Leaderboard</div>
+                <div className="text-xs text-gray-400">See your ranking & earn points</div>
+                {userStats.totalPoints > 0 && (
+                  <div className="text-xs text-yellow-300 font-bold">{userStats.totalPoints} points</div>
+                )}
               </div>
               <ChevronRight className="w-4 h-4" />
             </button>
