@@ -1,0 +1,337 @@
+/* 3D Live Typing Dry Run Styles */
+
+.live-3d-container {
+  position: fixed;
+  z-index: 40;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.live-3d-container.minimized {
+  right: 1rem;
+  bottom: 1rem;
+  width: 600px;
+  height: 500px;
+}
+
+.live-3d-container.fullscreen {
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* 3D Transform Utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-3d {
+  transform-style: preserve-3d;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+/* 3D Canvas Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.6);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Control Panel Styles */
+.control-panel {
+  backdrop-filter: blur(12px);
+  background: rgba(15, 23, 42, 0.8);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.control-button {
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.control-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.control-button:active::before {
+  width: 100px;
+  height: 100px;
+}
+
+/* Progress Bar */
+.progress-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Info Overlay */
+.info-overlay {
+  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+   
+    : brightness(1);
+  }
+  50% {
+    filter: brightness(1.5);
+  }
+}
+
+/* Tooltip Styles */
+.tooltip-3d {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: white;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Loading State */
+.loading-3d {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(168, 85, 247, 0.2);
+  border-top-color: #a855f7;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* Slow rotation animation */
+@keyframes slow-rotate {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.animate-slow-rotate {
+  animation: slow-rotate 20s linear infinite;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth slide-in animation for new variables */
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px) translateZ(0px) scale(0.8);
+  }
+  60% {
+    transform: translateY(5px) translateZ(30px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) translateZ(0px) scale(1);
+  }
+}
+
+/* Subtle bounce for highlighted items */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0) translateZ(60px);
+  }
+  50% {
+    transform: translateY(-10px) translateZ(70px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 1s ease-in-out infinite;
+}
+
+/* Smooth pop-in for boxes */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateZ(0);
+  }
+  50% {
+    transform: scale(1.1) translateZ(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateZ(0);
+  }
+}
+
+.box-appear {
+  animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Glow effect for active elements */
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4),
+                0 0 40px rgba(168, 85, 247, 0.2),
+                0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.8),
+                0 0 60px rgba(168, 85, 247, 0.4),
+                0 15px 40px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Real-time animations for instant feedback */
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(-20px);
+  }
+  60% {
+    transform: scale(1.1) translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes stackPush {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) translateZ(0px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) translateZ(var(--z-offset, 0px)) scale(1);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out both;
+}
+
+.animate-popIn {
+  animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+}
+
+.animate-stackPush {
+  animation: stackPush 0.3s ease-out both;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+}

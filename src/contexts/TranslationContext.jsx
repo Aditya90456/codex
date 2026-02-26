@@ -149,7 +149,7 @@ const baseTranslations = {
   result: 'Result',
   results: 'Results',
   passed: 'Passed',
-  failed: 'Failed',
+  testFailed: 'Failed',
   runYourCode: 'Run your code to see results...',
   allTestsPassed: 'All tests passed!',
   someTestsFailed: 'Some tests failed',
@@ -190,7 +190,7 @@ const baseTranslations = {
   warning: 'Warning',
   info: 'Information',
   saved: 'Saved successfully',
-  failed: 'Operation failed',
+  operationFailed: 'Operation failed',
   tryAgain: 'Try again',
   
   // Time

@@ -14,6 +14,14 @@ import ThemeSelector from '../UI/ThemeSelector';
 import LeetCodeHeader from './LeetCodeHeader';
 import ProblemDescription from '../ProblemDescription';
 import ResponsiveButton from '../UI/ResponsiveButton';
+import MindControlThinkingPanel from '../MindControl/MindControlThinkingPanel';
+import AutoDetectionPanel from './AutoDetectionPanel';
+import WelcomeOverlay from './WelcomeOverlay';
+import { codeAutoDetector } from '../../services/codeAutoDetection';
+import { useWelcomeState, useAutoStart } from '../../hooks/useAutoOpen';
+import '../../styles/mind-control-thinking.css';
+import '../../styles/auto-detection-panel.css';
+import '../../styles/welcome-overlay.css';
 
 const ThemedLeetCodeEditor = () => {
   const navigate = useNavigate();
@@ -52,8 +60,24 @@ const ThemedLeetCodeEditor = () => {
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   
+  // Auto-detection state
+  const [autoAnalysis, setAutoAnalysis] = useState(null);
+  const [emotionData, setEmotionData] = useState(null);
+  const [typingHistory, setTypingHistory] = useState([]);
+  
+  // Welcome state
+  const { showWelcome, dismissWelcome } = useWelcomeState();
+  
   const editorRef = useRef(null);
   const timerRef = useRef(null);
+
+  // Auto-start initial analysis
+  useAutoStart(() => {
+    if (code) {
+      const analysis = codeAutoDetector.analyze(code, [], null);
+      setAutoAnalysis(analysis);
+    }
+  }, 2000, [code]);
 
   // Timer logic
   useEffect(() => {
@@ -86,6 +110,22 @@ const ThemedLeetCodeEditor = () => {
 
   const handleEditorChange = (value) => {
     setCode(value || '');
+    
+    // Track typing for auto-detection
+    setTypingHistory(prev => {
+      const newHistory = [...prev, {
+        timestamp: Date.now(),
+        key: 'typing',
+        length: (value || '').length
+      }];
+      return newHistory.slice(-100); // Keep last 100
+    });
+    
+    // Auto-analyze code every 10 changes
+    if (typingHistory.length % 10 === 0) {
+      const analysis = codeAutoDetector.analyze(value || '', typingHistory, emotionData);
+      setAutoAnalysis(analysis);
+    }
   };
 
   const runCode = async () => {
@@ -185,6 +225,28 @@ const ThemedLeetCodeEditor = () => {
             
             <div className="flex-1 overflow-y-auto p-4">
               <ProblemDescription problem={selectedProblem} />
+              
+              {/* Auto-Detection Panel */}
+              <AutoDetectionPanel 
+                analysis={autoAnalysis}
+                emotionData={emotionData}
+              />
+              
+              {/* Mind Control Thinking Panel */}
+              <MindControlThinkingPanel 
+                problemId={selectedProblem?.id}
+                onThoughtsSave={(thoughts) => {
+                  console.log('Thoughts saved:', thoughts);
+                }}
+                onEmotionChange={(emotion) => {
+                  setEmotionData(emotion);
+                  // Re-analyze with new emotion data
+                  if (code) {
+                    const analysis = codeAutoDetector.analyze(code, typingHistory, emotion);
+                    setAutoAnalysis(analysis);
+                  }
+                }}
+              />
             </div>
           </div>
         )}
@@ -389,7 +451,7 @@ const ThemedLeetCodeEditor = () => {
                   onClick={() => setIsConsoleMinimized(true)}
                   className={`p-1.5 rounded hover:bg-white/10 ${theme.text}`}
                 >
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-4 h-4" /> 
                 </button>
               </div>
 

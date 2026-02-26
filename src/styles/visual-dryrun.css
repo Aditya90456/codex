@@ -1,0 +1,175 @@
+/* Visual Dry Run Animations */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.8);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Variable change animation */
+@keyframes variableChange {
+  0% {
+    background-color: rgba(34, 197, 94, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.4);
+    transform: scale(1.05);
+  }
+  100% {
+    background-color: rgba(34, 197, 94, 0.1);
+    transform: scale(1);
+  }
+}
+
+.variable-changed {
+  animation: variableChange 0.5s ease-out;
+}
+
+/* Line highlight animation */
+@keyframes lineHighlight {
+  0% {
+    background-color: rgba(168, 85, 247, 0);
+    transform: translateX(-10px);
+  }
+  50% {
+    background-color: rgba(168, 85, 247, 0.3);
+  }
+  100% {
+    background-color: rgba(168, 85, 247, 0.2);
+    transform: translateX(0);
+  }
+}
+
+.line-highlight {
+  animation: lineHighlight 0.4s ease-out;
+}
+
+/* Stack push animation */
+@keyframes stackPush {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.8);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.stack-push {
+  animation: stackPush 0.4s ease-out;
+}
+
+/* Output appear animation */
+@keyframes outputAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.output-appear {
+  animation: outputAppear 0.3s ease-out;
+}
+
+/* Progress bar animation */
+@keyframes progressGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.8);
+  }
+}
+
+.progress-glow {
+  animation: progressGlow 2s ease-in-out infinite;
+}
+
+/* Smooth transitions */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effects */
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Custom scrollbar for dry run panels */
+.dryrun-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dryrun-scroll::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 4px;
+}
+
+.dryrun-scroll::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+  border-radius: 4px;
+}
+
+.dryrun-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.5);
+}

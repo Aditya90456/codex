@@ -21,6 +21,10 @@ import SolutionViewer from './SolutionViewer';
 import AIPeerChat from './AIPeerChat';
 import AIWhiteboardVisualizer from './AIWhiteboardVisualizer';
 import RealTimeDryRun from './RealTimeDryRun';
+import VisualDryRun from './VisualDryRun';
+// Ultra-fast 3D component - loads in <1s
+import { lazy, Suspense } from 'react';
+const LiveTyping3DDryRun = lazy(() => import('./LiveTyping3DFast'));
 import SmartDryRunDetector from './SmartDryRunDetector';
 import SmartDebugNotification from './SmartDebugNotification';
 import SessionBookingModal from './SessionBookingModal';
@@ -44,6 +48,9 @@ import { runProblemTests } from '../services/enhancedTestRunner';
 import '../styles/leetcode-editor-responsive.css';
 import '../styles/z-index-fix.css';
 import '../styles/problem-list-animations.css';
+import '../styles/visual-dryrun.css';
+import '../styles/live-typing-3d.css';
+
 
 // Configure Monaco loader to use CDN
 loader.config({
@@ -146,6 +153,31 @@ const LeetCodeEditorRedesigned = () => {
   const [notificationDismissed, setNotificationDismissed] = useState(false);
   const [smartDebugMode, setSmartDebugMode] = useState('auto'); // auto, manual, off
   
+  // 3D Dry Run states
+  const [show3DDryRun, setShow3DDryRun] = useState(false);
+  const [enable3DAutoMode, setEnable3DAutoMode] = useState(true);
+  
+  // Auto-open 3D visualization when code is detected
+  useEffect(() => {
+    if (enable3DAutoMode && code && code.trim().length > 20) {
+      const hasDataStructure = 
+        code.includes('vector') || code.includes('array') || code.includes('stack') ||
+        code.includes('queue') || code.includes('tree') || code.includes('graph') ||
+        code.includes('ArrayList') || code.includes('LinkedList') ||
+        code.match(/\[.*\]/) || // Array literals
+        code.match(/(int|float|double|const|let|var)\s+\w+\s*=/) || // Variable declarations
+        code.includes('list') || code.includes('dict');
+      
+      if (hasDataStructure && !show3DDryRun) {
+        // Auto-open after a short delay
+        const timer = setTimeout(() => {
+          setShow3DDryRun(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [code, enable3DAutoMode, show3DDryRun]);
+  
   // Translation state
   const [translatedDescription, setTranslatedDescription] = useState('');
   
@@ -179,7 +211,7 @@ const LeetCodeEditorRedesigned = () => {
   const [showMonthlyGoals, setShowMonthlyGoals] = useState(false);
   const [showCodeShareModal, setShowCodeShareModal] = useState(false);
   const [showPracticeScheduler, setShowPracticeScheduler] = useState(false);
-
+  
   // Leaderboard integration
   const { addProblemSolved, userStats } = useLeaderboard();
   const [showPointsAnimation, setShowPointsAnimation] = useState(false);
@@ -1150,6 +1182,16 @@ const LeetCodeEditorRedesigned = () => {
                     <Zap className="w-4 h-4 inline mr-1" />
                     {t('dryRun')}
                   </button>
+                  
+                  <button
+                    onClick={() => setShow3DDryRun(!show3DDryRun)}
+                    className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
+                      show3DDryRun ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30' : `${theme.textSecondary} hover:${theme.text}`
+                    }`}
+                  >
+                    <Activity className="w-4 h-4 inline mr-1" />
+                    3D Live
+                  </button>
                     </>
                   )}
                 </div>
@@ -1346,10 +1388,11 @@ const LeetCodeEditorRedesigned = () => {
                 )}
 
                 {leftPanelTab === 'dryrun' && (
-                  <RealTimeDryRun 
+                  <VisualDryRun 
                     code={code}
                     language={language}
                     problem={selectedProblem}
+                    onClose={() => setLeftPanelTab('description')}
                   />
                 )}
               </div>
@@ -2386,6 +2429,22 @@ const LeetCodeEditorRedesigned = () => {
           }}
         />
       )}
+      
+      {/* 3D Live Typing Dry Run - Lazy loaded */}
+      <Suspense fallback={
+        <div className="fixed right-4 bottom-4 w-[500px] h-[400px] bg-slate-900 rounded-2xl border-2 border-purple-500/30 flex items-center justify-center">
+          <div className="text-white">Loading 3D...</div>
+        </div>
+      }>
+        {show3DDryRun && (
+          <LiveTyping3DDryRun
+            code={code}
+            language={language}
+            isVisible={show3DDryRun}
+            onClose={() => setShow3DDryRun(false)}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };
