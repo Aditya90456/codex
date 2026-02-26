@@ -12,12 +12,14 @@ const LiveTyping3DFast = ({ code, language, isVisible, onClose }) => {
   const [showTut, setShowTut] = useState(true);
   const [tutIdx, setTutIdx] = useState(0);
 
-  // Minimal tutorial examples
+  // Minimal tutorial examples with algorithms
   const tuts = [
-    { txt: 'vector<int> nums = {2,7,11,15}', d: { array: [2, 7, 11, 15] }, t: 'array' },
-    { txt: 'int p = 9', d: { vars: [{ n: 'p', v: '9' }] }, t: 'vars' },
-    { txt: 'stack<int> s', d: { stack: [10, 20, 30] }, t: 'stack' },
-    { txt: 'const arr = [1,2,3,4,5]', d: { array: [1, 2, 3, 4, 5] }, t: 'array' }
+    { txt: 'vector<int> nums = {2,7,11,15}', d: { array: [2, 7, 11, 15] }, t: 'array', desc: 'Array visualization' },
+    { txt: 'int p = 9', d: { vars: [{ n: 'p', v: '9' }] }, t: 'vars', desc: 'Variables' },
+    { txt: 'stack<int> s', d: { stack: [10, 20, 30] }, t: 'stack', desc: 'Stack operations' },
+    { txt: 'binarySearch(arr, target)', d: { bsearch: { arr: [1,3,5,7,9,11,13,15], target: 7, left: 0, right: 7, mid: 3 } }, t: 'bsearch', desc: 'Binary Search' },
+    { txt: 'bubbleSort(arr)', d: { sort: { arr: [5,2,8,1,9], comparing: [0,1] } }, t: 'sort', desc: 'Sorting Algorithm' },
+    { txt: 'const arr = [1,2,3,4,5]', d: { array: [1, 2, 3, 4, 5] }, t: 'array', desc: 'JavaScript array' }
   ];
 
   // Tutorial loop
@@ -87,8 +89,16 @@ const LiveTyping3DFast = ({ code, language, isVisible, onClose }) => {
           <div style={{ transform: `rotateY(${rotY}deg) rotateX(15deg)`, transformStyle: 'preserve-3d', transition: 'all 0.3s ease' }}>
             {type === 'array' && <ArrayViz data={data.array || []} />}
             {type === 'vars' && <VarsViz data={data.vars || []} />}
+            {type === 'mixed' && (
+              <div className="flex flex-col gap-6" style={{ transformStyle: 'preserve-3d' }}>
+                <VarsViz data={data.vars || []} />
+                <ArrayViz data={data.array || []} />
+              </div>
+            )}
             {type === 'stack' && <StackViz data={data.stack || []} />}
             {type === 'tree' && <TreeViz data={data.tree} />}
+            {type === 'bsearch' && <BinarySearchViz data={data.bsearch} />}
+            {type === 'sort' && <SortViz data={data.sort} />}
           </div>
         </div>
         
@@ -199,6 +209,59 @@ const TreeViz = memo(({ data }) => {
   );
 });
 
+// Binary Search visualization (memoized)
+const BinarySearchViz = memo(({ data }) => {
+  if (!data) return null;
+  return (
+    <div className="flex flex-col gap-4" style={{ transformStyle: 'preserve-3d' }}>
+      <div className="flex gap-2">
+        {data.arr.map((v, i) => (
+          <div 
+            key={i}
+            className={`w-12 h-12 rounded-lg flex items-center justify-center text-sm font-bold text-white shadow-lg ${
+              i === data.mid ? 'bg-gradient-to-br from-yellow-500 to-orange-500 scale-110' :
+              i >= data.left && i <= data.right ? 'bg-gradient-to-br from-blue-500 to-cyan-500' :
+              'bg-gradient-to-br from-gray-500 to-gray-600 opacity-50'
+            }`}
+            style={{ transformStyle: 'preserve-3d' }}
+          >
+            {v}
+          </div>
+        ))}
+      </div>
+      <div className="text-white text-xs text-center">
+        Target: {data.target} | Mid: {data.mid}
+      </div>
+    </div>
+  );
+});
+
+// Sort visualization (memoized)
+const SortViz = memo(({ data }) => {
+  if (!data) return null;
+  return (
+    <div className="flex gap-2" style={{ transformStyle: 'preserve-3d' }}>
+      {data.arr.map((v, i) => (
+        <div 
+          key={i}
+          className={`w-12 rounded-lg flex items-center justify-center text-sm font-bold text-white shadow-lg ${
+            data.comparing && data.comparing.includes(i) 
+              ? 'bg-gradient-to-br from-red-500 to-pink-500 animate-pulse' 
+              : 'bg-gradient-to-br from-purple-500 to-indigo-500'
+          }`}
+          style={{ 
+            transformStyle: 'preserve-3d',
+            height: `${v * 8}px`,
+            minHeight: '48px'
+          }}
+        >
+          {v}
+        </div>
+      ))}
+    </div>
+  );
+});
+
 // Ultra-fast parser (real-time, character-by-character)
 function fastParse(code) {
   const c = code.toLowerCase();
@@ -206,11 +269,21 @@ function fastParse(code) {
   
   // Multi-variable detection (real-time)
   const vars = [];
+  let hasArray = false;
+  let arrayData = [];
+  
   lines.forEach((line, idx) => {
+    // C++ array syntax: int b=[9,6,9] or int arr[]={1,2,3}
+    const cppArrayMatch = line.match(/(int|float|double)\s+(\w+)\s*(?:\[\s*\])?\s*=\s*[\[{]([^\]\}]+)[\]\}]/);
+    if (cppArrayMatch) {
+      hasArray = true;
+      arrayData = cppArrayMatch[3].split(',').map(n => n.trim()).filter(n => n);
+    }
+    
     // C++ variables: int p = 9, float x = 3.14
-    const cppMatch = line.match(/(int|float|double|long|char)\s+(\w+)\s*=\s*([^;,\n]+)/);
-    if (cppMatch) {
-      vars.push({ n: cppMatch[2], v: cppMatch[3].trim(), line: idx + 1 });
+    const cppVarMatches = line.matchAll(/(int|float|double|long|char)\s+(\w+)\s*=\s*([^;,\[\{]+)(?=[;,]|$)/g);
+    for (const match of cppVarMatches) {
+      vars.push({ n: match[2], v: match[3].trim(), line: idx + 1 });
     }
     
     // JS variables: const/let/var
@@ -226,7 +299,22 @@ function fastParse(code) {
     }
   });
   
+  // If we have both array and variables, show both
+  if (hasArray && arrayData.length > 0 && vars.length > 0) {
+    return { 
+      t: 'mixed', 
+      d: { 
+        vars: vars,
+        array: arrayData 
+      } 
+    };
+  }
+  
   // Array detection (real-time)
+  if (hasArray && arrayData.length > 0) {
+    return { t: 'array', d: { array: arrayData } };
+  }
+  
   if (c.includes('vector') || c.includes('[')) {
     const m = code.match(/\[([^\]]+)\]/);
     if (m) {
